@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flight Card</title>
+  <style>
+    /* General Styles */
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: monospace;
+      font-size: 10px;
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+      transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+    }
+    body {
+      display: flex;
+      justify-content: center; /* Center the page horizontally */
+      align-items: flex-start; /* Align page to top */
+      padding: 10px;
+      transform-origin: top left;
+      background-color: #ffffff; /* Day mode default */
+      color: #000000; /* Day mode default */
+    }
+    .page {
+      display: none;
+      width: 750px; /* Fixed width */
+      max-width: 750px; /* Ensure it doesn't exceed */
+      background-color: #ffffff; /* Day mode default */
+      color: #000000; /* Day mode default */
+      border: 1px solid transparent; /* Prevent minor layout shift */
+       transition: background-color 0.3s, color 0.3s;
+    }
+    .active {
+      display: block;
+    }
+
+    /* Heading Area */
+    .heading-container {
+        display: flex;
+        justify-content: space-between; /* Pushes title and controls apart */
+        align-items: center; /* Vertically aligns items */
+        margin-bottom: 10px; /* Add some space below the heading */
+    }
+    .heading-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px; /* Space between purge and toggle */
+    }
+    .heading-container h3 {
+        margin: 0; /* Remove default margin from h3 */
+    }
+
+    /* Form & Table Styles */
+    .form-section {
+      display: flex;
+      flex-direction: column;
+      flex-wrap: nowrap;
+      width: 100%; /* Take full width of the .page container */
+      border: 1px solid black;
+      border-collapse: collapse;
+       transition: border-color 0.3s;
+    }
+    /* Remove border from the card view's container */
+    #cardPage .form-section {
+        border: none;
+    }
+
+    .row {
+      display: flex;
+      width: 100%;
+      flex-wrap: nowrap; /* Prevent wrapping within rows */
+      border-bottom: 1px solid black; /* Apply default border */
+       transition: border-color 0.3s;
+    }
+     .row:last-child {
+         border-bottom: none; /* No border for the last row */
+     }
+    .row-1 {
+      /* border-bottom: 1px solid black; */ /* Handled by general .row now */
+    }
+     .row.no-bottom-border { /* Added class to remove specific borders */
+         border-bottom: none;
+     }
+     .row.add-top-border { /* Added class to add specific borders */
+         border-top: 1px solid black;
+          transition: border-color 0.3s;
+     }
+
+
+    .cell {
+      border-right: 1px solid black;
+      padding: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px; /* Default gap */
+      flex-shrink: 0; /* Prevent shrinking */
+      flex-grow: 0; /* Do not grow by default */
+      box-sizing: border-box;
+      white-space: nowrap; /* Prevent content wrapping within cell */
+       transition: border-color 0.3s;
+    }
+    .cell:last-child {
+      border-right: none;
+      flex-grow: 1; /* Allow last cell to fill remaining space if any, but shouldn't with fixed width */
+        min-width: 0; /* Allow last cell to be very small if needed */
+    }
+
+    /* Styles for rows from PLAN downwards for alignment */
+    .seamless-row .cell {
+      border-right: none; /* No vertical lines within these rows */
+      padding: 5px 2px; /* Reduced horizontal padding */
+      gap: 2px; /* Reduced gap between label and input */
+      border-bottom: none; /* No bottom border within seamless rows */
+      /* Add slight margin between cells in this row for visual separation */
+       margin-right: 3px;
+    }
+     .seamless-row .cell:last-child {
+         margin-right: 0; /* No margin on last cell */
+     }
+
+     .seamless-row {
+         border-bottom: none; /* Seamless rows themselves don't have bottom border */
+     }
+
+      .seamless-row .cell:last-child {
+          flex-grow: 0;
+          min-width: initial; /* Reset min-width if needed */
+      }
+    .seamless-row .cell.filler-cell { /* Filler cell definition */
+        min-width: 0;
+        padding: 0;
+        flex-grow: 1; /* Allow filler cell to take remaining space */
+        border: none !important; /* Ensure no borders */
+        margin-right: 0; /* No margin on filler cell */
+    }
+    .label-fixed {
+        width: 35px; /* Fixed width for labels in aligned rows */
+        flex-shrink: 0; /* Prevent label from shrinking */
+        display: inline-block;
+        text-align: left;
+        margin-right: 0; /* Removed margin-right */
+    }
+    .label-reg { width: 25px; } /* Specific for REG */
+    .label-pob { /* Removed fixed width */ } /* Specific for POB - Now uses label-right-aligned */
+    .reg-prefix { margin-right: 1px; }
+
+     /* Style for right-aligned labels */
+     .label-right-aligned {
+        text-align: right;
+        width: auto; /* Let label take its natural width */
+        flex-shrink: 0; /* Don't let it shrink */
+        /* No fixed width */
+     }
+
+
+    .cell.label-small label,
+    .cell.prefix-cell label,
+    .cell label,
+    .prefix-input span,
+    .crew-pax-inputs span {
+      font-size: inherit;
+    }
+     .cell.label-small {
+        /* Adjust alignment for potentially larger flight number */
+        align-items: baseline;
+     }
+
+    .cell.label-small input {
+      width: 45px;
+    }
+    .cell.crew-cell {
+      flex-direction: row;
+      /* Adjust gap for card view if needed */
+    }
+    /* Reduced prefix cell width */
+    .cell.prefix-cell {
+      flex-direction: column;
+      align-items: flex-start;
+      width: 75px !important;
+      min-width: 75px !important;
+      max-width: 75px !important;
+      flex: 0 0 75px !important;
+      padding: 5px; /* Restore padding for prefix cells */
+      gap: 5px; /* Restore gap for prefix cells */
+    }
+    .cell input[type="text"], .cell select {
+      font-size: inherit;
+      padding: 1px;
+      box-sizing: border-box;
+      height: auto;
+      background-color: #ffffff; /* Day mode default */
+      color: #000000; /* Day mode default */
+      border: 1px solid #ccc; /* Day mode default */
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+     .cell input[readonly] {
+         background-color: #eeeeee; /* Slightly different for readonly */
+     }
+    /* Style for the data display spans on card page */
+    .data-display {
+        display: inline-block; /* Allows width setting */
+        min-height: 1em; /* Ensure it has some height even if empty */
+        padding: 1px; /* Mimic input padding */
+        box-sizing: border-box;
+        /* font-family: inherit; */
+        white-space: pre; /* Preserve spacing from formatting */
+    }
+    /* Specific widths for data display spans matching input widths */
+    #card-plan { min-width: 25px; }
+    #card-reg, #card-fl, #card-dest, #card-flightNo { min-width: 35px; }
+    #card-gate, #card-bi, #card-v2, #card-v2_plus_15 { min-width: 45px; text-align: right; }
+    #card-pob { min-width: 40px; }
+    #card-info { min-width: 35px; text-align: center; }
+    #card-pzfw, #card-ezfw, #card-pfit, #card-exs, #card-bo, #card-res, #card-fzfw, #card-ezfw_du, #card-fzfw_du, #card-percent_mac { min-width: 55px; text-align: right; }
+    #card-bw { min-width: 65px; text-align: right; }
+    #card-sid, #card-star { min-width: 100px; }
+    #card-crew, #card-pax { min-width: 40px; }
+    #card-m2000, #card-p1000, #card-m1000 { min-width: 45px; }
+    #card-capt, #card-fzName { min-width: 140px; }
+    #card-staffNo { min-width: 90px; }
+    #card-std-time, #card-sta-time, #card-std-lt-time, #card-sta-lt-time, #card-flt-t-time, #card-blk-t-time { min-width: 45px; } /* Combined time fields */
+    #card-std-gmt, #card-sta-gmt { min-width: 60px; } /* GMT offset */
+
+    /* Card Page Specific Styles */
+     #card-flight-number-display {
+         font-size: 20px; /* Significantly larger font */
+         font-weight: bold;
+         display: flex; /* Use flex to keep SQ and number together */
+         align-items: baseline; /* Align text nicely */
+         gap: 5px;
+     }
+     #card-flight-number-display label {
+         font-size: inherit; /* Make "SQ" label match the number size */
+         font-weight: inherit;
+         width: auto; /* Override label-small width if needed */
+     }
+      #card-flight-number-display .data-display {
+         font-size: inherit; /* Make span match container size */
+         font-weight: inherit;
+         min-width: auto; /* Override specific width */
+     }
+
+     .text-blue { color: #0066cc; }
+     .text-red { color: #cc3300; }
+
+
+    /* --- Vertical Alignment --- */
+    .first-data-cell {
+        flex-basis: 110px; /* Fixed width basis */
+        flex-shrink: 0;
+        flex-grow: 0;
+    }
+    /* --- End Vertical Alignment --- */
+
+    /* --- Input Widths --- */
+    input#plan { width: 25px !important; } /* Max 2 */
+    input#reg, input#fl, input#dest, input#flightNo { width: 35px !important; } /* Max 3 */
+    input#gate, input#bi, input#v2, input#v2_plus_15 { width: 45px !important; } /* Max 4, updated V2 */
+    input#pob { width: 40px !important; } /* Fixed for readonly */
+    select#info { width: 35px !important; } /* Select */
+    input#pzfw, input#ezfw, input#pfit, input#exs, input#bo, input#res, input#fzfw, input#ezfw_du, input#fzfw_du, input#percent_mac { width: 55px !important; } /* Max 5 */
+    input#bw { width: 65px !important; } /* Max 6 */
+    input#sid, input#star { width: 100px !important; } /* SID/STAR width */
+    /* Crew/Pax */
+    .crew-pax-inputs input { width: 40px !important; }
+    /* Prefix inputs */
+    .prefix-input input { width: 45px !important; }
+    /* Capt/FZ */
+    .name-input { width: 140px !important; } /* Class for Capt/FZ name */
+    input#staffNo { width: 90px !important; }
+    /* --- End Input Widths --- */
+
+    .crew-pax-inputs {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+     /* Specific style for card page crew/pax display */
+    #cardPage .crew-pax-inputs {
+        gap: 1px; /* Tighter gap for display */
+    }
+
+    .prefix-input {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .capt-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 200px; /* Keep CAPT cell width */
+      box-sizing: border-box;
+    }
+    .capt-top {
+      display: flex;
+      gap: 5px;
+      width: 100%;
+    }
+    .capt-top .field {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 5px; /* Gap between label and input */
+    }
+    .capt-bottom {
+      display: flex;
+      gap: 5px; /* Gap between select and input */
+      width: 100%;
+      align-items: center;
+    }
+    /* Fixed width for Capt label and FZ select for alignment */
+    .label-capt, .select-fz {
+        width: 40px !important;
+        flex-shrink: 0;
+        display: inline-block;
+    }
+    .select-fz {
+        height: auto; /* Match input height */
+        padding: 1px;
+    }
+     /* Style for fzType display on card */
+     #card-fzType {
+         width: 40px !important; /* Match select width */
+         display: inline-block;
+         text-align: left;
+     }
+
+
+    /* Flight Card Output (Old style, now unused) */
+    .flight-card {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Buttons */
+    .button-container {
+        margin-top: 10px; /* Space above buttons */
+        margin-bottom: 10px; /* Space below buttons */
+    }
+    .button {
+      margin-top: 0; /* Remove default top margin */
+      margin-right: 10px;
+      font-size: 12px;
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: background-color 0.3s;
+    }
+    .button:hover {
+      background-color: #0055aa;
+    }
+     #purgeButton {
+        background-color: #cc3300; /* Reddish color */
+        margin-left: 0; /* Handled by gap in heading-controls */
+    }
+     #purgeButton:hover {
+        background-color: #aa2b00;
+    }
+
+    /* Time Inputs Specific */
+    .time-input-container {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .time-input {
+      width: 40px !important;
+      text-align: center;
+      padding: 2px;
+    }
+    .gmt-select {
+      width: 60px !important;
+      font-size: inherit;
+      padding: 1px;
+    }
+    .time-suffix {
+      margin-right: 5px;
+    }
+    .time-separator {
+      font-weight: bold;
+    }
+    .time-cell {
+      border-right: none !important;
+      flex-grow: 0 !important; /* Prevent time cells from growing */
+      flex-shrink: 0 !important;
+    }
+    #fileInput {
+        display: none; /* Hide the actual file input */
+    }
+
+    /* Toggle Switch Styles */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px; /* Smaller width */
+      height: 20px; /* Smaller height */
+      vertical-align: middle; /* Align with buttons */
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 20px; /* Fully rounded */
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px; /* Smaller handle */
+      width: 16px; /* Smaller handle */
+      left: 2px; /* Adjusted position */
+      bottom: 2px; /* Adjusted position */
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #0066cc; /* Same as button */
+    }
+    input:focus + .slider {
+      box-shadow: 0 0 1px #0066cc;
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px); /* Adjusted distance */
+    }
+
+    /* Footer Text */
+    .footer-text {
+        font-size: 8px;
+        margin-top: 15px; /* Space above footer */
+        text-align: left;
+        color: #555555; /* Default light grey */
+    }
+     .footer-text a {
+         color: inherit; /* Link color matches surrounding text */
+         text-decoration: none;
+     }
+      .footer-text a:hover {
+         text-decoration: underline;
+     }
+
+
+    /*--------------------*/
+    /* Night Mode Styles */
+    /*--------------------*/
+    body.night-mode {
+        background-color: #1a1a1a;
+        color: #e0e0e0;
+    }
+    .night-mode .page {
+        background-color: #1a1a1a;
+        color: #e0e0e0;
+    }
+     .night-mode .heading-container h3 {
+         color: #e0e0e0;
+     }
+    .night-mode .form-section {
+        border: 1px solid #555555;
+    }
+     /* Remove border from the card view's container in night mode too */
+    .night-mode #cardPage .form-section {
+        border: none;
+    }
+
+     .night-mode .row {
+         border-bottom: 1px solid #555555;
+     }
+     .night-mode .row:last-child {
+         border-bottom: none; /* Still no border for the last row */
+     }
+     .night-mode .row.no-bottom-border {
+         border-bottom: none; /* Still no border */
+     }
+     .night-mode .row.add-top-border {
+         border-top: 1px solid #555555;
+     }
+    .night-mode .cell {
+        border-right: 1px solid #555555;
+        color: #e0e0e0; /* Ensure cell text is light */
+    }
+    .night-mode .cell:last-child {
+        border-right: none;
+    }
+    .night-mode .cell input[type="text"],
+    .night-mode .cell select {
+        background-color: #333333;
+        color: #e0e0e0;
+        border: 1px solid #666666;
+    }
+     .night-mode .cell input[readonly] {
+         background-color: #444444; /* Darker readonly background */
+         color: #bbbbbb; /* Lighter text for readonly */
+     }
+     .night-mode .flight-card {
+         /* Conceptual container */
+     }
+     .night-mode .data-display {
+         color: #e0e0e0; /* Ensure displayed data is light */
+     }
+      .night-mode .text-blue { color: #66aaff; /* Brighter blue */}
+      .night-mode .text-red { color: #ff6666; /* Brighter red */}
+       .night-mode #card-flight-number-display {
+           color: #ffffff; /* Make flight number stand out more */
+       }
+        .night-mode .footer-text {
+         color: #aaaaaa; /* Lighter grey for night mode */
+        }
+         .night-mode .footer-text a {
+             color: inherit;
+         }
+
+
+    @media screen and (max-width: 750px) { /* Adjusted breakpoint */
+        /* Optional scaling */
+      /* html {
+          font-size: calc(100vw / 750 * 10);
+      } */
+    }
+  </style>
+</head>
+<body>
+  <div id="formPage" class="page active">
+    <div class="heading-container">
+        <h3>Flight Card Entry</h3>
+        <div class="heading-controls">
+            <button id="purgeButton" class="button">Purge</button>
+            <label class="switch" title="Toggle Day/Night Mode">
+              <input type="checkbox" id="darkModeToggle">
+              <span class="slider round"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-section">
+      <div class="row row-1">
+        <div class="cell label-small">
+          <label for="flightNo">SQ</label>
+          <input type="text" id="flightNo" maxlength="3">
+        </div>
+        <div class="cell capt-cell">
+          <div class="capt-top">
+            <div class="field">
+              <label class="label-capt" for="capt">CAPT</label>
+              <input type="text" id="capt" placeholder="Name" class="name-input">
+            </div>
+            <div class="field">
+              <label for="staffNo">No.</label>
+              <input type="text" id="staffNo" maxlength="8">
+            </div>
+          </div>
+          <div class="capt-bottom">
+            <select id="fzType" class="select-fz">
+              <option value="FZ">FZ</option>
+              <option value="SCO">SCO</option>
+              <option value="OBS">OBS</option>
+            </select>
+            <input type="text" id="fzName" placeholder="Name" class="name-input">
+          </div>
+        </div>
+        <div class="cell crew-cell">
+          <label for="crew">CREW/PAX</label>
+          <div class="crew-pax-inputs">
+            <input type="text" id="crew" maxlength="4">
+            <span>/</span>
+            <input type="text" id="pax" maxlength="4">
+          </div>
+        </div>
+        <div class="cell prefix-cell">
+          <label for="m2000">(M/2000ft)</label>
+          <div class="prefix-input">
+            <span>+</span>
+            <input type="text" id="m2000">
+          </div>
+        </div>
+        <div class="cell prefix-cell">
+          <label for="p1000">(P/1000kg)</label>
+          <div class="prefix-input">
+            <span>+</span>
+            <input type="text" id="p1000">
+          </div>
+        </div>
+        <div class="cell prefix-cell">
+          <label for="m1000">(M/1000kg)</label>
+          <div class="prefix-input">
+            <span>-</span>
+            <input type="text" id="m1000">
+          </div>
+        </div>
+      </div>
+      
+      <div class="row no-bottom-border"> <div class="cell time-cell">
+          <label for="std-hours">STD</label>
+          <div class="time-input-container">
+            <input type="text" id="std-hours" class="time-input" maxlength="2" placeholder="HH" pattern="[0-9]*" inputmode="numeric">
+            <span class="time-separator">:</span>
+            <input type="text" id="std-minutes" class="time-input" maxlength="2" placeholder="MM" pattern="[0-9]*" inputmode="numeric">
+            <span class="time-suffix">Z</span>
+            <select id="std-gmt" class="gmt-select">
+              <option value="">GMT</option>
+              <option value="-12">-12</option><option value="-11">-11</option><option value="-10">-10</option><option value="-9.5">-9.5</option><option value="-9">-9</option><option value="-8">-8</option><option value="-7">-7</option><option value="-6">-6</option><option value="-5">-5</option><option value="-4.5">-4.5</option><option value="-4">-4</option><option value="-3.5">-3.5</option><option value="-3">-3</option><option value="-2">-2</option><option value="-1">-1</option><option value="0">0</option><option value="+1">+1</option><option value="+2">+2</option><option value="+3">+3</option><option value="+3.5">+3.5</option><option value="+4">+4</option><option value="+4.5">+4.5</option><option value="+5">+5</option><option value="+5.5">+5.5</option><option value="+5.75">+5.75</option><option value="+6">+6</option><option value="+6.5">+6.5</option><option value="+7">+7</option><option value="+8">+8</option><option value="+8.75">+8.75</option><option value="+9">+9</option><option value="+9.5">+9.5</option><option value="+10">+10</option><option value="+10.5">+10.5</option><option value="+11">+11</option><option value="+12">+12</option><option value="+12.75">+12.75</option><option value="+13">+13</option><option value="+14">+14</option>
+            </select>
+            <input type="text" id="std-lt-hours" class="time-input" maxlength="2" placeholder="HH" pattern="[0-9]*" inputmode="numeric" readonly>
+            <span class="time-separator">:</span>
+            <input type="text" id="std-lt-minutes" class="time-input" maxlength="2" placeholder="MM" pattern="[0-9]*" inputmode="numeric" readonly>
+            <span class="time-suffix">LT</span>
+            <span class="time-suffix">FLT/T</span>
+            <input type="text" id="flt-t-hours" class="time-input" maxlength="2" placeholder="HH" pattern="[0-9]*" inputmode="numeric">
+            <span class="time-separator">:</span>
+            <input type="text" id="flt-t-minutes" class="time-input" maxlength="2" placeholder="MM" pattern="[0-9]*" inputmode="numeric">
+          </div>
+        </div>
+        <div class="cell filler-cell" style="border-right: none !important;"></div>
+      </div>
+      
+      <div class="row"> <div class="cell time-cell">
+          <label for="sta-hours">STA</label>
+          <div class="time-input-container">
+            <input type="text" id="sta-hours" class="time-input" maxlength="2" placeholder="HH" pattern="[0-9]*" inputmode="numeric">
+            <span class="time-separator">:</span>
+            <input type="text" id="sta-minutes" class="time-input" maxlength="2" placeholder="MM" pattern="[0-9]*" inputmode="numeric">
+            <span class="time-suffix">Z</span>
+            <select id="sta-gmt" class="gmt-select">
+              <option value="">GMT</option>
+              <option value="-12">-12</option><option value="-11">-11</option><option value="-10">-10</option><option value="-9.5">-9.5</option><option value="-9">-9</option><option value="-8">-8</option><option value="-7">-7</option><option value="-6">-6</option><option value="-5">-5</option><option value="-4.5">-4.5</option><option value="-4">-4</option><option value="-3.5">-3.5</option><option value="-3">-3</option><option value="-2">-2</option><option value="-1">-1</option><option value="0">0</option><option value="+1">+1</option><option value="+2">+2</option><option value="+3">+3</option><option value="+3.5">+3.5</option><option value="+4">+4</option><option value="+4.5">+4.5</option><option value="+5">+5</option><option value="+5.5">+5.5</option><option value="+5.75">+5.75</option><option value="+6">+6</option><option value="+6.5">+6.5</option><option value="+7">+7</option><option value="+8">+8</option><option value="+8.75">+8.75</option><option value="+9">+9</option><option value="+9.5">+9.5</option><option value="+10">+10</option><option value="+10.5">+10.5</option><option value="+11">+11</option><option value="+12">+12</option><option value="+12.75">+12.75</option><option value="+13">+13</option><option value="+14">+14</option>
+            </select>
+            <input type="text" id="sta-lt-hours" class="time-input" maxlength="2" placeholder="HH" pattern="[0-9]*" inputmode="numeric" readonly>
+            <span class="time-separator">:</span>
+            <input type="text" id="sta-lt-minutes" class="time-input" maxlength="2" placeholder="MM" pattern="[0-9]*" inputmode="numeric" readonly>
+            <span class="time-suffix">LT</span>
+            <span class="time-suffix">BLK/T</span>
+            <input type="text" id="blk-t-hours" class="time-input" maxlength="2" placeholder="HH" pattern="[0-9]*" inputmode="numeric" readonly>
+            <span class="time-separator">:</span>
+            <input type="text" id="blk-t-minutes" class="time-input" maxlength="2" placeholder="MM" pattern="[0-9]*" inputmode="numeric" readonly>
+          </div>
+        </div>
+         <div class="cell filler-cell" style="border-right: none !important;"></div>
+      </div>
+      
+      <div class="row seamless-row">
+        <div class="cell">
+          <label class="label-fixed" for="plan">PLAN</label>
+          <input type="text" id="plan" maxlength="2" pattern="[0-9]*" inputmode="numeric">
+        </div>
+        <div class="cell">
+          <label class="label-fixed label-reg" for="reg">REG</label>
+          <span class="reg-prefix">9V-</span><input type="text" id="reg" maxlength="3" pattern="[A-Za-z0-9]*">
+        </div>
+        <div class="cell">
+           <label class="label-right-aligned" for="gate">GATE</label>
+          <input type="text" id="gate" maxlength="4">
+        </div>
+        <div class="cell">
+           <label class="label-right-aligned" for="info">INFO</label>
+          <select id="info">
+            <option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option><option value="G">G</option><option value="H">H</option><option value="I">I</option><option value="J">J</option><option value="K">K</option><option value="L">L</option><option value="M">M</option><option value="N">N</option><option value="O">O</option><option value="P">P</option><option value="Q">Q</option><option value="R">R</option><option value="S">S</option><option value="T">T</option><option value="U">U</option><option value="V">V</option><option value="W">W</option><option value="X">X</option><option value="Y">Y</option><option value="Z">Z</option>
+          </select>
+        </div>
+        <div class="cell">
+           <label class="label-right-aligned" for="fl">FL</label>
+          <input type="text" id="fl" maxlength="3" pattern="[0-9]*">
+        </div>
+        <div class="cell">
+           <label class="label-right-aligned" for="dest">DEST</label>
+          <input type="text" id="dest" maxlength="3" pattern="[A-Za-z]*">
+        </div>
+        <div class="cell">
+           <label class="label-right-aligned" for="pob">POB</label>
+          <input type="text" id="pob" readonly>
+        </div>
+      </div>
+
+      <div class="row seamless-row data-row add-top-border"> <div class="cell first-data-cell"> <label class="label-fixed" for="bw">BW</label>
+          <input type="text" id="bw" maxlength="6" pattern="[0-9]*">
+        </div>
+        <div class="cell">
+          <label class="label-fixed label-reg" for="bi">BI</label>
+          <input type="text" id="bi" maxlength="4" pattern="[0-9.]*">
+        </div>
+         <div class="cell filler-cell"></div>
+      </div>
+      
+      <div class="row seamless-row data-row add-top-border"> <div class="cell first-data-cell"> <label class="label-fixed" for="pzfw">PZFW</label>
+          <input type="text" id="pzfw" maxlength="5" pattern="[0-9.]*">
+        </div>
+        <div class="cell">
+          <label class="label-fixed label-reg" for="ezfw">EZFW</label>
+          <input type="text" id="ezfw" maxlength="5" pattern="[0-9.]*">
+        </div>
+        <div class="cell">
+          <label class="label-fixed" for="ezfw_du">D/U</label>
+          <input type="text" id="ezfw_du" readonly>
+        </div>
+          <div class="cell filler-cell"></div>
+      </div>
+
+      <div class="row seamless-row data-row add-top-border"> <div class="cell first-data-cell"> <label class="label-fixed" for="pfit">PFIT</label>
+          <input type="text" id="pfit" maxlength="5" pattern="[0-9.]*">
+        </div>
+         <div class="cell">
+          <label class="label-fixed label-reg" for="exs">EXS</label>
+          <input type="text" id="exs" maxlength="5" pattern="[0-9.]*">
+        </div>
+         <div class="cell">
+          <label class="label-fixed" for="bo">BO</label>
+          <input type="text" id="bo" maxlength="5" pattern="[0-9.]*">
+        </div>
+         <div class="cell"> <label class="label-fixed" for="res">RES</label>
+          <input type="text" id="res" maxlength="5" pattern="[0-9.]*">
+        </div>
+      </div>
+
+      <div class="row seamless-row data-row add-top-border"> <div class="cell first-data-cell"> <label class="label-fixed" for="fzfw">FZFW</label>
+          <input type="text" id="fzfw" maxlength="5" pattern="[0-9.]*">
+        </div>
+        <div class="cell"> <label class="label-fixed label-reg" for="fzfw_du">D/U</label>
+          <input type="text" id="fzfw_du" readonly>
+        </div>
+        <div class="cell">
+          <label class="label-fixed" for="percent_mac">MACTOW</label> <input type="text" id="percent_mac" maxlength="4" pattern="[0-9.]*">
+        </div>
+        <div class="cell">
+          <label class="label-fixed" for="v2">V2</label>
+          <input type="text" id="v2" maxlength="3" pattern="[0-9]*">
+        </div>
+         <div class="cell"> <label class="label-fixed" for="v2_plus_15">V2+15</label>
+          <input type="text" id="v2_plus_15" readonly>
+        </div>
+      </div>
+
+      <div class="row seamless-row add-top-border"> <div class="cell">
+          <label class="label-fixed" for="sid">SID</label>
+          <input type="text" id="sid">
+        </div>
+        <div class="cell">
+          <label class="label-fixed label-reg" for="star">STAR</label>
+          <input type="text" id="star">
+        </div>
+         <div class="cell filler-cell"></div>
+      </div>
+
+    </div>
+    <input type="file" id="fileInput" accept=".78x" />
+    <div class="button-container">
+        <button id="saveButton" class="button">Save</button>
+        <button id="loadButton" class="button">Load</button>
+        <button onclick="generateCard()" class="button">Generate Flight Card</button>
+    </div>
+    <p class="footer-text">
+        Report bugs or suggestions to <a href="mailto:gengye_ng@singaporeair.com.sg">gengye_ng@singaporeair.com.sg</a>
+    </p>
+  </div>
+
+  <div id="cardPage" class="page">
+    <div class="heading-container">
+        <h3>Flight Card</h3>
+    </div>
+    <div class="form-section flight-card">
+       <div class="row row-1">
+        <div class="cell label-small">
+          <div id="card-flight-number-display">
+              <label>SQ</label>
+              <span class="data-display" id="card-flightNo"></span>
+          </div>
+        </div>
+        <div class="cell capt-cell">
+          <div class="capt-top">
+            <div class="field">
+              <label class="label-capt">CAPT</label>
+              <span class="data-display" id="card-capt"></span>
+            </div>
+            <div class="field">
+              <label>No.</label>
+               <span class="data-display" id="card-staffNo"></span>
+            </div>
+          </div>
+          <div class="capt-bottom">
+             <span class="data-display" id="card-fzType"></span>
+             <span class="data-display" id="card-fzName"></span>
+          </div>
+        </div>
+        <div class="cell crew-cell">
+          <label>CREW/PAX</label>
+          <div class="crew-pax-inputs data-display">
+             <span class="data-display" id="card-crew"></span>
+             <span>/</span>
+             <span class="data-display" id="card-pax"></span>
+          </div>
+        </div>
+        <div class="cell prefix-cell">
+          <label>(M/2000ft)</label>
+          <div class="prefix-input data-display">
+            <span>+</span>
+            <span class="data-display" id="card-m2000"></span>
+          </div>
+        </div>
+        <div class="cell prefix-cell">
+          <label>(P/1000kg)</label>
+          <div class="prefix-input data-display">
+            <span>+</span>
+             <span class="data-display" id="card-p1000"></span>
+          </div>
+        </div>
+        <div class="cell prefix-cell">
+          <label>(M/1000kg)</label>
+          <div class="prefix-input data-display">
+            <span>-</span>
+             <span class="data-display" id="card-m1000"></span>
+          </div>
+        </div>
+      </div>
+      <div class="row no-bottom-border">
+        <div class="cell time-cell">
+          <label>STD</label>
+          <div class="time-input-container data-display">
+              <span class="data-display" id="card-std-time"></span><span class="time-suffix">Z</span>
+              <span class="data-display" id="card-std-gmt"></span>
+              <span class="data-display" id="card-std-lt-time"></span><span class="time-suffix">LT</span>
+              <span class="time-suffix">FLT/T</span>
+              <span class="data-display" id="card-flt-t-time"></span>
+          </div>
+        </div>
+        <div class="cell filler-cell" style="border-right: none !important;"></div>
+      </div>
+      <div class="row">
+        <div class="cell time-cell">
+          <label>STA</label>
+          <div class="time-input-container data-display">
+             <span class="data-display" id="card-sta-time"></span><span class="time-suffix">Z</span>
+             <span class="data-display" id="card-sta-gmt"></span>
+             <span class="data-display" id="card-sta-lt-time"></span><span class="time-suffix">LT</span>
+             <span class="time-suffix">BLK/T</span>
+             <span class="data-display" id="card-blk-t-time"></span>
+          </div>
+        </div>
+         <div class="cell filler-cell" style="border-right: none !important;"></div>
+      </div>
+      <div class="row seamless-row">
+        <div class="cell">
+          <label class="label-fixed">PLAN</label>
+          <span class="data-display" id="card-plan"></span>
+        </div>
+        <div class="cell">
+          <label class="label-fixed label-reg">REG</label>
+          <span class="data-display" id="card-reg"></span>
+        </div>
+        <div class="cell">
+          <label class="label-right-aligned">GATE</label>
+           <span class="data-display text-blue" id="card-gate"></span>
+        </div>
+        <div class="cell">
+          <label class="label-right-aligned">INFO</label>
+          <span class="data-display text-blue" id="card-info"></span>
+        </div>
+        <div class="cell">
+          <label class="label-right-aligned">FL</label>
+          <span class="data-display text-blue" id="card-fl"></span>
+        </div>
+        <div class="cell">
+          <label class="label-right-aligned">DEST</label>
+          <span class="data-display text-blue" id="card-dest"></span>
+        </div>
+        <div class="cell">
+           <label class="label-right-aligned">POB</label>
+           <span class="data-display" id="card-pob"></span>
+        </div>
+      </div>
+      <div class="row seamless-row data-row add-top-border">
+        <div class="cell first-data-cell">
+          <label class="label-fixed">BW</label>
+          <span class="data-display" id="card-bw"></span>
+        </div>
+        <div class="cell">
+          <label class="label-fixed label-reg">BI</label>
+           <span class="data-display" id="card-bi"></span>
+        </div>
+         <div class="cell filler-cell"></div>
+      </div>
+      <div class="row seamless-row data-row add-top-border">
+        <div class="cell first-data-cell">
+          <label class="label-fixed">PZFW</label>
+           <span class="data-display" id="card-pzfw"></span>
+        </div>
+        <div class="cell">
+          <label class="label-fixed label-reg">EZFW</label>
+          <span class="data-display" id="card-ezfw"></span>
+        </div>
+        <div class="cell">
+          <label class="label-fixed">D/U</label>
+          <span class="data-display" id="card-ezfw_du"></span>
+        </div>
+          <div class="cell filler-cell"></div>
+      </div>
+      <div class="row seamless-row data-row add-top-border">
+         <div class="cell first-data-cell">
+          <label class="label-fixed">PFIT</label>
+          <span class="data-display" id="card-pfit"></span>
+        </div>
+         <div class="cell">
+          <label class="label-fixed label-reg">EXS</label>
+          <span class="data-display" id="card-exs"></span>
+        </div>
+         <div class="cell">
+          <label class="label-fixed">BO</label>
+          <span class="data-display" id="card-bo"></span>
+        </div>
+         <div class="cell"> <label class="label-fixed">RES</label>
+           <span class="data-display" id="card-res"></span>
+        </div>
+      </div>
+      <div class="row seamless-row data-row add-top-border">
+        <div class="cell first-data-cell">
+          <label class="label-fixed">FZFW</label>
+          <span class="data-display text-red" id="card-fzfw"></span>
+        </div>
+        <div class="cell">
+          <label class="label-fixed label-reg">D/U</label>
+          <span class="data-display" id="card-fzfw_du"></span>
+        </div>
+        <div class="cell">
+          <label class="label-fixed">MACTOW</label>
+           <span class="data-display text-red" id="card-percent_mac"></span><span>%</span>
+        </div>
+        <div class="cell">
+          <label class="label-fixed">V2</label>
+          <span class="data-display" id="card-v2"></span>
+        </div>
+         <div class="cell"> <label class="label-fixed">V2+15</label>
+            <span class="data-display text-red" id="card-v2_plus_15"></span>
+        </div>
+      </div>
+      <div class="row seamless-row add-top-border">
+        <div class="cell">
+          <label class="label-fixed">SID</label>
+          <span class="data-display" id="card-sid"></span>
+        </div>
+        <div class="cell">
+          <label class="label-fixed label-reg">STAR</label>
+          <span class="data-display" id="card-star"></span>
+        </div>
+         <div class="cell filler-cell"></div>
+      </div>
+
+    </div> <div class="button-container">
+        <button onclick="window.print()" class="button">Print</button>
+        <button onclick="goBack()" class="button">Edit</button>
+    </div>
+    <p class="footer-text">
+        Report bugs or suggestions to <a href="mailto:gengye_ng@singaporeair.com.sg">gengye_ng@singaporeair.com.sg</a>
+    </p>
+  </div>
+
+
+  <script>
+    // --- IDs of fields to save/load ---
+    const savableInputIds = [
+        'flightNo', 'capt', 'staffNo', 'fzType', 'fzName', 'crew', 'pax',
+        'm2000', 'p1000', 'm1000', 'std-hours', 'std-minutes', 'std-gmt',
+        'flt-t-hours', 'flt-t-minutes', 'sta-hours', 'sta-minutes', 'sta-gmt',
+        'plan', 'reg', 'gate', 'info', 'fl', 'dest', 'bw', 'bi', 'pzfw', 'ezfw',
+        'pfit', 'exs', 'bo', 'res', 'fzfw', 'percent_mac', 'sid', 'star', 'v2'
+    ];
+     // IDs of calculated/readonly fields (for card display)
+     const calculatedIds = [
+         'pob', 'ezfw_du', 'fzfw_du', 'v2_plus_15',
+         'std-lt-hours', 'std-lt-minutes', 'sta-lt-hours', 'sta-lt-minutes',
+         'blk-t-hours', 'blk-t-minutes'
+     ];
+
+
+    // --- Aircraft Data Store ---
+    const aircraftData = {
+        "SCA": { bw: 129763, bi: 39.2 }, "SCB": { bw: 129510, bi: 39.0 },
+        "SCD": { bw: 129200, bi: 39.6 }, "SCE": { bw: 129530, bi: 39.3 },
+        "SCF": { bw: 129797, bi: 40.0 }, "SCG": { bw: 129573, bi: 39.9 },
+        "SCH": { bw: 130290, bi: 39.6 }, "SCI": { bw: 129326, bi: 38.9 },
+        "SCJ": { bw: 129120, bi: 39.4 }, "SCK": { bw: 129055, bi: 40.1 },
+        "SCL": { bw: 129320, bi: 39.6 }, "SCM": { bw: 129150, bi: 38.8 },
+        "SCN": { bw: 129240, bi: 39.3 }, "SCO": { bw: 129360, bi: 39.3 },
+        "SCP": { bw: 129283, bi: 39.4 }, "SCQ": { bw: 129154, bi: 39.4 },
+        "SCR": { bw: 129111, bi: 38.9 }, "SCS": { bw: 129425, bi: 39.3 },
+        "SCT": { bw: 129376, bi: 39.4 }, "SCU": { bw: 129501, bi: 39.3 },
+        "SCV": { bw: 129436, bi: 39.3 }, "SCW": { bw: 129417, bi: 39.5 },
+        "SCY": { bw: 129325, bi: 39.5 }, "SCZ": { bw: 129417, bi: 39.1 },
+        "SDA": { bw: 129340, bi: 39.8 }
+    };
+
+    // --- Dark Mode Toggle Function ---
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    function toggleDarkMode(isNight) {
+      if (isNight) {
+        document.body.classList.add('night-mode');
+        localStorage.setItem('darkModePref', 'true');
+      } else {
+        document.body.classList.remove('night-mode');
+        localStorage.setItem('darkModePref', 'false');
+      }
+    }
+
+    // --- Calculation Functions ---
+    function calculateLocalTime(zHours, zMinutes, gmtOffset) {
+      if (!zHours || !zMinutes || !gmtOffset || isNaN(zHours) || isNaN(zMinutes)) {
+        return { hours: '', minutes: '' };
+      }
+      let totalMinutes = parseInt(zHours) * 60 + parseInt(zMinutes);
+      const offsetParts = gmtOffset.split('.');
+      const offsetHours = parseInt(offsetParts[0]);
+      let offsetMinutes = 0;
+        if (offsetParts.length > 1) {
+            const decimalPart = parseFloat('0.' + offsetParts[1]);
+            offsetMinutes = Math.round(decimalPart * 60);
+        }
+      const totalOffset = (offsetHours * 60) + (offsetHours >= 0 ? offsetMinutes : -offsetMinutes);
+      totalMinutes += totalOffset;
+      if (totalMinutes < 0) { totalMinutes += 1440; }
+      else if (totalMinutes >= 1440) { totalMinutes -= 1440; }
+      let hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      if (hours < 0) hours += 24;
+      return {
+        hours: hours.toString().padStart(2, '0'),
+        minutes: minutes.toString().padStart(2, '0')
+      };
+    }
+
+    function calculateTimeDifference(startHours, startMinutes, endHours, endMinutes) {
+      if (!startHours || !startMinutes || !endHours || !endMinutes || 
+            isNaN(startHours) || isNaN(startMinutes) || isNaN(endHours) || isNaN(endMinutes)) {
+        return { hours: '', minutes: '' };
+      }
+      const startTotal = parseInt(startHours) * 60 + parseInt(startMinutes);
+      const endTotal = parseInt(endHours) * 60 + parseInt(endMinutes);
+      let diffMinutes = endTotal - startTotal;
+      if (diffMinutes < 0) { diffMinutes += 1440; }
+      const hours = Math.floor(diffMinutes / 60);
+      const minutes = diffMinutes % 60;
+      return {
+        hours: hours.toString().padStart(2, '0'),
+        minutes: minutes.toString().padStart(2, '0')
+      };
+    }
+
+    function updateLocalTime(zHoursId, zMinutesId, gmtId, ltHoursId, ltMinutesId) {
+      const zHours = document.getElementById(zHoursId).value;
+      const zMinutes = document.getElementById(zMinutesId).value;
+      const gmtOffset = document.getElementById(gmtId).value;
+      if (zHours && zMinutes && gmtOffset) {
+        const localTime = calculateLocalTime(zHours, zMinutes, gmtOffset);
+        document.getElementById(ltHoursId).value = localTime.hours;
+        document.getElementById(ltMinutesId).value = localTime.minutes;
+      } else {
+        document.getElementById(ltHoursId).value = '';
+        document.getElementById(ltMinutesId).value = '';
+      }
+    }
+
+    function updateBlockTime() {
+      const stdHours = document.getElementById('std-hours').value;
+      const stdMinutes = document.getElementById('std-minutes').value;
+      const staHours = document.getElementById('sta-hours').value;
+      const staMinutes = document.getElementById('sta-minutes').value;
+      if (stdHours && stdMinutes && staHours && staMinutes) {
+        const blockTime = calculateTimeDifference(stdHours, stdMinutes, staHours, staMinutes);
+        document.getElementById('blk-t-hours').value = blockTime.hours;
+        document.getElementById('blk-t-minutes').value = blockTime.minutes;
+      } else {
+        document.getElementById('blk-t-hours').value = '';
+        document.getElementById('blk-t-minutes').value = '';
+      }
+    }
+
+    function calculatePOB() {
+      const crew = parseInt(document.getElementById('crew').value) || 0;
+      const pax = parseInt(document.getElementById('pax').value) || 0;
+      const pob = crew + pax;
+      document.getElementById('pob').value = pob > 0 ? pob : ''; // Don't show 0 POB
+    }
+
+    function calculateEZFW_DU() {
+      const pzfwInput = document.getElementById('pzfw');
+      const ezfwInput = document.getElementById('ezfw');
+      const ezfwDuInput = document.getElementById('ezfw_du');
+      const pzfw = parseFloat(pzfwInput.value) || 0;
+      const ezfw = parseFloat(ezfwInput.value) || 0;
+
+      if (pzfwInput.value.trim() && ezfwInput.value.trim()) { // Only calculate if both inputs have non-empty values
+            const du = (ezfw - pzfw).toFixed(1);
+            if (du === '0.0' || du === '-0.0') {
+                 ezfwDuInput.value = '';
+            } else {
+                 ezfwDuInput.value = du > 0 ? `+${du}` : du;
+            }
+      } else {
+          ezfwDuInput.value = '';
+      }
+    }
+
+    function calculateFZFW_DU() {
+        const fzfwInput = document.getElementById('fzfw');
+        const ezfwInput = document.getElementById('ezfw');
+        const fzfwDuInput = document.getElementById('fzfw_du');
+        const fzfwVal = parseFloat(fzfwInput.value) || 0;
+        const ezfwVal = parseFloat(ezfwInput.value) || 0;
+
+        if (fzfwInput.value.trim() && ezfwInput.value.trim()) {
+            const du = (fzfwVal - ezfwVal).toFixed(1);
+            if (du === '0.0' || du === '-0.0') {
+                 fzfwDuInput.value = '';
+            } else {
+                fzfwDuInput.value = du > 0 ? `+${du}` : du;
+            }
+        } else {
+            fzfwDuInput.value = '';
+        }
+    }
+
+
+    function calculateV2Plus15() {
+      const v2Input = document.getElementById('v2');
+      const v2Plus15Input = document.getElementById('v2_plus_15');
+      const v2Value = parseInt(v2Input.value);
+      if (!isNaN(v2Value) && v2Input.value.trim() !== '') {
+          v2Plus15Input.value = v2Value + 15;
+      } else {
+          v2Plus15Input.value = '';
+      }
+    }
+
+    // --- Update all calculated fields ---
+    function updateAllCalculatedFields() {
+        calculatePOB();
+        calculateEZFW_DU();
+        calculateFZFW_DU();
+        calculateV2Plus15();
+        updateLocalTime('std-hours', 'std-minutes', 'std-gmt', 'std-lt-hours', 'std-lt-minutes');
+        updateLocalTime('sta-hours', 'sta-minutes', 'sta-gmt', 'sta-lt-hours', 'sta-lt-minutes');
+        updateBlockTime();
+        const regInput = document.getElementById('reg');
+        if (regInput && regInput.value) {
+            regInput.dispatchEvent(new Event('input'));
+        } else {
+             if (!localStorage.getItem('bw')) document.getElementById('bw').value = '';
+             if (!localStorage.getItem('bi')) document.getElementById('bi').value = '';
+        }
+    }
+
+    // --- Formatting Functions ---
+     // Helper to format numbers with one decimal place for display
+     function formatDecimalForDisplay(value) {
+        const num = parseFloat(value);
+        if (!isNaN(num)) {
+            let formatted = num.toFixed(1);
+             return formatted;
+        }
+        return '';
+     }
+
+      // Helper to format time parts into HH:MM for display
+      function formatTimeForDisplay(hours, minutes) {
+          if (hours && minutes && hours.trim() !== '' && minutes.trim() !== '') {
+              return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+          }
+          return '';
+      }
+
+    // --- Generate Card Function (REVISED) ---
+    function generateCard() {
+      // 1. Get data from form page inputs
+      const data = {};
+      [...savableInputIds, ...calculatedIds].forEach(id => {
+          const element = document.getElementById(id);
+          if (element) {
+              data[id] = element.value;
+          } else {
+              data[id] = '';
+          }
+      });
+
+      // 2. Populate the card page spans
+      document.getElementById('card-flightNo').textContent = data['flightNo'] || '';
+      document.getElementById('card-capt').textContent = data['capt'] || '';
+      document.getElementById('card-staffNo').textContent = data['staffNo'] || '';
+      document.getElementById('card-fzType').textContent = data['fzType'] || '';
+      document.getElementById('card-fzName').textContent = data['fzName'] || '';
+      document.getElementById('card-crew').textContent = data['crew'] || '';
+      document.getElementById('card-pax').textContent = data['pax'] || '';
+      document.getElementById('card-m2000').textContent = data['m2000'] || '';
+      document.getElementById('card-p1000').textContent = data['p1000'] || '';
+      document.getElementById('card-m1000').textContent = data['m1000'] || '';
+
+      // Times
+      document.getElementById('card-std-time').textContent = formatTimeForDisplay(data['std-hours'], data['std-minutes']);
+      document.getElementById('card-std-gmt').textContent = data['std-gmt'] ? `(GMT${data['std-gmt']})` : '';
+      document.getElementById('card-std-lt-time').textContent = formatTimeForDisplay(data['std-lt-hours'], data['std-lt-minutes']);
+      document.getElementById('card-flt-t-time').textContent = formatTimeForDisplay(data['flt-t-hours'], data['flt-t-minutes']);
+
+      document.getElementById('card-sta-time').textContent = formatTimeForDisplay(data['sta-hours'], data['sta-minutes']);
+      document.getElementById('card-sta-gmt').textContent = data['sta-gmt'] ? `(GMT${data['sta-gmt']})` : '';
+      document.getElementById('card-sta-lt-time').textContent = formatTimeForDisplay(data['sta-lt-hours'], data['sta-lt-minutes']);
+      document.getElementById('card-blk-t-time').textContent = formatTimeForDisplay(data['blk-t-hours'], data['blk-t-minutes']);
+
+      // Plan Row
+      document.getElementById('card-plan').textContent = data['plan'] || '';
+      document.getElementById('card-reg').textContent = data['reg'] ? `9V-${data['reg']}` : '';
+      document.getElementById('card-gate').textContent = data['gate'] || '';
+      document.getElementById('card-info').textContent = data['info'] || '';
+      document.getElementById('card-fl').textContent = data['fl'] || '';
+      document.getElementById('card-dest').textContent = data['dest'] || '';
+      document.getElementById('card-pob').textContent = data['pob'] || '';
+
+       // Weight/Balance Row 1
+       document.getElementById('card-bw').textContent = data['bw'] || '';
+       document.getElementById('card-bi').textContent = formatDecimalForDisplay(data['bi']);
+
+       // Weight/Balance Row 2
+       document.getElementById('card-pzfw').textContent = formatDecimalForDisplay(data['pzfw']);
+       document.getElementById('card-ezfw').textContent = formatDecimalForDisplay(data['ezfw']);
+       document.getElementById('card-ezfw_du').textContent = data['ezfw_du'] || '';
+
+      // Weight/Balance Row 3
+      document.getElementById('card-pfit').textContent = formatDecimalForDisplay(data['pfit']);
+      document.getElementById('card-exs').textContent = formatDecimalForDisplay(data['exs']);
+      document.getElementById('card-bo').textContent = formatDecimalForDisplay(data['bo']);
+      document.getElementById('card-res').textContent = formatDecimalForDisplay(data['res']);
+
+      // Weight/Balance Row 4
+      document.getElementById('card-fzfw').textContent = formatDecimalForDisplay(data['fzfw']);
+      document.getElementById('card-fzfw_du').textContent = data['fzfw_du'] || '';
+      document.getElementById('card-percent_mac').textContent = formatDecimalForDisplay(data['percent_mac']);
+      document.getElementById('card-v2').textContent = data['v2'] || '';
+      document.getElementById('card-v2_plus_15').textContent = data['v2_plus_15'] || '';
+
+      // SID/STAR Row
+      document.getElementById('card-sid').textContent = data['sid'] || '';
+      document.getElementById('card-star').textContent = data['star'] || '';
+
+
+      // 3. Switch pages
+      document.getElementById("formPage").classList.remove("active");
+      document.getElementById("cardPage").classList.add("active");
+    }
+
+
+    // --- Input Validation Functions ---
+    function validateNumericDecimal(input, maxLength, maxDecimalPlaces) {
+        input.value = input.value.replace(/[^0-9.]/g, '');
+        const parts = input.value.split('.');
+        if (parts.length > 2) {
+            input.value = parts[0] + '.' + parts.slice(1).join('');
+        }
+        if (input.value.length > maxLength) {
+             const currentParts = input.value.split('.');
+             if (currentParts.length > 1) {
+                  const allowedIntegerLength = maxLength - 1 - (maxDecimalPlaces > 0 ? maxDecimalPlaces : 0);
+                  if (currentParts[0].length > allowedIntegerLength) {
+                       currentParts[0] = currentParts[0].slice(0, allowedIntegerLength);
+                  }
+                  currentParts[1] = currentParts[1].slice(0, maxDecimalPlaces);
+                  input.value = currentParts.join('.');
+                   if (input.value.length > maxLength) {
+                       input.value = input.value.slice(0,maxLength);
+                   }
+
+             } else {
+                 input.value = input.value.slice(0, maxLength);
+             }
+        }
+        const finalParts = input.value.split('.');
+        if (finalParts.length > 1 && finalParts[1].length > maxDecimalPlaces) {
+            input.value = finalParts[0] + '.' + finalParts[1].slice(0, maxDecimalPlaces);
+        }
+    }
+
+    function validateNumericOnly(input, maxLength) {
+         input.value = input.value.replace(/[^0-9]/g, '');
+         if (input.value.length > maxLength) {
+             input.value = input.value.slice(0, maxLength);
+         }
+    }
+
+    function validateAlphaNumeric(input, maxLength) {
+        // Allow letters and numbers, convert to uppercase
+        input.value = input.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+        if (input.value.length > maxLength) {
+            input.value = input.value.slice(0, maxLength);
+        }
+    }
+
+
+    function validateTimePart(input) {
+         validateNumericOnly(input, 2);
+         const value = parseInt(input.value);
+         if (input.id.includes('hours') && value > 23) input.value = '23';
+         if (input.id.includes('minutes') && value > 59) input.value = '59';
+    }
+
+    // --- Purge Function ---
+    function purgeData() {
+        if (confirm("Are you sure you want to clear all flight card data? This cannot be undone.")) {
+            savableInputIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element && !element.readOnly) {
+                    element.value = '';
+                }
+                localStorage.removeItem(id);
+            });
+            updateAllCalculatedFields();
+            console.log("Flight card data purged.");
+        } else {
+             console.log("Purge cancelled.");
+        }
+    }
+
+
+    // --- Save/Load Functionality ---
+    function saveDataToFile() {
+        // 1. Get current date and format it
+        const now = new Date();
+        const day = now.getDate().toString().padStart(2, '0');
+        const month = (now.getMonth() + 1).toString().padStart(2, '0'); // JS months are 0-indexed
+        const year = now.getFullYear().toString().slice(-2);
+        const ddmmyy = `${day}${month}${year}`;
+
+        // 2. Get Flight Number
+        const flightNoInput = document.getElementById('flightNo');
+        const flightNo = flightNoInput ? flightNoInput.value.trim() : '';
+
+        // 3. Construct default filename
+        let defaultFilename = `SQ${flightNo}_${ddmmyy}`;
+        if (!flightNo) { // Handle case where flight number is empty
+             defaultFilename = `flightcard_${ddmmyy}`;
+        }
+
+
+        // 4. Prepare data for saving
+        const flightData = {};
+        savableInputIds.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                flightData[id] = element.value;
+            }
+        });
+
+        const jsonData = JSON.stringify(flightData, null, 2);
+        const blob = new Blob([jsonData], { type: 'application/json' });
+
+        // 5. Prompt user, using generated default
+        let filename = prompt("Enter filename:", defaultFilename);
+        if (!filename) {
+            console.log("Save cancelled.");
+            return;
+        }
+        if (!filename.toLowerCase().endsWith('.78x')) {
+            filename += '.78x';
+        }
+
+        // 6. Trigger download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        console.log("Flight card data download triggered as:", filename);
+    }
+
+    function loadDataFromFile(event) {
+        const file = event.target.files[0];
+        if (!file) {
+            console.log("No file selected.");
+            return;
+        }
+
+        if (!file.name.toLowerCase().endsWith('.78x')) {
+             alert("Please select a valid '.78x' flight card file.");
+             event.target.value = null;
+             return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const fileContent = e.target.result;
+            try {
+                const loadedData = JSON.parse(fileContent);
+
+                // Populate the form fields
+                savableInputIds.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element && loadedData[id] !== undefined) {
+                        element.value = loadedData[id];
+                    } else if (element && !element.readOnly) {
+                         element.value = '';
+                         localStorage.removeItem(id);
+                    }
+                });
+
+                updateAllCalculatedFields();
+                alert(`Flight card data loaded from ${file.name}`);
+
+            } catch (error) {
+                console.error("Error parsing flight card file:", error);
+                console.error("File content that failed parsing:", fileContent);
+                alert("Error reading or parsing the flight card file. Ensure it is a valid '.78x' JSON file.");
+            } finally {
+                 event.target.value = null;
+            }
+        };
+
+        reader.onerror = function(e) {
+            console.error("Error reading file:", e);
+            alert("Error reading the selected file.");
+             event.target.value = null;
+        };
+
+        reader.readAsText(file);
+    }
+
+
+    // --- Setup Event Listeners ---
+    function setupEventListeners() { 
+
+      // Function to save data to localStorage (for session persistence)
+      function saveData(element) {
+          if(element && element.id && !element.readOnly && savableInputIds.includes(element.id)) {
+              localStorage.setItem(element.id, element.value);
+          }
+      }
+
+      // REG Input Listener for BW/BI auto-fill AND VALIDATION
+      const regInput = document.getElementById('reg');
+      regInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+        if (this.value.length > 3) {
+            this.value = this.value.slice(0, 3);
+        }
+        const regValue = this.value;
+        const bwInput = document.getElementById('bw');
+        const biInput = document.getElementById('bi');
+        if (regValue.length === 3) {
+            if (aircraftData[regValue]) {
+                 bwInput.value = aircraftData[regValue].bw;
+                 biInput.value = aircraftData[regValue].bi;
+                 saveData(bwInput);
+                 saveData(biInput);
+            }
+        }
+        saveData(this);
+      });
+
+      // Time Inputs (STD, STA, FLT/T)
+      document.querySelectorAll('.time-input').forEach(input => {
+        if (!input.readOnly) {
+          input.addEventListener('input', function() {
+            validateTimePart(this);
+            saveData(this);
+            if (this.value.length === 2) {
+                let nextElement = this.nextElementSibling;
+                while (nextElement && (nextElement.tagName === 'SPAN' || nextElement.nodeType === Node.TEXT_NODE)) {
+                    nextElement = nextElement.nextElementSibling;
+                }
+                if (nextElement && (nextElement.tagName === 'INPUT' || nextElement.tagName === 'SELECT')) {
+                    nextElement.focus();
+                }
+            }
+          });
+           input.addEventListener('focus', function() { this.select(); });
+           if (input.id.startsWith('std-')) {
+               input.addEventListener('input', () => { updateLocalTime('std-hours', 'std-minutes', 'std-gmt', 'std-lt-hours', 'std-lt-minutes'); updateBlockTime(); });
+           }
+           if (input.id.startsWith('sta-')) {
+               input.addEventListener('input', () => { updateLocalTime('sta-hours', 'sta-minutes', 'sta-gmt', 'sta-lt-hours', 'sta-lt-minutes'); updateBlockTime(); });
+           }
+        }
+      });
+      // Save Select changes to localStorage
+      document.querySelectorAll('.form-section select').forEach(select => {
+           select.addEventListener('change', function() { saveData(this); });
+             if (select.id.startsWith('std-')) {
+               select.addEventListener('change', () => { updateLocalTime('std-hours', 'std-minutes', 'std-gmt', 'std-lt-hours', 'std-lt-minutes'); });
+             }
+               if (select.id.startsWith('sta-')) {
+               select.addEventListener('change', () => { updateLocalTime('sta-hours', 'sta-minutes', 'sta-gmt', 'sta-lt-hours', 'sta-lt-minutes'); });
+             }
+      });
+
+
+      // Numeric Only Inputs
+      document.getElementById('plan').addEventListener('input', function(){ validateNumericOnly(this, 2); saveData(this); });
+      document.getElementById('crew').addEventListener('input', function(){ validateNumericOnly(this, 4); calculatePOB(); saveData(this); });
+      document.getElementById('pax').addEventListener('input', function(){ validateNumericOnly(this, 4); calculatePOB(); saveData(this); });
+      document.getElementById('fl').addEventListener('input', function(){ validateNumericOnly(this, 3); saveData(this); });
+      document.getElementById('gate').addEventListener('input', function(){ validateAlphaNumeric(this, 4); saveData(this); }); // Changed validation
+      document.getElementById('bw').addEventListener('input', function(){ validateNumericOnly(this, 6); saveData(this); });
+      document.getElementById('m2000').addEventListener('input', function(){ validateNumericOnly(this, 3); saveData(this); });
+      document.getElementById('p1000').addEventListener('input', function(){ validateNumericOnly(this, 3); saveData(this); });
+      document.getElementById('m1000').addEventListener('input', function(){ validateNumericOnly(this, 3); saveData(this); });
+      document.getElementById('flightNo').addEventListener('input', function(){ validateNumericOnly(this, 3); saveData(this); });
+      document.getElementById('staffNo').addEventListener('input', function(){ validateNumericOnly(this, 8); saveData(this); });
+      document.getElementById('fzName').addEventListener('input', function(){ saveData(this); });
+      document.getElementById('capt').addEventListener('input', function(){ saveData(this); });
+      document.getElementById('sid').addEventListener('input', function(){ saveData(this); });
+      document.getElementById('star').addEventListener('input', function(){ saveData(this); });
+      document.getElementById('v2').addEventListener('input', function(){
+          validateNumericOnly(this, 3);
+          calculateV2Plus15();
+          saveData(this);
+      });
+
+
+      // Decimal Inputs (000.0 format)
+       ['pzfw', 'ezfw', 'pfit', 'exs', 'bo', 'res', 'fzfw'].forEach(id => {
+          document.getElementById(id).addEventListener('input', function() {
+              validateNumericDecimal(this, 5, 1);
+              saveData(this);
+               if (id === 'pzfw' || id === 'ezfw') calculateEZFW_DU();
+               if (id === 'fzfw' || id === 'ezfw') calculateFZFW_DU();
+          });
+       });
+
+      // Decimal Inputs (00.0 format)
+       ['percent_mac', 'bi'].forEach(id => {
+          document.getElementById(id).addEventListener('input', function() {
+             validateNumericDecimal(this, 4, 1);
+             saveData(this);
+         });
+       });
+
+      // D/U calculation trigger - ensure they are called on input
+       document.getElementById('pzfw').addEventListener('input', calculateEZFW_DU);
+       document.getElementById('ezfw').addEventListener('input', () => { calculateEZFW_DU(); calculateFZFW_DU(); });
+       document.getElementById('fzfw').addEventListener('input', calculateFZFW_DU);
+
+
+      // DEST input validation
+      document.getElementById('dest').addEventListener('input', function() {
+        this.value = this.value.replace(/[^A-Za-z]/g, '').toUpperCase();
+        if (this.value.length > 3) this.value = this.value.slice(0, 3);
+        saveData(this);
+      });
+
+       // --- Button Listeners ---
+       document.getElementById('saveButton').addEventListener('click', saveDataToFile);
+       document.getElementById('loadButton').addEventListener('click', () => {
+           document.getElementById('fileInput').click();
+       });
+       document.getElementById('fileInput').addEventListener('change', loadDataFromFile);
+       document.getElementById('purgeButton').addEventListener('click', purgeData);
+       darkModeToggle.addEventListener('change', () => {
+          toggleDarkMode(darkModeToggle.checked);
+       });
+
+
+    } // End setupEventListeners
+
+    function goBack() {
+      document.getElementById("cardPage").classList.remove("active");
+      document.getElementById("formPage").classList.add("active");
+    }
+
+    // --- Initialize the form ---
+    document.addEventListener('DOMContentLoaded', function() {
+
+      // Load saved data from localStorage (for session persistence)
+      savableInputIds.forEach(id => {
+          const savedValue = localStorage.getItem(id);
+          if (savedValue !== null) {
+              const element = document.getElementById(id);
+              if (element) {
+                  element.value = savedValue;
+              }
+          }
+      });
+
+      // Setup validation, calculations, and saving listeners
+      setupEventListeners(); 
+
+      // Trigger initial calculations AFTER loading data AND setting up listeners
+      updateAllCalculatedFields();
+
+      // Apply saved dark mode preference on load
+      const savedDarkMode = localStorage.getItem('darkModePref');
+      if (savedDarkMode === 'true') {
+        darkModeToggle.checked = true;
+        toggleDarkMode(true);
+      } else {
+          darkModeToggle.checked = false;
+         toggleDarkMode(false);
+      }
+
+
+    }); // End DOMContentLoaded
+  </script>
+</body>
+</html>
