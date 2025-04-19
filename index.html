@@ -50,6 +50,11 @@
         align-items: center;
         gap: 10px; /* Space between purge and toggle */
     }
+     /* Controls specifically on Card Page might only have toggle */
+     #cardPage .heading-controls {
+        gap: 0; /* No gap if only one item */
+     }
+
     .heading-container h3 {
         margin: 0; /* Remove default margin from h3 */
     }
@@ -105,7 +110,7 @@
     }
     .cell:last-child {
       border-right: none;
-      flex-grow: 1; /* Allow last cell to fill remaining space if any, but shouldn't with fixed width */
+      /* flex-grow: 1; */ /* Allow last cell to fill remaining space if any - Changed for seamless rows */
         min-width: 0; /* Allow last cell to be very small if needed */
     }
 
@@ -127,7 +132,7 @@
      }
 
       .seamless-row .cell:last-child {
-          flex-grow: 0;
+          flex-grow: 0; /* Don't let last REAL cell grow */
           min-width: initial; /* Reset min-width if needed */
       }
     .seamless-row .cell.filler-cell { /* Filler cell definition */
@@ -145,7 +150,6 @@
         margin-right: 0; /* Removed margin-right */
     }
     .label-reg { width: 25px; } /* Specific for REG */
-    .label-pob { /* Removed fixed width */ } /* Specific for POB - Now uses label-right-aligned */
     .reg-prefix { margin-right: 1px; }
 
      /* Style for right-aligned labels */
@@ -187,7 +191,7 @@
       padding: 5px; /* Restore padding for prefix cells */
       gap: 5px; /* Restore gap for prefix cells */
     }
-    .cell input[type="text"], .cell select {
+    .cell input[type="text"], .cell select, .cell textarea {
       font-size: inherit;
       padding: 1px;
       box-sizing: border-box;
@@ -196,10 +200,36 @@
       color: #000000; /* Day mode default */
       border: 1px solid #ccc; /* Day mode default */
       transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+       font-family: inherit; /* Ensure textarea matches font */
     }
      .cell input[readonly] {
          background-color: #eeeeee; /* Slightly different for readonly */
      }
+      .cell textarea {
+         width: 100%; /* Make textarea fill its cell */
+         max-width: 100%; /* Limit resize width to container */
+         resize: both; /* Allow vertical and horizontal resize */
+         min-height: calc(3 * 1.2em + 4px); /* Approx 3 lines + padding */
+         line-height: 1.2em; /* Control line height */
+     }
+      /* Remarks cell specific styling */
+      .remarks-cell {
+         /* Spans approx SID + STAR cells width (141 + 131 = 272) + margin */
+         flex-basis: 280px; /* Adjust as needed */
+         flex-grow: 0;
+         flex-shrink: 0;
+         border-right: none !important; /* No border for this cell */
+         align-items: stretch; /* Allow textarea to fill height */
+         padding: 5px 2px !important; /* Match seamless style */
+         margin-right: 3px; /* Match seamless style */
+     }
+      /* Placeholder styling */
+      textarea::placeholder {
+          color: grey;
+          opacity: 1; /* Ensure placeholder is visible */
+      }
+
+
     /* Style for the data display spans on card page */
     .data-display {
         display: inline-block; /* Allows width setting */
@@ -209,6 +239,17 @@
         /* font-family: inherit; */
         white-space: pre; /* Preserve spacing from formatting */
     }
+     /* Specific style for remarks display */
+     #card-remarks {
+         white-space: pre-wrap; /* Allow wrapping and preserve line breaks */
+         display: block; /* Make it take block layout */
+         text-align: left; /* Ensure left alignment */
+         min-height: calc(3 * 1.2em); /* Match approximate height */
+         line-height: 1.2em;
+         width: 100%; /* Fill the container cell */
+     }
+
+
     /* Specific widths for data display spans matching input widths */
     #card-plan { min-width: 25px; }
     #card-reg, #card-fl, #card-dest, #card-flightNo { min-width: 35px; }
@@ -448,7 +489,7 @@
         text-align: left;
         color: #555555; /* Default light grey */
     }
-     .footer-text a {
+     .footer-text a { /* Keep link style just in case */
          color: inherit; /* Link color matches surrounding text */
          text-decoration: none;
      }
@@ -499,7 +540,8 @@
         border-right: none;
     }
     .night-mode .cell input[type="text"],
-    .night-mode .cell select {
+    .night-mode .cell select,
+    .night-mode .cell textarea {
         background-color: #333333;
         color: #e0e0e0;
         border: 1px solid #666666;
@@ -508,6 +550,11 @@
          background-color: #444444; /* Darker readonly background */
          color: #bbbbbb; /* Lighter text for readonly */
      }
+      /* Placeholder styling */
+      .night-mode textarea::placeholder {
+          color: #888888; /* Lighter grey for night mode */
+      }
+
      .night-mode .flight-card {
          /* Conceptual container */
      }
@@ -525,6 +572,90 @@
          .night-mode .footer-text a {
              color: inherit;
          }
+
+
+     /*--------------------*/
+     /* Print Styles       */
+     /*--------------------*/
+     @media print {
+         body {
+             background-color: #ffffff !important;
+             color: #000000 !important;
+             transform: none !important;
+             padding: 0 !important;
+             margin: 0 !important;
+             font-size: 9px; /* Slightly smaller for print */
+         }
+         /* Hide non-essential elements */
+         .heading-controls, /* Hides purge/toggle on both pages */
+         .button-container, /* Hides Save/Load/Generate */
+         #cardPage .button-container, /* Hides Print/Edit */
+         #fileInput,
+         .footer-text {
+             display: none !important;
+         }
+         /* Ensure only the active page *at time of print* is potentially visible */
+          /* Though ideally only cardPage should be printed */
+          .page {
+              display: none !important; /* Hide all pages by default */
+              border: none !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              width: 100% !important;
+              max-width: 100% !important;
+          }
+           /* Force the card page content to be visible */
+           #cardPage {
+               display: block !important;
+               background-color: #ffffff !important;
+               color: #000000 !important;
+           }
+            #cardPage h3 { /* Ensure heading is black */
+                 color: #000000 !important;
+             }
+           /* Style the card container for print */
+           #cardPage .form-section {
+              display: block !important; /* Ensure it's displayed */
+              border: 1px solid black !important; /* Add border for print */
+              background-color: #ffffff !important; /* Ensure white background */
+           }
+            #cardPage .row,
+            #cardPage .row.add-top-border {
+               border-color: black !important; /* Ensure borders are black */
+            }
+            #cardPage .cell {
+                border-color: black !important; /* Ensure borders are black */
+                color: #000000 !important; /* Ensure text is black */
+                 padding: 3px 2px; /* Slightly tighter padding for print */
+                 gap: 2px;
+            }
+             #cardPage .data-display {
+                 color: #000000 !important; /* Ensure displayed data is black */
+                 padding: 1px;
+             }
+             #cardPage #card-flight-number-display {
+                 font-size: 16px !important; /* Adjust size for print */
+                 color: #000000 !important; /* Black flight number for print */
+               }
+             #cardPage .label-fixed { width: 30px !important; } /* Slightly tighten fixed labels */
+             #cardPage .label-reg { width: 20px !important; }
+              #cardPage .text-blue { color: #0000FF !important; } /* Use standard blue for print */
+              #cardPage .text-red { color: #FF0000 !important; } /* Use standard red for print */
+               /* Adjust remarks display for print */
+               #cardPage .remarks-cell { flex-basis: auto !important; width: 100%; } /* Let remarks take full width below SID/STAR */
+                #cardPage #card-remarks { font-size: 8px; line-height: 1.1; }
+
+
+           /* Prevent page breaks inside rows if possible */
+           .row {
+               page-break-inside: avoid;
+           }
+            /* Allow page breaks within remarks if needed */
+            #card-remarks {
+                page-break-inside: auto;
+            }
+
+     }
 
 
     @media screen and (max-width: 750px) { /* Adjusted breakpoint */
@@ -754,6 +885,12 @@
          <div class="cell filler-cell"></div>
       </div>
 
+      <div class="row add-top-border"> <div class="cell remarks-cell">
+              <textarea id="remarks" placeholder="RMK" rows="3"></textarea>
+          </div>
+          <div class="cell filler-cell"></div> </div>
+
+
     </div>
     <input type="file" id="fileInput" accept=".78x" />
     <div class="button-container">
@@ -762,13 +899,18 @@
         <button onclick="generateCard()" class="button">Generate Flight Card</button>
     </div>
     <p class="footer-text">
-        Report bugs or suggestions to <a href="mailto:gengye_ng@singaporeair.com.sg">gengye_ng@singaporeair.com.sg</a>
+        Note to User: This is a live webpage. Add to "Reading List" on Safari prior to use.
     </p>
   </div>
 
   <div id="cardPage" class="page">
     <div class="heading-container">
         <h3>Flight Card</h3>
+         <div class="heading-controls">
+             <label class="switch" title="Toggle Day/Night Mode">
+               <input type="checkbox" id="darkModeToggleCard"> <span class="slider round"></span>
+             </label>
+         </div>
     </div>
     <div class="form-section flight-card">
        <div class="row row-1">
@@ -955,13 +1097,16 @@
         </div>
          <div class="cell filler-cell"></div>
       </div>
+       <div class="row add-top-border"> <div class="cell remarks-cell"> <span class="data-display" id="card-remarks"></span>
+          </div>
+          <div class="cell filler-cell"></div> </div>
 
     </div> <div class="button-container">
         <button onclick="window.print()" class="button">Print</button>
         <button onclick="goBack()" class="button">Edit</button>
     </div>
     <p class="footer-text">
-        Report bugs or suggestions to <a href="mailto:gengye_ng@singaporeair.com.sg">gengye_ng@singaporeair.com.sg</a>
+        Note to User: This is a live webpage. Add to "Reading List" on Safari prior to use.
     </p>
   </div>
 
@@ -973,7 +1118,8 @@
         'm2000', 'p1000', 'm1000', 'std-hours', 'std-minutes', 'std-gmt',
         'flt-t-hours', 'flt-t-minutes', 'sta-hours', 'sta-minutes', 'sta-gmt',
         'plan', 'reg', 'gate', 'info', 'fl', 'dest', 'bw', 'bi', 'pzfw', 'ezfw',
-        'pfit', 'exs', 'bo', 'res', 'fzfw', 'percent_mac', 'sid', 'star', 'v2'
+        'pfit', 'exs', 'bo', 'res', 'fzfw', 'percent_mac', 'sid', 'star', 'v2',
+        'remarks' // <-- Added remarks ID
     ];
      // IDs of calculated/readonly fields (for card display)
      const calculatedIds = [
@@ -1001,16 +1147,23 @@
     };
 
     // --- Dark Mode Toggle Function ---
-    const darkModeToggle = document.getElementById('darkModeToggle');
     function toggleDarkMode(isNight) {
-      if (isNight) {
-        document.body.classList.add('night-mode');
-        localStorage.setItem('darkModePref', 'true');
-      } else {
-        document.body.classList.remove('night-mode');
-        localStorage.setItem('darkModePref', 'false');
-      }
+        const toggleForm = document.getElementById('darkModeToggle');
+        const toggleCard = document.getElementById('darkModeToggleCard');
+
+        if (isNight) {
+            document.body.classList.add('night-mode');
+            localStorage.setItem('darkModePref', 'true');
+            if(toggleForm) toggleForm.checked = true;
+            if(toggleCard) toggleCard.checked = true;
+        } else {
+            document.body.classList.remove('night-mode');
+            localStorage.setItem('darkModePref', 'false');
+            if(toggleForm) toggleForm.checked = false;
+            if(toggleCard) toggleCard.checked = false;
+        }
     }
+
 
     // --- Calculation Functions ---
     function calculateLocalTime(zHours, zMinutes, gmtOffset) {
@@ -1098,7 +1251,7 @@
       const pzfw = parseFloat(pzfwInput.value) || 0;
       const ezfw = parseFloat(ezfwInput.value) || 0;
 
-      if (pzfwInput.value.trim() && ezfwInput.value.trim()) { // Only calculate if both inputs have non-empty values
+      if (pzfwInput.value.trim() && ezfwInput.value.trim()) {
             const du = (ezfw - pzfw).toFixed(1);
             if (du === '0.0' || du === '-0.0') {
                  ezfwDuInput.value = '';
@@ -1249,6 +1402,9 @@
       document.getElementById('card-sid').textContent = data['sid'] || '';
       document.getElementById('card-star').textContent = data['star'] || '';
 
+      // Remarks
+      document.getElementById('card-remarks').textContent = data['remarks'] || ''; // Display remarks
+
 
       // 3. Switch pages
       document.getElementById("formPage").classList.remove("active");
@@ -1329,25 +1485,20 @@
 
     // --- Save/Load Functionality ---
     function saveDataToFile() {
-        // 1. Get current date and format it
         const now = new Date();
         const day = now.getDate().toString().padStart(2, '0');
-        const month = (now.getMonth() + 1).toString().padStart(2, '0'); // JS months are 0-indexed
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
         const year = now.getFullYear().toString().slice(-2);
         const ddmmyy = `${day}${month}${year}`;
 
-        // 2. Get Flight Number
         const flightNoInput = document.getElementById('flightNo');
         const flightNo = flightNoInput ? flightNoInput.value.trim() : '';
 
-        // 3. Construct default filename
         let defaultFilename = `SQ${flightNo}_${ddmmyy}`;
-        if (!flightNo) { // Handle case where flight number is empty
+        if (!flightNo) {
              defaultFilename = `flightcard_${ddmmyy}`;
         }
 
-
-        // 4. Prepare data for saving
         const flightData = {};
         savableInputIds.forEach(id => {
             const element = document.getElementById(id);
@@ -1359,7 +1510,6 @@
         const jsonData = JSON.stringify(flightData, null, 2);
         const blob = new Blob([jsonData], { type: 'application/json' });
 
-        // 5. Prompt user, using generated default
         let filename = prompt("Enter filename:", defaultFilename);
         if (!filename) {
             console.log("Save cancelled.");
@@ -1369,7 +1519,7 @@
             filename += '.78x';
         }
 
-        // 6. Trigger download
+        // Trigger download - Browser handles save location
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -1401,7 +1551,6 @@
             try {
                 const loadedData = JSON.parse(fileContent);
 
-                // Populate the form fields
                 savableInputIds.forEach(id => {
                     const element = document.getElementById(id);
                     if (element && loadedData[id] !== undefined) {
@@ -1437,14 +1586,12 @@
     // --- Setup Event Listeners ---
     function setupEventListeners() { 
 
-      // Function to save data to localStorage (for session persistence)
       function saveData(element) {
           if(element && element.id && !element.readOnly && savableInputIds.includes(element.id)) {
               localStorage.setItem(element.id, element.value);
           }
       }
 
-      // REG Input Listener for BW/BI auto-fill AND VALIDATION
       const regInput = document.getElementById('reg');
       regInput.addEventListener('input', function() {
         this.value = this.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
@@ -1465,7 +1612,6 @@
         saveData(this);
       });
 
-      // Time Inputs (STD, STA, FLT/T)
       document.querySelectorAll('.time-input').forEach(input => {
         if (!input.readOnly) {
           input.addEventListener('input', function() {
@@ -1490,7 +1636,7 @@
            }
         }
       });
-      // Save Select changes to localStorage
+
       document.querySelectorAll('.form-section select').forEach(select => {
            select.addEventListener('change', function() { saveData(this); });
              if (select.id.startsWith('std-')) {
@@ -1501,13 +1647,13 @@
              }
       });
 
+       document.getElementById('remarks').addEventListener('input', function() { saveData(this); });
 
-      // Numeric Only Inputs
       document.getElementById('plan').addEventListener('input', function(){ validateNumericOnly(this, 2); saveData(this); });
       document.getElementById('crew').addEventListener('input', function(){ validateNumericOnly(this, 4); calculatePOB(); saveData(this); });
       document.getElementById('pax').addEventListener('input', function(){ validateNumericOnly(this, 4); calculatePOB(); saveData(this); });
       document.getElementById('fl').addEventListener('input', function(){ validateNumericOnly(this, 3); saveData(this); });
-      document.getElementById('gate').addEventListener('input', function(){ validateAlphaNumeric(this, 4); saveData(this); }); // Changed validation
+      document.getElementById('gate').addEventListener('input', function(){ validateAlphaNumeric(this, 4); saveData(this); });
       document.getElementById('bw').addEventListener('input', function(){ validateNumericOnly(this, 6); saveData(this); });
       document.getElementById('m2000').addEventListener('input', function(){ validateNumericOnly(this, 3); saveData(this); });
       document.getElementById('p1000').addEventListener('input', function(){ validateNumericOnly(this, 3); saveData(this); });
@@ -1524,8 +1670,6 @@
           saveData(this);
       });
 
-
-      // Decimal Inputs (000.0 format)
        ['pzfw', 'ezfw', 'pfit', 'exs', 'bo', 'res', 'fzfw'].forEach(id => {
           document.getElementById(id).addEventListener('input', function() {
               validateNumericDecimal(this, 5, 1);
@@ -1535,7 +1679,6 @@
           });
        });
 
-      // Decimal Inputs (00.0 format)
        ['percent_mac', 'bi'].forEach(id => {
           document.getElementById(id).addEventListener('input', function() {
              validateNumericDecimal(this, 4, 1);
@@ -1543,13 +1686,10 @@
          });
        });
 
-      // D/U calculation trigger - ensure they are called on input
        document.getElementById('pzfw').addEventListener('input', calculateEZFW_DU);
        document.getElementById('ezfw').addEventListener('input', () => { calculateEZFW_DU(); calculateFZFW_DU(); });
        document.getElementById('fzfw').addEventListener('input', calculateFZFW_DU);
 
-
-      // DEST input validation
       document.getElementById('dest').addEventListener('input', function() {
         this.value = this.value.replace(/[^A-Za-z]/g, '').toUpperCase();
         if (this.value.length > 3) this.value = this.value.slice(0, 3);
@@ -1563,9 +1703,19 @@
        });
        document.getElementById('fileInput').addEventListener('change', loadDataFromFile);
        document.getElementById('purgeButton').addEventListener('click', purgeData);
-       darkModeToggle.addEventListener('change', () => {
-          toggleDarkMode(darkModeToggle.checked);
-       });
+       // Dark mode listeners for BOTH toggles
+       const dmToggleForm = document.getElementById('darkModeToggle');
+       const dmToggleCard = document.getElementById('darkModeToggleCard');
+       if(dmToggleForm) {
+            dmToggleForm.addEventListener('change', () => {
+               toggleDarkMode(dmToggleForm.checked);
+            });
+       }
+        if(dmToggleCard) {
+            dmToggleCard.addEventListener('change', () => {
+               toggleDarkMode(dmToggleCard.checked);
+           });
+        }
 
 
     } // End setupEventListeners
@@ -1573,12 +1723,18 @@
     function goBack() {
       document.getElementById("cardPage").classList.remove("active");
       document.getElementById("formPage").classList.add("active");
+      // Ensure toggles are synced when going back
+       const dmToggleForm = document.getElementById('darkModeToggle');
+       const dmToggleCard = document.getElementById('darkModeToggleCard');
+       if(dmToggleForm && dmToggleCard) {
+           dmToggleForm.checked = dmToggleCard.checked;
+       }
+
     }
 
     // --- Initialize the form ---
     document.addEventListener('DOMContentLoaded', function() {
 
-      // Load saved data from localStorage (for session persistence)
       savableInputIds.forEach(id => {
           const savedValue = localStorage.getItem(id);
           if (savedValue !== null) {
@@ -1589,19 +1745,14 @@
           }
       });
 
-      // Setup validation, calculations, and saving listeners
       setupEventListeners(); 
-
-      // Trigger initial calculations AFTER loading data AND setting up listeners
       updateAllCalculatedFields();
 
-      // Apply saved dark mode preference on load
       const savedDarkMode = localStorage.getItem('darkModePref');
       if (savedDarkMode === 'true') {
-        darkModeToggle.checked = true;
+        // No need to explicitly set checked here, toggleDarkMode will do it
         toggleDarkMode(true);
       } else {
-          darkModeToggle.checked = false;
          toggleDarkMode(false);
       }
 
