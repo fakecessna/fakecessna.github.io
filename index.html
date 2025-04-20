@@ -594,8 +594,6 @@
          .footer-text {
              display: none !important;
          }
-         /* Ensure only the active page *at time of print* is potentially visible */
-          /* Though ideally only cardPage should be printed */
           .page {
               display: none !important; /* Hide all pages by default */
               border: none !important;
@@ -700,7 +698,7 @@
               <option value="FZ">FZ</option>
               <option value="SCO">SCO</option>
               <option value="OBS">OBS</option>
-            </select>
+              <option value="IFM">IFM</option> </select>
             <input type="text" id="fzName" placeholder="Name" class="name-input">
           </div>
         </div>
@@ -742,9 +740,47 @@
             <span class="time-separator">:</span>
             <input type="text" id="std-minutes" class="time-input" maxlength="2" placeholder="MM" pattern="[0-9]*" inputmode="numeric">
             <span class="time-suffix">Z</span>
-            <select id="std-gmt" class="gmt-select">
+             <select id="std-gmt" class="gmt-select">
               <option value="">GMT</option>
-              <option value="-12">-12</option><option value="-11">-11</option><option value="-10">-10</option><option value="-9.5">-9.5</option><option value="-9">-9</option><option value="-8">-8</option><option value="-7">-7</option><option value="-6">-6</option><option value="-5">-5</option><option value="-4.5">-4.5</option><option value="-4">-4</option><option value="-3.5">-3.5</option><option value="-3">-3</option><option value="-2">-2</option><option value="-1">-1</option><option value="0">0</option><option value="+1">+1</option><option value="+2">+2</option><option value="+3">+3</option><option value="+3.5">+3.5</option><option value="+4">+4</option><option value="+4.5">+4.5</option><option value="+5">+5</option><option value="+5.5">+5.5</option><option value="+5.75">+5.75</option><option value="+6">+6</option><option value="+6.5">+6.5</option><option value="+7">+7</option><option value="+8">+8</option><option value="+8.75">+8.75</option><option value="+9">+9</option><option value="+9.5">+9.5</option><option value="+10">+10</option><option value="+10.5">+10.5</option><option value="+11">+11</option><option value="+12">+12</option><option value="+12.75">+12.75</option><option value="+13">+13</option><option value="+14">+14</option>
+              <option value="+14">+14</option>
+              <option value="+13">+13</option>
+              <option value="+12.75">+12.75</option>
+              <option value="+12">+12</option>
+              <option value="+11">+11</option>
+              <option value="+10.5">+10.5</option>
+              <option value="+10">+10</option>
+              <option value="+9.5">+9.5</option>
+              <option value="+9">+9</option>
+              <option value="+8.75">+8.75</option>
+              <option value="+8">+8</option>
+              <option value="+7">+7</option>
+              <option value="+6.5">+6.5</option>
+              <option value="+6">+6</option>
+              <option value="+5.75">+5.75</option>
+              <option value="+5.5">+5.5</option>
+              <option value="+5">+5</option>
+              <option value="+4.5">+4.5</option>
+              <option value="+4">+4</option>
+              <option value="+3.5">+3.5</option>
+              <option value="+3">+3</option>
+              <option value="+2">+2</option>
+              <option value="+1">+1</option>
+              <option value="0">0</option>
+              <option value="-1">-1</option>
+              <option value="-2">-2</option>
+              <option value="-3">-3</option>
+              <option value="-3.5">-3.5</option>
+              <option value="-4">-4</option>
+              <option value="-4.5">-4.5</option>
+              <option value="-5">-5</option>
+              <option value="-6">-6</option>
+              <option value="-7">-7</option>
+              <option value="-8">-8</option>
+              <option value="-9">-9</option>
+              <option value="-9.5">-9.5</option>
+              <option value="-10">-10</option>
+              <option value="-11">-11</option>
+              <option value="-12">-12</option>
             </select>
             <input type="text" id="std-lt-hours" class="time-input" maxlength="2" placeholder="HH" pattern="[0-9]*" inputmode="numeric" readonly>
             <span class="time-separator">:</span>
@@ -766,9 +802,47 @@
             <span class="time-separator">:</span>
             <input type="text" id="sta-minutes" class="time-input" maxlength="2" placeholder="MM" pattern="[0-9]*" inputmode="numeric">
             <span class="time-suffix">Z</span>
-            <select id="sta-gmt" class="gmt-select">
+             <select id="sta-gmt" class="gmt-select">
               <option value="">GMT</option>
-              <option value="-12">-12</option><option value="-11">-11</option><option value="-10">-10</option><option value="-9.5">-9.5</option><option value="-9">-9</option><option value="-8">-8</option><option value="-7">-7</option><option value="-6">-6</option><option value="-5">-5</option><option value="-4.5">-4.5</option><option value="-4">-4</option><option value="-3.5">-3.5</option><option value="-3">-3</option><option value="-2">-2</option><option value="-1">-1</option><option value="0">0</option><option value="+1">+1</option><option value="+2">+2</option><option value="+3">+3</option><option value="+3.5">+3.5</option><option value="+4">+4</option><option value="+4.5">+4.5</option><option value="+5">+5</option><option value="+5.5">+5.5</option><option value="+5.75">+5.75</option><option value="+6">+6</option><option value="+6.5">+6.5</option><option value="+7">+7</option><option value="+8">+8</option><option value="+8.75">+8.75</option><option value="+9">+9</option><option value="+9.5">+9.5</option><option value="+10">+10</option><option value="+10.5">+10.5</option><option value="+11">+11</option><option value="+12">+12</option><option value="+12.75">+12.75</option><option value="+13">+13</option><option value="+14">+14</option>
+              <option value="+14">+14</option>
+              <option value="+13">+13</option>
+              <option value="+12.75">+12.75</option>
+              <option value="+12">+12</option>
+              <option value="+11">+11</option>
+              <option value="+10.5">+10.5</option>
+              <option value="+10">+10</option>
+              <option value="+9.5">+9.5</option>
+              <option value="+9">+9</option>
+              <option value="+8.75">+8.75</option>
+              <option value="+8">+8</option>
+              <option value="+7">+7</option>
+              <option value="+6.5">+6.5</option>
+              <option value="+6">+6</option>
+              <option value="+5.75">+5.75</option>
+              <option value="+5.5">+5.5</option>
+              <option value="+5">+5</option>
+              <option value="+4.5">+4.5</option>
+              <option value="+4">+4</option>
+              <option value="+3.5">+3.5</option>
+              <option value="+3">+3</option>
+              <option value="+2">+2</option>
+              <option value="+1">+1</option>
+              <option value="0">0</option>
+              <option value="-1">-1</option>
+              <option value="-2">-2</option>
+              <option value="-3">-3</option>
+              <option value="-3.5">-3.5</option>
+              <option value="-4">-4</option>
+              <option value="-4.5">-4.5</option>
+              <option value="-5">-5</option>
+              <option value="-6">-6</option>
+              <option value="-7">-7</option>
+              <option value="-8">-8</option>
+              <option value="-9">-9</option>
+              <option value="-9.5">-9.5</option>
+              <option value="-10">-10</option>
+              <option value="-11">-11</option>
+              <option value="-12">-12</option>
             </select>
             <input type="text" id="sta-lt-hours" class="time-input" maxlength="2" placeholder="HH" pattern="[0-9]*" inputmode="numeric" readonly>
             <span class="time-separator">:</span>
@@ -1119,7 +1193,7 @@
         'flt-t-hours', 'flt-t-minutes', 'sta-hours', 'sta-minutes', 'sta-gmt',
         'plan', 'reg', 'gate', 'info', 'fl', 'dest', 'bw', 'bi', 'pzfw', 'ezfw',
         'pfit', 'exs', 'bo', 'res', 'fzfw', 'percent_mac', 'sid', 'star', 'v2',
-        'remarks' // <-- Added remarks ID
+        'remarks'
     ];
      // IDs of calculated/readonly fields (for card display)
      const calculatedIds = [
@@ -1450,7 +1524,6 @@
     }
 
     function validateAlphaNumeric(input, maxLength) {
-        // Allow letters and numbers, convert to uppercase
         input.value = input.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
         if (input.value.length > maxLength) {
             input.value = input.value.slice(0, maxLength);
@@ -1508,7 +1581,8 @@
         });
 
         const jsonData = JSON.stringify(flightData, null, 2);
-        const blob = new Blob([jsonData], { type: 'application/json' });
+        // Use generic MIME type to avoid .json extension issues on some platforms
+        const blob = new Blob([jsonData], { type: 'application/octet-stream' });
 
         let filename = prompt("Enter filename:", defaultFilename);
         if (!filename) {
@@ -1662,8 +1736,9 @@
       document.getElementById('staffNo').addEventListener('input', function(){ validateNumericOnly(this, 8); saveData(this); });
       document.getElementById('fzName').addEventListener('input', function(){ saveData(this); });
       document.getElementById('capt').addEventListener('input', function(){ saveData(this); });
-      document.getElementById('sid').addEventListener('input', function(){ saveData(this); });
-      document.getElementById('star').addEventListener('input', function(){ saveData(this); });
+      // SID/STAR Uppercase conversion
+      document.getElementById('sid').addEventListener('input', function(){ this.value = this.value.toUpperCase(); saveData(this); });
+      document.getElementById('star').addEventListener('input', function(){ this.value = this.value.toUpperCase(); saveData(this); });
       document.getElementById('v2').addEventListener('input', function(){
           validateNumericOnly(this, 3);
           calculateV2Plus15();
@@ -1726,6 +1801,7 @@
       // Ensure toggles are synced when going back
        const dmToggleForm = document.getElementById('darkModeToggle');
        const dmToggleCard = document.getElementById('darkModeToggleCard');
+       // Only sync if both elements exist (safety check)
        if(dmToggleForm && dmToggleCard) {
            dmToggleForm.checked = dmToggleCard.checked;
        }
@@ -1749,8 +1825,8 @@
       updateAllCalculatedFields();
 
       const savedDarkMode = localStorage.getItem('darkModePref');
+      // Set initial state based on preference, which also syncs toggles via toggleDarkMode function
       if (savedDarkMode === 'true') {
-        // No need to explicitly set checked here, toggleDarkMode will do it
         toggleDarkMode(true);
       } else {
          toggleDarkMode(false);
