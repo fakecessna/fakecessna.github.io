@@ -418,16 +418,22 @@
             qaContainer.appendChild(newPair);
         }
 
-        // --- Form Submission ---
+// --- Form Submission ---
         const entryForm = document.getElementById('entry-form');
         if (entryForm) {
-            entryForm.addEventListener('submit', function(event) {
+            // !!! REPLACE THIS WITH THE WEB APP URL YOU COPIED !!!
+            const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzS42fKFx8_A2XL1Aa1nOAOpeelyz1w02T_nl1zF-cGXR1CwOvJSYaCiy06IKWTzBDPWA/exec';
+
+            entryForm.addEventListener('submit', async function(event) { // Make function async
                 event.preventDefault(); // Prevent default HTML form submission
 
-                // ** Placeholder for Google Sheets API interaction **
-                console.log("Form submitted! Data needs to be sent to Google Sheets.");
+                // Optional: Provide visual feedback during submission
+                const submitButton = entryForm.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.textContent;
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
 
-                // Gather form data
+                // Gather form data (same as before)
                 const formData = new FormData(entryForm);
                 const data = {};
                 const questions = [];
@@ -449,22 +455,24 @@
                           continue;
                       }
 
-
                     if (key.startsWith('question_')) {
                         // Handled below
                     } else if (key.startsWith('answer_')) {
                         // Handled below
                     } else {
+                         // Ensure we don't send empty strings for optional fields if not desired
+                         // Keep them for now as Apps Script handles || ""
                         data[key] = value;
                     }
                 }
 
-                 // Double check if captainName was set (if select was blank and new name was blank)
+                 // Double check if captainName was set
                  if (!data.captainName) {
                      alert("Please select or add a Captain Name.");
+                     submitButton.disabled = false; // Re-enable button
+                     submitButton.textContent = originalButtonText;
                      return; // Stop submission
                  }
-
 
                 // Consolidate Q&A pairs
                 for(let i = 1; i <= qaCounter; i++) {
@@ -474,21 +482,60 @@
                         questions.push({ q: q || '', a: a || '' });
                     }
                 }
-                // Store Q&A as a JSON string to fit in one cell easily
+                // Store Q&A as a JSON string
                 data['questions'] = JSON.stringify(questions);
 
-                console.log("Collected Form Data:", data);
+                console.log("Collected Form Data for POST:", data);
 
-                // ** TODO: Implement Google Sheets API call here to send 'data' **
-                alert("Entry submitted (Simulation only - Data not saved yet!)");
+                // --- Send Data to Google Apps Script Web App ---
+                try {
+                     if (!WEB_APP_URL || WEB_APP_URL === 'YOUR_WEB_APP_URL_HERE') {
+                         throw new Error("Web App URL is not set in the script.");
+                     }
 
-                // Optional: Reset form after successful submission
-                entryForm.reset();
-                const qaContainer = document.getElementById('qa-container');
-                if(qaContainer) qaContainer.innerHTML = ''; // Clear dynamic Q&A
-                qaCounter = 0;
-                if(newCaptainField) newCaptainField.style.display = 'none'; // Hide add new field
-                showView('menu-view'); // Go back to menu after submission
+                    // Convert the data object into URL-encoded format suitable for e.parameter
+                    const urlEncodedData = new URLSearchParams(data);
+
+                    const response = await fetch(WEB_APP_URL, {
+                        method: 'POST',
+                        // mode: 'no-cors', // Use this ONLY if you get CORS errors AND understand the implications (response becomes opaque)
+                        // redirect: 'follow', // Let the browser handle redirects if any (usually needed)
+                        headers: {
+                            // Required header for sending URL-encoded data
+                           'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: urlEncodedData // Send the URL-encoded data
+                    });
+
+                     // Check if the response indicates success (even if opaque with no-cors)
+                     // A proper check requires reading the response body, which needs CORS configured correctly (or a JSONP response from Apps Script)
+                     // For now, assume ok if no network error, but ideally check response body if possible.
+                     // Let's try parsing the JSON response we expect from Apps Script
+                     const result = await response.json();
+                     console.log("Response from Web App:", result);
+
+                     if (result.status === 'success') {
+                        alert("Entry submitted successfully!");
+                        // Reset form and navigate back
+                        entryForm.reset();
+                        const qaContainer = document.getElementById('qa-container');
+                        if(qaContainer) qaContainer.innerHTML = ''; // Clear dynamic Q&A
+                        qaCounter = 0;
+                        if(newCaptainField) newCaptainField.style.display = 'none'; // Hide add new field
+                        showView('menu-view'); // Go back to menu after submission
+                     } else {
+                          // Show error message from Apps Script
+                         throw new Error(result.message || "Unknown error from Apps Script.");
+                     }
+
+                } catch (error) {
+                    console.error("Error submitting data:", error);
+                    alert(`Submission failed: ${error.message}`);
+                } finally {
+                     // Restore button state regardless of success/failure
+                     submitButton.disabled = false;
+                     submitButton.textContent = originalButtonText;
+                }
             });
         } else {
              console.error("Entry form not found!");
