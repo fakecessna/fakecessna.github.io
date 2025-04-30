@@ -5,408 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Captain Database</title>
     <style>
-        /* General Styles */
-        :root {
-            --bg-color-day: #f4f4f4;
-            --container-bg-day: #ffffff;
-            --text-color-day: #333;
-            --heading-color-day: #0056b3;
-            --border-color-day: #eee;
-            --input-border-day: #ccc;
-            --input-focus-border-day: #007bff;
-            --input-focus-shadow-day: rgba(0, 123, 255, 0.5);
-            --placeholder-bg-day: #e9ecef;
-            --placeholder-border-day: #ced4da;
-            --placeholder-text-day: #6c757d;
-            --qa-bg-day: #f9f9f9;
-            --qa-border-day: #ddd;
-            --link-color-day: #0056b3;
-
-            --bg-color-night: #121212; /* Darker BG */
-            --container-bg-night: #1e1e1e; /* Slightly lighter container */
-            --text-color-night: #e0e0e0;
-            --heading-color-night: #FCB130; /* Accent for headings */
-            --border-color-night: #444;
-            --input-border-night: #555;
-            --input-focus-border-night: #FCB130; /* Accent */
-            --input-focus-shadow-night: rgba(252, 177, 48, 0.5);
-            --placeholder-bg-night: #2a2a2a;
-            --placeholder-border-night: #555;
-            --placeholder-text-night: #888;
-            --qa-bg-night: #252525;
-            --qa-border-night: #444;
-            --link-color-night: #ffcc66; /* Lighter accent for links */
-
-
-            /* Theme Colors */
-            --primary-bg: #1D4886; /* User specified background */
-            --accent-color: #FCB130; /* User specified accent */
-        }
-
-        html, body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 14px;
-            box-sizing: border-box;
-            width: 100%;
-            min-height: 100vh; /* Ensure body takes full height */
-            background-color: var(--primary-bg); /* Use primary BG for body */
-            color: var(--text-color-day);
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        body.night-mode {
-            background-color: var(--primary-bg); /* Keep primary BG */
-            color: var(--text-color-night);
-        }
-
-        .header-controls {
-            position: fixed; /* Keep toggle visible */
-            top: 10px;
-            right: 10px;
-            z-index: 100;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 850px; /* Slightly wider */
-            background-color: var(--container-bg-day);
-            color: var(--text-color-day); /* Text color inside container */
-            padding: 25px;
-            margin-top: 60px; /* Add space for fixed header controls */
-            margin-bottom: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        body.night-mode .container {
-            background-color: var(--container-bg-night);
-            color: var(--text-color-night);
-        }
-
-        /* View Sections */
-        .view {
-            display: none;
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        .view.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        h2, h3 {
-            color: var(--heading-color-day);
-            margin-top: 0;
-            border-bottom: 1px solid var(--border-color-day);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            transition: color 0.3s, border-color 0.3s;
-        }
-        body.night-mode h2, body.night-mode h3 {
-            color: var(--heading-color-night);
-            border-bottom-color: var(--border-color-night);
-        }
-
-        /* Buttons */
-        .button {
-            padding: 10px 20px; /* Adjusted padding */
-            font-size: 15px; /* Adjusted font size */
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease, color 0.3s ease;
-            margin-right: 10px;
-            margin-top: 5px; /* Add some top margin */
-            margin-bottom: 5px; /* Add some bottom margin */
-            background-color: var(--accent-color); /* Accent color for buttons */
-            color: #fff; /* White text on accent */
-            font-weight: bold;
-        }
-        .button:hover {
-            opacity: 0.85;
-        }
-        body.night-mode .button {
-             background-color: var(--accent-color);
-             color: #333; /* Darker text on accent for night mode contrast */
-        }
-        .button-secondary { /* For less prominent actions like 'Add Question' */
-            background-color: #6c757d;
-            color: white;
-        }
-        body.night-mode .button-secondary {
-             background-color: #5a6268;
-        }
-        .button-back { /* Consistent back button style */
-             background-color: #6c757d;
-             color: white;
-        }
-        body.night-mode .button-back {
-             background-color: #5a6268;
-        }
-         .button-delete { /* Style for delete Q&A button */
-             background-color: #dc3545; /* Red */
-             color: white;
-             padding: 3px 8px;
-             font-size: 12px;
-             margin-left: 10px;
-             vertical-align: middle;
-         }
-          body.night-mode .button-delete {
-              background-color: #c82333;
-          }
-         button:disabled {
-             background-color: #adb5bd;
-             cursor: not-allowed;
-             opacity: 0.7;
-         }
-         body.night-mode button:disabled {
-              background-color: #5a6268;
-         }
-
-
-        /* Menu Styles */
-        .menu-buttons button {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 10px;
-            font-size: 16px;
-            /* Inherit general button styles */
-        }
-
-        /* Form Styles */
-        .form-section { margin-bottom: 20px; }
-        .form-section label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color-day); }
-        body.night-mode .form-section label { color: var(--text-color-night); }
-
-        .form-section input[type="text"],
-        .form-section select,
-        .form-section textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--input-border-day);
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 14px;
-            margin-bottom: 10px;
-            background-color: var(--container-bg-day);
-            color: var(--text-color-day);
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-        }
-        body.night-mode .form-section input[type="text"],
-        body.night-mode .form-section select,
-        body.night-mode .form-section textarea {
-             background-color: #333; /* Darker input field */
-             color: var(--text-color-night);
-             border-color: var(--input-border-night);
-        }
-
-        .form-section input[type="text"]:focus,
-        .form-section select:focus,
-        .form-section textarea:focus {
-             border-color: var(--input-focus-border-day);
-             outline: none;
-             box-shadow: 0 0 5px var(--input-focus-shadow-day);
-        }
-         body.night-mode .form-section input[type="text"]:focus,
-         body.night-mode .form-section select:focus,
-         body.night-mode .form-section textarea:focus {
-             border-color: var(--input-focus-border-night);
-             box-shadow: 0 0 5px var(--input-focus-shadow-night);
-         }
-
-        .form-section textarea { min-height: 100px; resize: vertical; }
-
-        /* Specific field styling */
+        /* --- CSS Styles same as previous version --- */
+        /* ... (All CSS rules from the previous version go here) ... */
+        .container { display: none; /* Initially hidden for password */ }
+        body.unlocked .container { display: block; }
+        /* Ensure the add-captain-field is hidden initially if JS fails */
         #add-captain-field { display: none; margin-top: -5px; margin-bottom: 10px; }
-        #add-captain-field input { margin-bottom: 0; }
-        .captain-select-container { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .captain-select-container select { flex-grow: 1; margin-bottom: 0; }
-
-        /* Q&A Section */
-        .qa-pair {
-            background-color: var(--qa-bg-day);
-            border: 1px dashed var(--qa-border-day);
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            position: relative; /* For positioning delete button */
-            transition: background-color 0.3s, border-color 0.3s;
-        }
-         body.night-mode .qa-pair {
-             background-color: var(--qa-bg-night);
-             border-color: var(--qa-border-night);
-         }
-        .qa-pair label { font-weight: bold; color: var(--text-color-day); }
-         body.night-mode .qa-pair label { color: var(--text-color-night); }
-        .qa-pair input[type="text"] { margin-bottom: 10px; }
-        .qa-pair input[type="text"]:last-child { margin-bottom: 0; }
-        .qa-pair .button-delete { /* Position delete button */
-             position: absolute;
-             top: 5px;
-             right: 5px;
-         }
-
-
-        /* Radio Button Styling */
-        .radio-group { margin-bottom: 20px; }
-        .radio-group label { display: inline-block; margin-right: 20px; font-weight: normal; cursor: pointer; }
-        .radio-group input[type="radio"] { margin-right: 5px; vertical-align: middle; }
-
-        /* Placeholder / List / Profile Styling */
-        .placeholder-content, .data-list, .profile-display {
-            padding: 20px;
-            background-color: var(--placeholder-bg-day);
-            border: 1px solid var(--placeholder-border-day);
-            border-radius: 5px;
-            color: var(--placeholder-text-day);
-            margin-top: 15px;
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-        }
-        body.night-mode .placeholder-content,
-        body.night-mode .data-list,
-        body.night-mode .profile-display {
-             background-color: var(--placeholder-bg-night);
-             border-color: var(--placeholder-border-night);
-             color: var(--text-color-night); /* Use main text color */
-        }
-         .data-list ul {
-             list-style: none;
-             padding: 0;
-             margin: 0;
-         }
-         .data-list li {
-             padding: 10px;
-             border-bottom: 1px solid var(--border-color-day);
-             transition: border-color 0.3s;
-         }
-         body.night-mode .data-list li {
-              border-bottom-color: var(--border-color-night);
-         }
-         .data-list li:last-child {
-             border-bottom: none;
-         }
-         .captain-name { /* Now used as a clickable span */
-             font-weight: bold;
-             font-size: 1.1em;
-             color: var(--link-color-day); /* Make it look like a link */
-             cursor: pointer; /* Indicate clickable */
-             text-decoration: underline;
-         }
-         .captain-name:hover {
-             opacity: 0.8;
-         }
-         body.night-mode .captain-name {
-              color: var(--link-color-night);
-         }
-         .captain-details {
-             font-size: 0.9em;
-             color: #555;
-             margin-left: 5px;
-         }
-          body.night-mode .captain-details {
-               color: #bbb;
-          }
-          .profile-section {
-             margin-bottom: 15px;
-             padding-bottom: 15px;
-             border-bottom: 1px dashed var(--border-color-day);
-          }
-           body.night-mode .profile-section {
-               border-bottom-color: var(--border-color-night);
-           }
-           .profile-section:last-child {
-               border-bottom: none;
-               margin-bottom: 0;
-               padding-bottom: 0;
-           }
-           .profile-section h4 {
-               margin-top: 0;
-               margin-bottom: 8px;
-               color: var(--heading-color-day);
-           }
-            body.night-mode .profile-section h4 {
-                color: var(--heading-color-night);
-            }
-           .profile-section pre { /* Preserve whitespace in details */
-               white-space: pre-wrap;
-               word-wrap: break-word;
-               background-color: rgba(0,0,0,0.03); /* Slight background */
-               padding: 8px;
-               border-radius: 4px;
-               font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; /* Monospace for details */
-               font-size: 0.95em;
-               max-height: 200px; /* Limit height */
-               overflow-y: auto; /* Add scroll if needed */
-           }
-            body.night-mode .profile-section pre {
-                 background-color: rgba(255,255,255,0.05);
-                 color: #eee; /* Lighter text */
-            }
-            .profile-section .qa-item {
-                margin-bottom: 8px;
-                font-size: 0.95em;
-            }
-             .profile-section .qa-item strong { /* Style Question */
-                 display: block;
-                 margin-bottom: 2px;
-                 color: #333;
-             }
-              body.night-mode .profile-section .qa-item strong {
-                   color: #ddd;
-              }
-
-        /* Search View Specific */
-        #search-dropdown-container label { margin-bottom: 10px; }
-        #search-captain-select { width: 100%; padding: 10px; font-size: 15px; margin-bottom: 20px; }
-         body.night-mode #search-captain-select {
-              background-color: #333;
-              color: var(--text-color-night);
-              border-color: var(--input-border-night);
-         }
-         /* Reusing .profile-display for Search view content */
-
-
-        /* Toggle Switch Styles */
-        .switch {
-          position: relative;
-          display: inline-block;
-          width: 50px; /* Slightly larger */
-          height: 24px; /* Slightly larger */
-          vertical-align: middle;
-        }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: #ccc;
-          transition: .4s;
-          border-radius: 24px; /* Fully rounded */
-        }
-        .slider:before {
-          position: absolute;
-          content: "";
-          height: 18px; /* Adjusted handle */
-          width: 18px; /* Adjusted handle */
-          left: 3px; /* Adjusted position */
-          bottom: 3px; /* Adjusted position */
-          background-color: white;
-          transition: .4s;
-          border-radius: 50%;
-        }
-        input:checked + .slider {
-          background-color: var(--accent-color); /* Use accent color */
-        }
-        input:focus + .slider {
-          box-shadow: 0 0 1px var(--accent-color);
-        }
-        input:checked + .slider:before {
-          transform: translateX(26px); /* Adjusted distance */
-        }
 
     </style>
 </head>
@@ -420,17 +24,16 @@
     </div>
 
     <div class="container">
-
         <div id="menu-view" class="view active">
-            <h2>Captain Database Menu</h2>
-            <div class="menu-buttons">
-                <button class="button" onclick="showView('submit-view')">Submit New Entry</button>
-                <button class="button" onclick="showView('good-guys-view')">View Good Guys</button>
-                <button class="button" onclick="showView('bad-guys-view')">View Bad Guys</button>
-                <button class="button" onclick="showView('search-view')">Search Captains</button>
-                <button class="button" onclick="showView('abba-view')">ABBA Q&A Compilation</button>
-            </div>
-             </div>
+             <h2>Captain Database Menu</h2>
+              <div class="menu-buttons">
+                  <button class="button" onclick="showView('submit-view')">Submit New Entry</button>
+                  <button class="button" onclick="showView('good-guys-view')">View Good Guys</button>
+                  <button class="button" onclick="showView('bad-guys-view')">View Bad Guys</button>
+                  <button class="button" onclick="showView('search-view')">Search Captains</button>
+                  <button class="button" onclick="showView('abba-view')">ABBA Q&A Compilation</button>
+              </div>
+        </div>
 
         <div id="submit-view" class="view">
              <h2>Submit New Entry</h2>
@@ -448,265 +51,115 @@
                           <input type="text" id="captain-name-new" name="captainNameNew">
                      </div>
                  </div>
-
                  <div class="form-section">
                      <label for="appointment">Appointment (Your observation)</label>
-                     <select id="appointment" name="appointment" required>
-                         <option value="" selected disabled>-- Select Appointment --</option>
-                         <option value="Line">Line</option>
-                         <option value="SUC">SUC</option>
-                         <option value="LIP">LIP</option>
-                         <option value="MGMT">MGMT</option>
-                     </select>
+                     <select id="appointment" name="appointment" required> <option value="" selected disabled>-- Select Appointment --</option> <option value="Line">Line</option> <option value="SUC">SUC</option> <option value="LIP">LIP</option> <option value="MGMT">MGMT</option> </select>
                  </div>
-
-                 <div class="form-section">
-                     <label for="experience">Experience / Remarks</label>
-                     <textarea id="experience" name="experience" placeholder="Share your overall experience, notable events, or general remarks..."></textarea>
-                 </div>
-
-                 <div class="form-section">
-                     <label for="dos">Do's</label>
-                     <textarea id="dos" name="dos" placeholder="What behaviours, techniques, or preferences are encouraged?"></textarea>
-                 </div>
-
-                 <div class="form-section">
-                     <label for="donts">Don'ts</label>
-                     <textarea id="donts" name="donts" placeholder="What behaviours, actions, or topics should be avoided?"></textarea>
-                 </div>
-
-                 <div class="form-section">
-                     <h3>Captain Specific Q&A</h3>
-                     <div id="qa-container">
-                         </div>
-                     <button type="button" class="button button-secondary" onclick="addQaPair()">Add Question</button>
-                 </div>
-
-                 <div class="form-section radio-group">
-                      <label>Rate This Interaction:</label>
-                      <label for="good-guy">
-                          <input type="radio" id="good-guy" name="rating" value="good" required> Good Guy
-                      </label>
-                      <label for="bad-guy">
-                          <input type="radio" id="bad-guy" name="rating" value="bad"> Bad Guy
-                      </label>
-                  </div>
-
-
-                 <div class="form-section">
-                     <button type="submit" class="button button-primary">Submit Entry</button>
-                     <button type="button" class="button button-back" onclick="showView('menu-view')">Back to Menu</button>
-                 </div>
+                 <div class="form-section"> <label for="experience">Experience / Remarks</label> <textarea id="experience" name="experience" placeholder="Share your overall experience, notable events, or general remarks..."></textarea> </div>
+                 <div class="form-section"> <label for="dos">Do's</label> <textarea id="dos" name="dos" placeholder="What behaviours, techniques, or preferences are encouraged?"></textarea> </div>
+                 <div class="form-section"> <label for="donts">Don'ts</label> <textarea id="donts" name="donts" placeholder="What behaviours, actions, or topics should be avoided?"></textarea> </div>
+                 <div class="form-section"> <h3>Captain Specific Q&A</h3> <div id="qa-container"></div> <button type="button" class="button button-secondary" onclick="addQaPair()">Add Question</button> </div>
+                 <div class="form-section radio-group"> <label>Rate This Interaction:</label> <label for="good-guy"><input type="radio" id="good-guy" name="rating" value="good" required> Good Guy</label> <label for="bad-guy"><input type="radio" id="bad-guy" name="rating" value="bad"> Bad Guy</label> </div>
+                 <div class="form-section"> <button type="submit" class="button button-primary">Submit Entry</button> <button type="button" class="button button-back" onclick="showView('menu-view')">Back to Menu</button> </div>
              </form>
         </div>
 
-        <div id="good-guys-view" class="view">
-             <h2>Good Guys List</h2>
-             <div id="good-guys-list-content" class="data-list">
-                 <div class="placeholder-content">Loading data...</div>
-             </div>
-             <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
-        </div>
-
-        <div id="bad-guys-view" class="view">
-             <h2>Bad Guys List</h2>
-             <div id="bad-guys-list-content" class="data-list">
-                 <div class="placeholder-content">Loading data...</div>
-             </div>
-             <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
-        </div>
-
-        <div id="search-view" class="view">
-            <h2>Search Captains</h2>
-            <div id="search-dropdown-container" class="form-section">
-                 <label for="search-captain-select">Select Captain to View Profile:</label>
-                 <select id="search-captain-select">
-                     <option value="" selected disabled>-- Select Captain --</option>
-                     </select>
-            </div>
-             <div id="search-profile-content" class="profile-display" style="display: none;">
-                  </div>
-             <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
-        </div>
-
-        <div id="abba-view" class="view">
-            <h2>ABBA Q&A Compilation</h2>
-             <div id="abba-list-content" class="data-list">
-                 <div class="placeholder-content">Loading data...</div>
-             </div>
-              <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
-        </div>
-
-        <div id="profile-view" class="view">
-             <h2 id="profile-view-captain-name">Captain Profile</h2> <div id="profile-view-content" class="profile-display">
-                  <div class="placeholder-content">Loading profile...</div>
-             </div>
-              <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
-        </div>
-
+        <div id="good-guys-view" class="view"> /* ... */ <h2>Good Guys List</h2> <div id="good-guys-list-content" class="data-list"><div class="placeholder-content">Loading data...</div></div> <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button> </div>
+        <div id="bad-guys-view" class="view"> /* ... */ <h2>Bad Guys List</h2> <div id="bad-guys-list-content" class="data-list"><div class="placeholder-content">Loading data...</div></div> <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button> </div>
+        <div id="search-view" class="view"> /* ... */ <h2>Search Captains</h2> <div id="search-dropdown-container" class="form-section"> <label for="search-captain-select">Select Captain to View Profile:</label> <select id="search-captain-select"><option value="" selected disabled>-- Select Captain --</option></select> </div> <div id="search-profile-content" class="profile-display" style="display: none;"></div> <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button> </div>
+        <div id="abba-view" class="view"> /* ... */ <h2>ABBA Q&A Compilation</h2> <div id="abba-list-content" class="data-list"><div class="placeholder-content">Loading data...</div></div> <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button> </div>
+        <div id="profile-view" class="view"> /* ... */ <h2 id="profile-view-captain-name">Captain Profile</h2> <div id="profile-view-content" class="profile-display"><div class="placeholder-content">Loading profile...</div></div> <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button> </div>
 
     </div> <script>
-        // --- Credentials (REPLACE WITH YOUR ACTUAL VALUES!) ---
+        // --- Credentials ---
         const API_KEY = 'AIzaSyA0JGGJAYg_xY8EpR-cVn4hVFKkZyji5ck';
         const SPREADSHEET_ID = '1JNwm0Tl2HpaDW6MJdrF_0bcTL7imtwvYldt1UDx1r3Q';
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzS42fKFx8_A2XL1Aa1nOAOpeelyz1w02T_nl1zF-cGXR1CwOvJSYaCiy06IKWTzBDPWA/exec';
+        const PASSWORD_SHEET_NAME = 'Sheet2';
+        const PASSWORD_CELL = 'A1';
 
         // --- Global Cache & State ---
         let allSheetData = null;
         let captainProfiles = {};
         let isFetching = false;
         let lastView = 'menu-view';
+        let isAuthenticated = false;
 
         // --- Night Mode ---
         const darkModeToggle = document.getElementById('darkModeToggle');
-        function setDarkMode(isNight) { /* ... function code same as previous ... */
-            if (isNight) { document.body.classList.add('night-mode'); localStorage.setItem('darkModePref', 'true'); if(darkModeToggle) darkModeToggle.checked = true; }
-            else { document.body.classList.remove('night-mode'); localStorage.setItem('darkModePref', 'false'); if(darkModeToggle) darkModeToggle.checked = false; }
-        }
+        function setDarkMode(isNight) { /* ... */ }
         if (darkModeToggle) { darkModeToggle.addEventListener('change', () => setDarkMode(darkModeToggle.checked)); }
 
         // --- Utility Functions ---
-        function findMode(arr) { /* ... function code same as previous ... */
-            if (!arr || arr.length === 0) return 'N/A';
-            return arr.sort((a,b) => arr.filter(v => v===a).length - arr.filter(v => v===b).length).pop();
-        }
-        function escapeHtml(unsafe) { /* ... function code same as previous ... */
-             if (!unsafe) return '';
-             return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-         }
+        function findMode(arr) { /* ... */ }
+        function escapeHtml(unsafe) { /* ... */ }
 
         // --- Data Fetching & Processing ---
-        async function fetchAllData() { /* ... function code same as previous ... */
-            if (isFetching) { console.log("Fetch already in progress..."); return false; }
-            if (!API_KEY || API_KEY === 'YOUR_NEW_PRIVATE_API_KEY' || !SPREADSHEET_ID || SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID') { console.warn("API Key or Spreadsheet ID is not set correctly."); alert("Configuration incomplete. Please set your NEW API Key and Spreadsheet ID in the script."); return false; }
-            console.log("Fetching all data from sheet...");
-            isFetching = true; document.body.style.cursor = 'wait';
-            const range = 'Sheet1!A2:I'; const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?key=${API_KEY}&valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER`;
-            try {
-                const response = await fetch(apiUrl); const responseData = await response.json();
-                if (!response.ok) { console.error('Error response from API:', responseData); const error = responseData.error || {}; const status = error.status || response.status; const message = error.message || response.statusText; alert(`Error fetching data: ${status} - ${message}`); throw new Error(`HTTP error! status: ${status}`); }
-                console.log("All data fetched successfully."); allSheetData = responseData.values || []; processAllData(); return true;
-            } catch (error) {
-                console.error('Could not fetch all data:', error); alert(`Failed to fetch data from sheet: ${error.message}. Check console (F12) and API Key/Sheet settings.`); allSheetData = null; captainProfiles = {}; populateSubmitDropdown(); populateSearchDropdown(); displayList('good'); displayList('bad'); displayAbba(); return false;
-            } finally { isFetching = false; document.body.style.cursor = 'default'; }
-        }
-
-        function processAllData() { /* ... function code same as previous ... */
-             if (!allSheetData) return; console.log("Processing fetched data..."); captainProfiles = {};
-             allSheetData.forEach(row => {
-                 const name = row[1]; if (!name || name.trim() === '') return;
-                 if (!captainProfiles[name]) { captainProfiles[name] = { name: name, submissions: [], appointments: [], ratings: [], goodCount: 0, badCount: 0, aggregate: { appointment: 'N/A', status: 'Neutral' } }; }
-                 const submission = { timestamp: row[0] ? new Date(Math.round((row[0] - 25569) * 86400 * 1000)) : null, appointment: row[2] || '', experience: row[3] || '', dos: row[4] || '', donts: row[5] || '', questions: [], rating: row[7] || '', id: row[8] || '' };
-                 try { if(row[6]) { submission.questions = JSON.parse(row[6]); if (!Array.isArray(submission.questions)) submission.questions = []; } } catch(e) { console.warn(`Could not parse questions JSON for ${name}, submission ID ${submission.id}: ${row[6]}`); submission.questions = []; }
-                 captainProfiles[name].submissions.push(submission); if (submission.appointment) captainProfiles[name].appointments.push(submission.appointment); if (submission.rating === 'good') captainProfiles[name].goodCount++; if (submission.rating === 'bad') captainProfiles[name].badCount++; if (submission.rating) captainProfiles[name].ratings.push(submission.rating);
-             });
-             Object.values(captainProfiles).forEach(profile => { if (profile.goodCount > profile.badCount) { profile.aggregate.status = 'Good'; } else if (profile.badCount > profile.goodCount) { profile.aggregate.status = 'Bad'; } else { profile.aggregate.status = 'Neutral'; } profile.aggregate.appointment = findMode(profile.appointments) || 'N/A'; });
-             console.log("Data processed:", captainProfiles); populateSubmitDropdown(); populateSearchDropdown();
-        }
-
-        function populateSubmitDropdown() { /* ... function code same as previous ... */
-            const selectElement = document.getElementById('captain-name-select'); if (!selectElement) return; const currentSelection = selectElement.value; while (selectElement.options.length > 2) { selectElement.remove(1); } const names = Object.keys(captainProfiles).sort(); const addNewOption = selectElement.options[selectElement.options.length - 1]; names.forEach(name => { const option = document.createElement('option'); option.value = name; option.textContent = name; selectElement.insertBefore(option, addNewOption); }); if (names.includes(currentSelection)) { selectElement.value = currentSelection; }
-        }
-         function populateSearchDropdown() { /* ... function code same as previous ... */
-            const selectElement = document.getElementById('search-captain-select'); if (!selectElement) return; const currentSelection = selectElement.value; while (selectElement.options.length > 1) { selectElement.remove(1); } const names = Object.keys(captainProfiles).sort(); names.forEach(name => { const option = document.createElement('option'); option.value = name; option.textContent = name; selectElement.appendChild(option); }); if (names.includes(currentSelection)) { selectElement.value = currentSelection; } else { selectElement.value = ""; }
-         }
+        async function fetchAllData() { /* ... */ }
+        function processAllData() { /* ... */ }
+        function populateSubmitDropdown() { /* ... */ }
+        function populateSearchDropdown() { /* ... */ }
 
         // --- Display Logic for Views ---
-        function displayList(type) { /* ... function code updated to include clickable span ... */
-            const targetDivId = type === 'good' ? 'good-guys-list-content' : 'bad-guys-list-content'; const listDiv = document.getElementById(targetDivId); if (!listDiv) return;
-            if (!allSheetData) { listDiv.innerHTML = '<div class="placeholder-content">Data not loaded. Try Refreshing.</div>'; return; } if (Object.keys(captainProfiles).length === 0) { listDiv.innerHTML = '<div class="placeholder-content">No captain data processed.</div>'; return; }
-            const statusFilter = type === 'good' ? 'Good' : 'Bad'; const filteredCaptains = Object.values(captainProfiles).filter(p => p.aggregate.status === statusFilter);
-            if (filteredCaptains.length === 0) { listDiv.innerHTML = `<div class="placeholder-content">No captains currently classified as '${statusFilter}'.</div>`; return; }
-            let html = '<ul>'; filteredCaptains.sort((a, b) => a.name.localeCompare(b.name)).forEach(profile => { html += `<li><span class="captain-name" onclick="showProfileView('${escapeHtml(profile.name)}')">${escapeHtml(profile.name)}</span> <span class="captain-details">(Appt: ${escapeHtml(profile.aggregate.appointment)})</span></li>`; }); html += '</ul>'; listDiv.innerHTML = html;
-         }
-
-        function displayAbba() { /* ... function code same as previous ... */
-             const listDiv = document.getElementById('abba-list-content'); if (!listDiv) return; if (!allSheetData) { listDiv.innerHTML = '<div class="placeholder-content">Data not loaded. Try Refreshing.</div>'; return; } let allQuestions = [];
-             Object.values(captainProfiles).forEach(profile => { profile.submissions.forEach(sub => { if (sub.questions && Array.isArray(sub.questions)) { sub.questions.forEach(qa => { if (qa.q && qa.q.trim() !== '') { allQuestions.push({ captain: profile.name, q: qa.q.trim(), a: (qa.a || '').trim() }); } }); } }); });
-             if (allQuestions.length === 0) { listDiv.innerHTML = '<div class="placeholder-content">No questions submitted yet.</div>'; return; } let html = '<ul>'; allQuestions.sort((a,b) => a.q.localeCompare(b.q) || a.captain.localeCompare(b.captain)).forEach(item => { html += `<li><strong>Q: ${escapeHtml(item.q)}</strong> (For ${escapeHtml(item.captain)}) <br> A: ${item.a ? escapeHtml(item.a) : '<i>No answer provided</i>'}</li>`; }); html += '</ul>'; listDiv.innerHTML = html;
-        }
-
-         // Modified to accept targetDivId
-         function displayCaptainProfile(captainName, targetDivId = 'search-profile-content') { /* ... function code same as previous, but uses targetDivId ... */
-              const profileDiv = document.getElementById(targetDivId); const profile = captainProfiles[captainName];
-              if (!profileDiv || !profile) { console.error(`Profile or target div not found for ${captainName} in #${targetDivId}`); if(profileDiv) profileDiv.innerHTML = `<div class="placeholder-content">Could not load profile for ${escapeHtml(captainName)}.</div>`; return; }
-              if (targetDivId === 'profile-view-content') { const profileTitle = document.getElementById('profile-view-captain-name'); if (profileTitle) profileTitle.textContent = `Profile: ${profile.name}`; }
-              profileDiv.style.display = 'block';
-              let html = `<p><strong>Calculated Status:</strong> ${profile.aggregate.status} (Good: ${profile.goodCount}, Bad: ${profile.badCount})</p><p><strong>Most Common Appointment:</strong> ${profile.aggregate.appointment}</p><hr>`;
-              if (profile.submissions.length > 0) {
-                   html += `<h4>Individual Submissions (${profile.submissions.length}):</h4>`; profile.submissions.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                   profile.submissions.forEach((sub, index) => {
-                        html += `<div class="profile-section">`; let subDate = 'N/A'; try { if (sub.timestamp instanceof Date && !isNaN(sub.timestamp)) { subDate = sub.timestamp.toLocaleDateString(); } else if (typeof sub.timestamp === 'number') { subDate = new Date(Math.round((sub.timestamp - 25569) * 86400 * 1000)).toLocaleDateString(); } } catch(e) {}
-                        html += `<h5>Submission ${profile.submissions.length - index} (${subDate}) - Rating: ${sub.rating || 'N/A'}, Appt: ${sub.appointment || 'N/A'}</h5>`;
-                        if(sub.experience) html += `<h4>Experience/Remarks:</h4><pre>${escapeHtml(sub.experience)}</pre>`; if(sub.dos) html += `<h4>Do's:</h4><pre>${escapeHtml(sub.dos)}</pre>`; if(sub.donts) html += `<h4>Don'ts:</h4><pre>${escapeHtml(sub.donts)}</pre>`;
-                        if (sub.questions && sub.questions.length > 0) { html += `<h4>Q&A:</h4>`; sub.questions.forEach(qa => { if (qa.q) { html += `<div class="qa-item"><strong>Q: ${escapeHtml(qa.q)}</strong> A: ${escapeHtml(qa.a || 'N/A')}</div>`; } }); } html += `</div>`; });
-               } else { html += `<p>No detailed submissions found.</p>`; } profileDiv.innerHTML = html;
-          }
+        function displayList(type) { /* ... */ }
+        function displayAbba() { /* ... */ }
+        function displayCaptainProfile(captainName, targetDivId = 'search-profile-content') { /* ... */ }
 
         // --- View Switching & Control ---
-        async function showView(viewId) { /* ... function code same as previous ... */
-             const currentActive = document.querySelector('.view.active'); if(currentActive) previousView = currentActive.id;
-             console.log(`Switching view to: ${viewId}, Previous: ${previousView}`);
-             const dataViews = ['good-guys-view', 'bad-guys-view', 'search-view', 'abba-view', 'profile-view']; const requiresLoad = dataViews.includes(viewId) && viewId !== 'profile-view'; // Profile view loaded on demand
-             let targetContentArea = document.getElementById(viewId)?.querySelector('.data-list, .profile-display, #profile-view-content, #search-dropdown-container');
-             if (requiresLoad || (viewId === 'search-view')) { if (targetContentArea && viewId !== 'search-view') { targetContentArea.innerHTML = '<div class="placeholder-content">Loading data...</div>'; } else if (viewId === 'search-view') { const profileDiv = document.getElementById('search-profile-content'); if (profileDiv) { profileDiv.style.display = 'none'; profileDiv.innerHTML = ''; } const searchSelect = document.getElementById('search-captain-select'); if (searchSelect) searchSelect.value = ""; } }
-             if (requiresLoad) { if (!allSheetData && !isFetching) { const fetchSuccess = await fetchAllData(); if (!fetchSuccess && targetContentArea) { targetContentArea.innerHTML = '<div class="placeholder-content" style="color: red;">Failed to load data.</div>'; } } else if (isFetching && targetContentArea) { /* Already showing loading */ } }
-             document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
-             if (allSheetData || !dataViews.includes(viewId) || viewId === 'search-view') { if (viewId === 'good-guys-view') { displayList('good'); } else if (viewId === 'bad-guys-view') { displayList('bad'); } else if (viewId === 'abba-view') { displayAbba(); } else if (viewId === 'search-view') { /* Dropdown updated by processAllData */ } else if (viewId === 'submit-view') { populateSubmitDropdown(); } }
-             const activeView = document.getElementById(viewId); if (activeView) { activeView.classList.add('active'); } else { console.error(`View with ID ${viewId} not found!`); }
-             if (previousView === 'submit-view' && viewId !== 'submit-view') { const qaContainer = document.getElementById('qa-container'); if(qaContainer) qaContainer.innerHTML = ''; qaCounter = 0; const addCaptainField = document.getElementById('add-captain-field'); if(addCaptainField) addCaptainField.style.display = 'none'; const entryForm = document.getElementById('entry-form'); if(entryForm) entryForm.reset(); }
+        async function showView(viewId) { /* ... */ }
+        function showProfileView(captainName) { /* ... */ }
+
+        // --- Handle Captain Selection (Submit Form) --- << CHECK THIS BLOCK >>
+        const captainSelect = document.getElementById('captain-name-select');
+        const newCaptainField = document.getElementById('add-captain-field');
+        const newCaptainInput = document.getElementById('captain-name-new');
+
+        if (captainSelect && newCaptainField && newCaptainInput) { // Ensure all elements exist
+            captainSelect.addEventListener('change', function() {
+                // Add logs to see if this runs and what the value is
+                console.log('Captain dropdown changed. Selected value:', this.value); // DEBUG LOG
+
+                if (this.value === '__add_new__') {
+                    console.log('Add New selected. Showing input field.'); // DEBUG LOG
+                    newCaptainField.style.display = 'block'; // Show the div
+                    newCaptainInput.required = true;
+                    newCaptainInput.focus();
+                } else {
+                    console.log('Existing captain selected (or placeholder). Hiding input field.'); // DEBUG LOG
+                    newCaptainField.style.display = 'none'; // Hide the div
+                    newCaptainInput.required = false;
+                    newCaptainInput.value = '';
+                }
+            });
+        } else {
+            console.error("Error setting up captain selection: One or more elements (select, field div, input) not found.");
         }
+         // --- End Captain Selection Handler ---
 
-         function showProfileView(captainName) { /* ... function code same as previous ... */
-             if (!captainName) return; console.log(`Showing profile for: ${captainName}`); if (!captainProfiles[captainName]) { alert("Captain data not found. Please refresh data."); return; } displayCaptainProfile(captainName, 'profile-view-content'); showView('profile-view');
-         }
-
-         // --- Handle Search Captain Selection ---
-         const searchCaptainSelect = document.getElementById('search-captain-select');
-         if (searchCaptainSelect) { /* ... event listener code same as previous ... */
-              searchCaptainSelect.addEventListener('change', function() { if (this.value) { displayCaptainProfile(this.value, 'search-profile-content'); } else { const profileDiv = document.getElementById('search-profile-content'); if(profileDiv) { profileDiv.style.display = 'none'; profileDiv.innerHTML = ''; } } });
-         } else { console.error("Search captain select dropdown not found!"); }
-
+        // --- Handle Search Captain Selection ---
+        const searchCaptainSelect = document.getElementById('search-captain-select');
+        if (searchCaptainSelect) { /* ... */ }
 
         // --- Dynamic Q&A Pairs ---
         let qaCounter = 0;
-         function addQaPair() { /* ... function code same as previous ... */
-             qaCounter++; const qaContainer = document.getElementById('qa-container'); if (!qaContainer) { console.error("Q&A container not found!"); return; } const newPair = document.createElement('div'); newPair.classList.add('qa-pair'); newPair.id = `qa-pair-${qaCounter}`; newPair.innerHTML = ` <button type="button" class="button button-delete" onclick="deleteQaPair(${qaCounter})">X</button> <label for="question-${qaCounter}">Q${qaCounter}:</label> <input type="text" id="question-${qaCounter}" name="question_${qaCounter}" placeholder="Enter question..."> <label for="answer-${qaCounter}">A${qaCounter}:</label> <input type="text" id="answer-${qaCounter}" name="answer_${qaCounter}" placeholder="Enter answer...">`; qaContainer.appendChild(newPair);
-         }
-         function deleteQaPair(pairId) { /* ... function code same as previous ... */
-              const pairElement = document.getElementById(`qa-pair-${pairId}`); if (pairElement) { pairElement.remove(); }
-          }
-
+        function addQaPair() { /* ... */ }
+        function deleteQaPair(pairId) { /* ... */ }
 
         // --- Form Submission ---
         const entryForm = document.getElementById('entry-form');
-        if (entryForm) { /* ... Form submission code same as previous ... */
-             const WEB_APP_URL = 'YOUR_WEB_APP_URL_HERE';
-            entryForm.addEventListener('submit', async function(event) {
-                 event.preventDefault(); const submitButton = entryForm.querySelector('button[type="submit"]'); const originalButtonText = submitButton.textContent; submitButton.disabled = true; submitButton.textContent = 'Submitting...';
-                 const formData = new FormData(entryForm); const data = { timestamp: new Date().toISOString(), captainName: '', appointment: formData.get('appointment') || '', experience: formData.get('experience') || '', dos: formData.get('dos') || '', donts: formData.get('donts') || '', rating: formData.get('rating') || '', questions: '' }; const questions = [];
-                 const selectedName = formData.get('captainNameSelect'); const newName = formData.get('captainNameNew')?.trim(); if (selectedName === '__add_new__') { if (!newName) { alert("Please enter the new Captain's Name."); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; } data.captainName = newName; } else if (selectedName) { data.captainName = selectedName; } else { alert("Please select or add a Captain Name."); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; }
-                 if (!data.appointment) { alert("Please select an Appointment."); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; } if (!data.rating) { alert("Please select a Rating (Good Guy / Bad Guy)."); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; }
-                 const qaPairs = document.querySelectorAll('#qa-container .qa-pair'); qaPairs.forEach(pairDiv => { const qInput = pairDiv.querySelector('input[name^="question_"]'); const aInput = pairDiv.querySelector('input[name^="answer_"]'); if (qInput && aInput) { const q = qInput.value.trim(); const a = aInput.value.trim(); if (q || a) { questions.push({ q: q || '', a: a || '' }); } } }); data.questions = JSON.stringify(questions); console.log("Collected Form Data for POST:", data);
-                 try {
-                     if (!WEB_APP_URL || WEB_APP_URL === 'YOUR_WEB_APP_URL_HERE') { throw new Error("Web App URL is not set in the script."); } const urlEncodedData = new URLSearchParams(data); const response = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', }, body: urlEncodedData }); const result = await response.json(); console.log("Response from Web App:", result);
-                     if (result.status === 'success') { alert("Entry submitted successfully!"); allSheetData = null; captainProfiles = {}; await fetchAllData(); entryForm.reset(); const qaContainer = document.getElementById('qa-container'); if(qaContainer) qaContainer.innerHTML = ''; qaCounter = 0; if(newCaptainField) newCaptainField.style.display = 'none'; showView('menu-view'); }
-                     else { throw new Error(result.message || "Unknown error from Apps Script."); }
-                 } catch (error) { console.error("Error submitting data:", error); alert(`Submission failed: ${error.message}`); }
-                 finally { submitButton.disabled = false; submitButton.textContent = originalButtonText; }
-            });
-         } else { console.error("Entry form not found!"); }
+        if (entryForm) { /* ... */ }
 
-         // --- Refresh Data Manually ---
-         // Function Removed as requested
+        // --- Authentication ---
+        async function checkPassword() { /* ... */ }
 
         // --- Initial Setup ---
-        document.addEventListener('DOMContentLoaded', async () => {
-             console.log("DOM fully loaded and parsed");
-             const savedDarkMode = localStorage.getItem('darkModePref');
-             setDarkMode(savedDarkMode === 'true');
-             await fetchAllData(); // Fetch and process data on load
-             showView('menu-view');
+        document.addEventListener('DOMContentLoaded', () => {
+             console.log("DOM fully loaded and parsed. Checking password...");
+             checkPassword();
+             // Apply initial dark mode setting if needed (can be done before auth)
+              const savedDarkMode = localStorage.getItem('darkModePref');
+              setDarkMode(savedDarkMode === 'true');
+             // The rest (fetching data, showing menu) is handled inside checkPassword() on success
         });
 
     </script>
