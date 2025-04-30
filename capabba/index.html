@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captain Database</title>
+    <style>
+        /* General Styles (Inspired by flightcard) */
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* More standard font */
+            font-size: 14px;
+            box-sizing: border-box;
+            width: 100%;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px; /* Max width for readability */
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* View Sections */
+        .view {
+            display: none; /* Hide all views by default */
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .view.active {
+            display: block; /* Show active view */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        h2, h3 {
+            color: #0056b3; /* A nice blue */
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Menu Styles */
+        .menu-buttons button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .menu-buttons button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Form Styles */
+        .form-section {
+            margin-bottom: 20px;
+        }
+
+        .form-section label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-section input[type="text"],
+        .form-section select,
+        .form-section textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Include padding in width */
+            font-size: 14px;
+            margin-bottom: 10px; /* Space below each input */
+        }
+
+         .form-section input[type="text"]:focus,
+         .form-section select:focus,
+         .form-section textarea:focus {
+             border-color: #007bff;
+             outline: none;
+             box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+         }
+
+        .form-section textarea {
+            min-height: 100px; /* Minimum height for text areas */
+            resize: vertical; /* Allow vertical resize */
+        }
+
+        /* Specific field styling */
+        #add-captain-field {
+            display: none; /* Hidden by default */
+            margin-top: -5px; /* Align closer to dropdown */
+            margin-bottom: 10px;
+        }
+         #add-captain-field input {
+             margin-bottom: 0; /* No extra margin below the input itself */
+         }
+
+        .captain-select-container {
+             display: flex;
+             align-items: center;
+             gap: 10px;
+             margin-bottom: 10px;
+         }
+         .captain-select-container select {
+             flex-grow: 1;
+             margin-bottom: 0; /* Remove margin as it's handled by container */
+         }
+         .captain-select-container button {
+             padding: 10px 15px;
+             font-size: 14px;
+             cursor: pointer;
+             background-color: #6c757d;
+             color: white;
+             border: none;
+             border-radius: 4px;
+             white-space: nowrap;
+             margin-bottom: 0; /* Remove margin */
+         }
+          .captain-select-container button:hover {
+              background-color: #5a6268;
+          }
+
+
+        /* Q&A Section */
+        .qa-pair {
+            background-color: #f9f9f9;
+            border: 1px dashed #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .qa-pair label {
+            font-weight: bold;
+            color: #333;
+        }
+        .qa-pair input[type="text"] {
+            margin-bottom: 10px;
+        }
+         .qa-pair input[type="text"]:last-child {
+             margin-bottom: 0; /* No margin after the 'A' field */
+         }
+
+        /* Buttons */
+        .button {
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .button-primary {
+            background-color: #28a745; /* Green for primary actions */
+            color: white;
+        }
+        .button-primary:hover {
+            background-color: #218838;
+        }
+
+        .button-secondary {
+             background-color: #007bff; /* Blue for secondary */
+             color: white;
+        }
+         .button-secondary:hover {
+             background-color: #0056b3;
+         }
+
+         .button-back {
+             background-color: #6c757d; /* Grey for back */
+             color: white;
+         }
+          .button-back:hover {
+             background-color: #5a6268;
+         }
+
+        /* Radio Button Styling */
+        .radio-group {
+            margin-bottom: 20px;
+        }
+        .radio-group label {
+            display: inline-block; /* Keep label and radio together */
+            margin-right: 20px;
+            font-weight: normal; /* Normal weight for radio labels */
+            cursor: pointer;
+        }
+        .radio-group input[type="radio"] {
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        /* Simple Placeholder Styling for other views */
+        .placeholder-content {
+            padding: 20px;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            text-align: center;
+            color: #6c757d;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <div id="menu-view" class="view active">
+            <h2>Captain Database Menu</h2>
+            <div class="menu-buttons">
+                <button onclick="showView('submit-view')">Submit New Entry</button>
+                <button onclick="showView('good-guys-view')">View Good Guys</button>
+                <button onclick="showView('bad-guys-view')">View Bad Guys</button>
+                <button onclick="showView('abba-view')">ABBA Q&A Compilation</button>
+            </div>
+        </div>
+
+        <div id="submit-view" class="view">
+            <h2>Submit New Entry</h2>
+            <form id="entry-form">
+                <div class="form-section">
+                    <label for="captain-name-select">Captain Name</label>
+                    <div class="captain-select-container">
+                         <select id="captain-name-select" name="captainNameSelect">
+                             <option value="" selected disabled>-- Select Existing Captain --</option>
+                             <option value="__add_new__">-- Add New Captain --</option>
+                         </select>
+                         </div>
+                    <div id="add-captain-field">
+                         <label for="captain-name-new">New Captain Name:</label>
+                         <input type="text" id="captain-name-new" name="captainNameNew">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label for="appointment">Appointment</label>
+                    <select id="appointment" name="appointment">
+                        <option value="" selected disabled>-- Select Appointment --</option>
+                        <option value="Line">Line</option>
+                        <option value="SUC">SUC</option>
+                        <option value="LIP">LIP</option>
+                        <option value="MGMT">MGMT</option>
+                    </select>
+                </div>
+
+                <div class="form-section">
+                    <label for="experience">Experience / Remarks</label>
+                    <textarea id="experience" name="experience" placeholder="Share your overall experience, notable events, or general remarks..."></textarea>
+                </div>
+
+                <div class="form-section">
+                    <label for="dos">Do's</label>
+                    <textarea id="dos" name="dos" placeholder="What behaviours, techniques, or preferences are encouraged?"></textarea>
+                </div>
+
+                <div class="form-section">
+                    <label for="donts">Don'ts</label>
+                    <textarea id="donts" name="donts" placeholder="What behaviours, actions, or topics should be avoided?"></textarea>
+                </div>
+
+                <div class="form-section">
+                    <h3>Captain Specific Q&A</h3>
+                    <div id="qa-container">
+                        </div>
+                    <button type="button" class="button button-secondary" onclick="addQaPair()">Add Question</button>
+                </div>
+
+                <div class="form-section radio-group">
+                     <label>Rate This Interaction:</label>
+                     <label for="good-guy">
+                         <input type="radio" id="good-guy" name="rating" value="good"> Good Guy
+                     </label>
+                     <label for="bad-guy">
+                         <input type="radio" id="bad-guy" name="rating" value="bad"> Bad Guy
+                     </label>
+                     </div>
+
+
+                <div class="form-section">
+                    <button type="submit" class="button button-primary">Submit Entry</button>
+                    <button type="button" class="button button-back" onclick="showView('menu-view')">Back to Menu</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="good-guys-view" class="view">
+             <h2>Good Guys List</h2>
+             <div class="placeholder-content">
+                 Good guy captain list will appear here.
+             </div>
+              <button type="button" class="button button-back" onclick="showView('menu-view')">Back to Menu</button>
+        </div>
+
+        <div id="bad-guys-view" class="view">
+             <h2>Bad Guys List</h2>
+              <div class="placeholder-content">
+                 Bad guy captain list will appear here.
+             </div>
+               <button type="button" class="button button-back" onclick="showView('menu-view')">Back to Menu</button>
+        </div>
+
+        <div id="abba-view" class="view">
+            <h2>ABBA Q&A Compilation</h2>
+             <div class="placeholder-content">
+                 Compiled unique questions and answers will appear here.
+             </div>
+              <button type="button" class="button button-back" onclick="showView('menu-view')">Back to Menu</button>
+        </div>
+
+    </div> <script>
+        // --- Credentials (REPLACE WITH YOUR ACTUAL VALUES!) ---
+        // !!! IMPORTANT: Replace with your NEW, PRIVATE API key after deleting the old one !!!
+        const API_KEY = 'AIzaSyA0JGGJAYg_xY8EpR-cVn4hVFKkZyji5ck';
+        const SPREADSHEET_ID = '1JNwm0Tl2HpaDW6MJdrF_0bcTL7imtwvYldt1UDx1r3Q'; // Replace with your Sheet ID
+
+        // --- View Switching ---
+        function showView(viewId) {
+            console.log('showView called with ID:', viewId); // Keep this for debugging
+            // Hide all views
+            document.querySelectorAll('.view').forEach(view => {
+                view.classList.remove('active');
+            });
+            // Show the selected view
+            const activeView = document.getElementById(viewId);
+            if (activeView) {
+                activeView.classList.add('active');
+            }
+
+            // Clear Q&A container and potentially reset form when navigating away from submit view
+            // or back to menu
+             if (viewId !== 'submit-view') {
+                 const qaContainer = document.getElementById('qa-container');
+                 if(qaContainer) qaContainer.innerHTML = ''; // Clear dynamic Q&A
+                 qaCounter = 0; // Reset counter
+
+                 const addCaptainField = document.getElementById('add-captain-field');
+                 if(addCaptainField) addCaptainField.style.display = 'none';
+
+                 const captainSelect = document.getElementById('captain-name-select');
+                 if(captainSelect) captainSelect.value = ''; // Reset dropdown
+
+                 const entryForm = document.getElementById('entry-form');
+                 if(entryForm) entryForm.reset(); // Reset the whole form
+             }
+        }
+
+        // --- Handle Captain Selection ---
+        const captainSelect = document.getElementById('captain-name-select');
+        const newCaptainField = document.getElementById('add-captain-field');
+        const newCaptainInput = document.getElementById('captain-name-new');
+
+        // Add event listener only if captainSelect exists
+        if (captainSelect) {
+            captainSelect.addEventListener('change', function() {
+                if (this.value === '__add_new__') {
+                    if(newCaptainField) newCaptainField.style.display = 'block';
+                    if(newCaptainInput) {
+                         newCaptainInput.required = true; // Make required if adding new
+                         newCaptainInput.focus();
+                    }
+                } else {
+                    if(newCaptainField) newCaptainField.style.display = 'none';
+                    if(newCaptainInput) {
+                         newCaptainInput.required = false; // Not required if selecting existing
+                         newCaptainInput.value = ''; // Clear the input field
+                    }
+                }
+            });
+        } else {
+             console.error("Captain select dropdown not found!");
+        }
+
+        // --- Dynamic Q&A Pairs ---
+        let qaCounter = 0;
+        function addQaPair() {
+            qaCounter++;
+            const qaContainer = document.getElementById('qa-container');
+            if (!qaContainer) {
+                 console.error("Q&A container not found!");
+                 return;
+            }
+
+            const newPair = document.createElement('div');
+            newPair.classList.add('qa-pair');
+            newPair.innerHTML = `
+                <label for="question-${qaCounter}">Q${qaCounter}:</label>
+                <input type="text" id="question-${qaCounter}" name="question_${qaCounter}" placeholder="Enter question...">
+                <label for="answer-${qaCounter}">A${qaCounter}:</label>
+                <input type="text" id="answer-${qaCounter}" name="answer_${qaCounter}" placeholder="Enter answer...">
+            `;
+            qaContainer.appendChild(newPair);
+        }
+
+        // --- Form Submission ---
+        const entryForm = document.getElementById('entry-form');
+        if (entryForm) {
+            entryForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent default HTML form submission
+
+                // ** Placeholder for Google Sheets API interaction **
+                console.log("Form submitted! Data needs to be sent to Google Sheets.");
+
+                // Gather form data
+                const formData = new FormData(entryForm);
+                const data = {};
+                const questions = [];
+
+                for (let [key, value] of formData.entries()) {
+                     // Skip temporary select field value if it exists
+                     if (key === 'captainNameSelect' && value === '__add_new__') continue;
+                     if (key === 'captainNameSelect' && value !== '__add_new__') {
+                         data['captainName'] = value; // Use selected name
+                         continue; // Don't process further
+                     }
+                     // Use new captain name if provided
+                     if (key === 'captainNameNew' && value.trim() !== '') {
+                          data['captainName'] = value.trim();
+                          continue; // Don't process further
+                     }
+                     // Skip captainNameNew if empty and a selection was made
+                      if (key === 'captainNameNew' && value.trim() === '' && formData.get('captainNameSelect') !== '__add_new__') {
+                          continue;
+                      }
+
+
+                    if (key.startsWith('question_')) {
+                        // Handled below
+                    } else if (key.startsWith('answer_')) {
+                        // Handled below
+                    } else {
+                        data[key] = value;
+                    }
+                }
+
+                 // Double check if captainName was set (if select was blank and new name was blank)
+                 if (!data.captainName) {
+                     alert("Please select or add a Captain Name.");
+                     return; // Stop submission
+                 }
+
+
+                // Consolidate Q&A pairs
+                for(let i = 1; i <= qaCounter; i++) {
+                    const q = formData.get(`question_${i}`);
+                    const a = formData.get(`answer_${i}`);
+                    if (q || a) { // Only add if at least one field has content
+                        questions.push({ q: q || '', a: a || '' });
+                    }
+                }
+                // Store Q&A as a JSON string to fit in one cell easily
+                data['questions'] = JSON.stringify(questions);
+
+                console.log("Collected Form Data:", data);
+
+                // ** TODO: Implement Google Sheets API call here to send 'data' **
+                alert("Entry submitted (Simulation only - Data not saved yet!)");
+
+                // Optional: Reset form after successful submission
+                entryForm.reset();
+                const qaContainer = document.getElementById('qa-container');
+                if(qaContainer) qaContainer.innerHTML = ''; // Clear dynamic Q&A
+                qaCounter = 0;
+                if(newCaptainField) newCaptainField.style.display = 'none'; // Hide add new field
+                showView('menu-view'); // Go back to menu after submission
+            });
+        } else {
+             console.error("Entry form not found!");
+        }
+
+        // --- Google Sheets API Interaction ---
+
+        // Function to fetch unique captain names from the sheet
+        async function fetchCaptainNames() {
+            if (!API_KEY || API_KEY === 'YOUR_NEW_PRIVATE_API_KEY' || !SPREADSHEET_ID || SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID') {
+                console.warn("API Key or Spreadsheet ID is not set correctly.");
+                alert("Configuration incomplete. Please set your NEW API Key and Spreadsheet ID in the script.");
+                return [];
+            }
+            // Assumes Captain Names are in Column B, starting from row 2
+            const range = 'Sheet1!B2:B'; // Adjust 'Sheet1' if your sheet name is different
+            const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?key=${API_KEY}`;
+
+            console.log("Attempting to fetch captain names from:", apiUrl); // For debugging
+
+            try {
+                const response = await fetch(apiUrl);
+                const responseData = await response.json(); // Try to get response data even if not ok
+
+                if (!response.ok) {
+                    console.error('Error response from API:', responseData);
+                     const error = responseData.error || {};
+                     const status = error.status || response.status;
+                     const message = error.message || response.statusText;
+
+                    // More specific error check for API key issues
+                    if (status === 'PERMISSION_DENIED') {
+                         alert(`Error fetching captain names: Permission Denied. \n1. Check API Key restrictions (Website/API).\n2. Ensure Google Sheets API is enabled in Cloud Console.\n3. Ensure Spreadsheet ID is correct and the sheet is shared appropriately (e.g., 'Anyone with the link can view' if using only API Key).`);
+                    } else if (status === 'NOT_FOUND') {
+                         alert(`Error fetching captain names: Spreadsheet or Range Not Found.\nVerify SPREADSHEET_ID ('${SPREADSHEET_ID}') and range ('${range}') are correct.`);
+                    } else {
+                         alert(`Error fetching captain names: ${status} - ${message}\nCheck console (F12) for details.`);
+                    }
+                    throw new Error(`HTTP error! status: ${status}`);
+                }
+
+                console.log("API Response Success:", responseData); // For debugging
+
+                if (responseData.values && responseData.values.length > 0) {
+                    const names = [...new Set(responseData.values.flat().filter(name => name && name.trim() !== ''))].sort();
+                    return names;
+                } else {
+                    console.log("No captain names found in the specified range (Column B). Sheet might be empty or range incorrect.");
+                    return [];
+                }
+            } catch (error) {
+                console.error('Could not fetch captain names:', error);
+                 // Avoid duplicate alert if already handled in the 'if (!response.ok)' block
+                 if (!error.message.startsWith('HTTP error!')) {
+                    alert(`Network error or issue fetching captain names: ${error.message}\nIs the SPREADSHEET_ID correct? Is the sheet shared (viewable by anyone with link)?`);
+                 }
+                return []; // Return empty array on error
+            }
+        }
+
+        // Function to populate the captain dropdown
+        function populateCaptainDropdown(names) {
+            const selectElement = document.getElementById('captain-name-select');
+             if (!selectElement) {
+                 console.error("Captain select dropdown element not found!");
+                 return;
+             }
+
+            // Clear existing options (except the placeholder and "Add New")
+            while (selectElement.options.length > 2) { // Keep first two: Placeholder & Add New
+                 selectElement.remove(1); // Remove the second option repeatedly (index 1)
+            }
+
+            // Add fetched names before the "-- Add New Captain --" option
+            const addNewOption = selectElement.options[selectElement.options.length - 1]; // Get reference to Add New option
+            names.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                selectElement.insertBefore(option, addNewOption); // Insert before the Add New option
+            });
+             console.log("Dropdown populated with:", names);
+        }
+
+        // --- Initial Setup ---
+        document.addEventListener('DOMContentLoaded', async () => {
+             console.log("DOM fully loaded and parsed");
+            // Fetch names and populate dropdown when the page loads
+            try {
+                 const captainNames = await fetchCaptainNames();
+                 populateCaptainDropdown(captainNames);
+            } catch (error) {
+                 console.error("Error during initial data fetch:", error);
+                 // Alert is likely handled within fetchCaptainNames
+            }
+
+             // Ensure menu is shown on load
+             showView('menu-view'); // Ensure menu is active initially
+        });
+
+    </script>
+    </body>
+</html>
