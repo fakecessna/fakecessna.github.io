@@ -20,6 +20,7 @@
             --placeholder-text-day: #6c757d;
             --qa-bg-day: #f9f9f9;
             --qa-border-day: #ddd;
+            --link-color-day: #0056b3;
 
             --bg-color-night: #121212; /* Darker BG */
             --container-bg-night: #1e1e1e; /* Slightly lighter container */
@@ -34,6 +35,8 @@
             --placeholder-text-night: #888;
             --qa-bg-night: #252525;
             --qa-border-night: #444;
+            --link-color-night: #ffcc66; /* Lighter accent for links */
+
 
             /* Theme Colors */
             --primary-bg: #1D4886; /* User specified background */
@@ -123,7 +126,6 @@
             opacity: 0.85;
         }
         body.night-mode .button {
-             /* Keep accent color in night mode maybe? Or adjust if needed */
              background-color: var(--accent-color);
              color: #333; /* Darker text on accent for night mode contrast */
         }
@@ -169,21 +171,8 @@
             padding: 15px;
             margin-bottom: 10px;
             font-size: 16px;
-            /* Use accent color */
-            /* background-color: var(--accent-color); */
-            /* color: white; */
-            /* border: none; */
-            /* border-radius: 5px; */
-            /* cursor: pointer; */
-            /* transition: background-color 0.3s ease; */
+            /* Inherit general button styles */
         }
-        /* .menu-buttons button:hover {
-            background-color: #e09a2a; /* Darker accent */
-        /* } */
-        /* body.night-mode .menu-buttons button:hover {
-             background-color: #d49020;
-        } */
-
 
         /* Form Styles */
         .form-section { margin-bottom: 20px; }
@@ -233,7 +222,6 @@
         #add-captain-field input { margin-bottom: 0; }
         .captain-select-container { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .captain-select-container select { flex-grow: 1; margin-bottom: 0; }
-        /* Removed button style from here */
 
         /* Q&A Section */
         .qa-pair {
@@ -265,7 +253,7 @@
         .radio-group label { display: inline-block; margin-right: 20px; font-weight: normal; cursor: pointer; }
         .radio-group input[type="radio"] { margin-right: 5px; vertical-align: middle; }
 
-        /* Placeholder / List Styling */
+        /* Placeholder / List / Profile Styling */
         .placeholder-content, .data-list, .profile-display {
             padding: 20px;
             background-color: var(--placeholder-bg-day);
@@ -298,13 +286,18 @@
          .data-list li:last-child {
              border-bottom: none;
          }
-         .captain-name {
+         .captain-name { /* Now used as a clickable span */
              font-weight: bold;
              font-size: 1.1em;
-             color: var(--heading-color-day);
+             color: var(--link-color-day); /* Make it look like a link */
+             cursor: pointer; /* Indicate clickable */
+             text-decoration: underline;
+         }
+         .captain-name:hover {
+             opacity: 0.8;
          }
          body.night-mode .captain-name {
-              color: var(--heading-color-night);
+              color: var(--link-color-night);
          }
          .captain-details {
              font-size: 0.9em;
@@ -343,6 +336,8 @@
                border-radius: 4px;
                font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; /* Monospace for details */
                font-size: 0.95em;
+               max-height: 200px; /* Limit height */
+               overflow-y: auto; /* Add scroll if needed */
            }
             body.night-mode .profile-section pre {
                  background-color: rgba(255,255,255,0.05);
@@ -369,9 +364,10 @@
               color: var(--text-color-night);
               border-color: var(--input-border-night);
          }
+         /* Reusing .profile-display for Search view content */
 
 
-        /* Toggle Switch Styles (from flightcard) */
+        /* Toggle Switch Styles */
         .switch {
           position: relative;
           display: inline-block;
@@ -434,75 +430,74 @@
                 <button class="button" onclick="showView('search-view')">Search Captains</button>
                 <button class="button" onclick="showView('abba-view')">ABBA Q&A Compilation</button>
             </div>
-             <button class="button button-secondary" onclick="refreshData()" style="margin-top: 20px;">Refresh Data from Sheet</button>
-        </div>
+             </div>
 
         <div id="submit-view" class="view">
-            <h2>Submit New Entry</h2>
-            <form id="entry-form">
-                <div class="form-section">
-                    <label for="captain-name-select">Captain Name</label>
-                    <div class="captain-select-container">
-                         <select id="captain-name-select" name="captainNameSelect">
-                             <option value="" selected disabled>-- Select Existing or Add New --</option>
-                             <option value="__add_new__">-- Add New Captain --</option>
-                         </select>
-                    </div>
-                    <div id="add-captain-field">
-                         <label for="captain-name-new">New Captain Name:</label>
-                         <input type="text" id="captain-name-new" name="captainNameNew">
-                    </div>
-                </div>
-
-                <div class="form-section">
-                    <label for="appointment">Appointment (Your observation)</label>
-                    <select id="appointment" name="appointment">
-                        <option value="" selected disabled>-- Select Appointment --</option>
-                        <option value="Line">Line</option>
-                        <option value="SUC">SUC</option>
-                        <option value="LIP">LIP</option>
-                        <option value="MGMT">MGMT</option>
-                    </select>
-                </div>
-
-                <div class="form-section">
-                    <label for="experience">Experience / Remarks</label>
-                    <textarea id="experience" name="experience" placeholder="Share your overall experience, notable events, or general remarks..."></textarea>
-                </div>
-
-                <div class="form-section">
-                    <label for="dos">Do's</label>
-                    <textarea id="dos" name="dos" placeholder="What behaviours, techniques, or preferences are encouraged?"></textarea>
-                </div>
-
-                <div class="form-section">
-                    <label for="donts">Don'ts</label>
-                    <textarea id="donts" name="donts" placeholder="What behaviours, actions, or topics should be avoided?"></textarea>
-                </div>
-
-                <div class="form-section">
-                    <h3>Captain Specific Q&A</h3>
-                    <div id="qa-container">
-                        </div>
-                    <button type="button" class="button button-secondary" onclick="addQaPair()">Add Question</button>
-                </div>
-
-                <div class="form-section radio-group">
-                     <label>Rate This Interaction:</label>
-                     <label for="good-guy">
-                         <input type="radio" id="good-guy" name="rating" value="good"> Good Guy
-                     </label>
-                     <label for="bad-guy">
-                         <input type="radio" id="bad-guy" name="rating" value="bad"> Bad Guy
-                     </label>
+             <h2>Submit New Entry</h2>
+             <form id="entry-form">
+                 <div class="form-section">
+                     <label for="captain-name-select">Captain Name</label>
+                     <div class="captain-select-container">
+                          <select id="captain-name-select" name="captainNameSelect" required>
+                              <option value="" selected disabled>-- Select Existing or Add New --</option>
+                              <option value="__add_new__">-- Add New Captain --</option>
+                          </select>
+                     </div>
+                     <div id="add-captain-field">
+                          <label for="captain-name-new">New Captain Name:</label>
+                          <input type="text" id="captain-name-new" name="captainNameNew">
+                     </div>
                  </div>
 
+                 <div class="form-section">
+                     <label for="appointment">Appointment (Your observation)</label>
+                     <select id="appointment" name="appointment" required>
+                         <option value="" selected disabled>-- Select Appointment --</option>
+                         <option value="Line">Line</option>
+                         <option value="SUC">SUC</option>
+                         <option value="LIP">LIP</option>
+                         <option value="MGMT">MGMT</option>
+                     </select>
+                 </div>
 
-                <div class="form-section">
-                    <button type="submit" class="button button-primary">Submit Entry</button>
-                    <button type="button" class="button button-back" onclick="showView('menu-view')">Back to Menu</button>
-                </div>
-            </form>
+                 <div class="form-section">
+                     <label for="experience">Experience / Remarks</label>
+                     <textarea id="experience" name="experience" placeholder="Share your overall experience, notable events, or general remarks..."></textarea>
+                 </div>
+
+                 <div class="form-section">
+                     <label for="dos">Do's</label>
+                     <textarea id="dos" name="dos" placeholder="What behaviours, techniques, or preferences are encouraged?"></textarea>
+                 </div>
+
+                 <div class="form-section">
+                     <label for="donts">Don'ts</label>
+                     <textarea id="donts" name="donts" placeholder="What behaviours, actions, or topics should be avoided?"></textarea>
+                 </div>
+
+                 <div class="form-section">
+                     <h3>Captain Specific Q&A</h3>
+                     <div id="qa-container">
+                         </div>
+                     <button type="button" class="button button-secondary" onclick="addQaPair()">Add Question</button>
+                 </div>
+
+                 <div class="form-section radio-group">
+                      <label>Rate This Interaction:</label>
+                      <label for="good-guy">
+                          <input type="radio" id="good-guy" name="rating" value="good" required> Good Guy
+                      </label>
+                      <label for="bad-guy">
+                          <input type="radio" id="bad-guy" name="rating" value="bad"> Bad Guy
+                      </label>
+                  </div>
+
+
+                 <div class="form-section">
+                     <button type="submit" class="button button-primary">Submit Entry</button>
+                     <button type="button" class="button button-back" onclick="showView('menu-view')">Back to Menu</button>
+                 </div>
+             </form>
         </div>
 
         <div id="good-guys-view" class="view">
@@ -516,7 +511,7 @@
         <div id="bad-guys-view" class="view">
              <h2>Bad Guys List</h2>
              <div id="bad-guys-list-content" class="data-list">
-                  <div class="placeholder-content">Loading data...</div>
+                 <div class="placeholder-content">Loading data...</div>
              </div>
              <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
         </div>
@@ -534,645 +529,183 @@
              <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
         </div>
 
-
         <div id="abba-view" class="view">
             <h2>ABBA Q&A Compilation</h2>
              <div id="abba-list-content" class="data-list">
-                  <div class="placeholder-content">Loading data...</div>
+                 <div class="placeholder-content">Loading data...</div>
              </div>
               <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
         </div>
 
+        <div id="profile-view" class="view">
+             <h2 id="profile-view-captain-name">Captain Profile</h2> <div id="profile-view-content" class="profile-display">
+                  <div class="placeholder-content">Loading profile...</div>
+             </div>
+              <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
+        </div>
+
+
     </div> <script>
         // --- Credentials (REPLACE WITH YOUR ACTUAL VALUES!) ---
-        // !!! IMPORTANT: Replace with your NEW, PRIVATE API key after deleting the old one !!!
         const API_KEY = 'AIzaSyA0JGGJAYg_xY8EpR-cVn4hVFKkZyji5ck';
-        const SPREADSHEET_ID = '1JNwm0Tl2HpaDW6MJdrF_0bcTL7imtwvYldt1UDx1r3Q'; // Replace with your Sheet ID
-        // !!! REPLACE THIS WITH THE WEB APP URL YOU COPIED !!!
-        const WEB_APP_URL = 'YOUR_WEB_APP_URL_HERE';
+        const SPREADSHEET_ID = '1JNwm0Tl2HpaDW6MJdrF_0bcTL7imtwvYldt1UDx1r3Q';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzS42fKFx8_A2XL1Aa1nOAOpeelyz1w02T_nl1zF-cGXR1CwOvJSYaCiy06IKWTzBDPWA/exec';
 
-        // --- Global Cache for Sheet Data ---
-        let allSheetData = null; // To store fetched data
-        let captainProfiles = {}; // To store processed data grouped by captain
-        let isFetching = false; // Prevent multiple simultaneous fetches
+        // --- Global Cache & State ---
+        let allSheetData = null;
+        let captainProfiles = {};
+        let isFetching = false;
+        let lastView = 'menu-view';
 
         // --- Night Mode ---
         const darkModeToggle = document.getElementById('darkModeToggle');
-
-        function setDarkMode(isNight) {
-            if (isNight) {
-                document.body.classList.add('night-mode');
-                localStorage.setItem('darkModePref', 'true');
-                if(darkModeToggle) darkModeToggle.checked = true;
-            } else {
-                document.body.classList.remove('night-mode');
-                localStorage.setItem('darkModePref', 'false');
-                if(darkModeToggle) darkModeToggle.checked = false;
-            }
+        function setDarkMode(isNight) { /* ... function code same as previous ... */
+            if (isNight) { document.body.classList.add('night-mode'); localStorage.setItem('darkModePref', 'true'); if(darkModeToggle) darkModeToggle.checked = true; }
+            else { document.body.classList.remove('night-mode'); localStorage.setItem('darkModePref', 'false'); if(darkModeToggle) darkModeToggle.checked = false; }
         }
-
-        if (darkModeToggle) {
-             darkModeToggle.addEventListener('change', () => {
-                setDarkMode(darkModeToggle.checked);
-            });
-        }
-         // --- End Night Mode ---
+        if (darkModeToggle) { darkModeToggle.addEventListener('change', () => setDarkMode(darkModeToggle.checked)); }
 
         // --- Utility Functions ---
-        function findMode(arr) {
+        function findMode(arr) { /* ... function code same as previous ... */
             if (!arr || arr.length === 0) return 'N/A';
-            return arr.sort((a,b) =>
-                  arr.filter(v => v===a).length
-                - arr.filter(v => v===b).length
-            ).pop();
+            return arr.sort((a,b) => arr.filter(v => v===a).length - arr.filter(v => v===b).length).pop();
         }
+        function escapeHtml(unsafe) { /* ... function code same as previous ... */
+             if (!unsafe) return '';
+             return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+         }
 
         // --- Data Fetching & Processing ---
-
-        // Fetches ALL data from the sheet
-        async function fetchAllData() {
-             if (isFetching) {
-                 console.log("Fetch already in progress...");
-                 return false; // Indicate fetch wasn't started now
-             }
-             if (!API_KEY || API_KEY === 'YOUR_NEW_PRIVATE_API_KEY' || !SPREADSHEET_ID || SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID') {
-                console.warn("API Key or Spreadsheet ID is not set correctly.");
-                alert("Configuration incomplete. Please set your NEW API Key and Spreadsheet ID in the script.");
-                return false;
-             }
-             console.log("Fetching all data from sheet...");
-             isFetching = true;
-
-            // Define the range to fetch all relevant columns (A to I - Timestamp to SubmissionID)
-            // Adjust 'Sheet1' if your sheet name is different
-            // Fetching from row 2 downwards to skip headers
-             const range = 'Sheet1!A2:I';
-             const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?key=${API_KEY}&valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER`;
-
+        async function fetchAllData() { /* ... function code same as previous ... */
+            if (isFetching) { console.log("Fetch already in progress..."); return false; }
+            if (!API_KEY || API_KEY === 'YOUR_NEW_PRIVATE_API_KEY' || !SPREADSHEET_ID || SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID') { console.warn("API Key or Spreadsheet ID is not set correctly."); alert("Configuration incomplete. Please set your NEW API Key and Spreadsheet ID in the script."); return false; }
+            console.log("Fetching all data from sheet...");
+            isFetching = true; document.body.style.cursor = 'wait';
+            const range = 'Sheet1!A2:I'; const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?key=${API_KEY}&valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER`;
             try {
-                const response = await fetch(apiUrl);
-                const responseData = await response.json();
-
-                if (!response.ok) {
-                    console.error('Error response from API:', responseData);
-                    const error = responseData.error || {};
-                    const status = error.status || response.status;
-                    const message = error.message || response.statusText;
-                    alert(`Error fetching data: ${status} - ${message}`);
-                    throw new Error(`HTTP error! status: ${status}`);
-                }
-
-                console.log("All data fetched successfully.");
-                allSheetData = responseData.values || []; // Store fetched data [[row], [row], ...]
-                processAllData(); // Process the data immediately after fetching
-                return true; // Indicate successful fetch
-
+                const response = await fetch(apiUrl); const responseData = await response.json();
+                if (!response.ok) { console.error('Error response from API:', responseData); const error = responseData.error || {}; const status = error.status || response.status; const message = error.message || response.statusText; alert(`Error fetching data: ${status} - ${message}`); throw new Error(`HTTP error! status: ${status}`); }
+                console.log("All data fetched successfully."); allSheetData = responseData.values || []; processAllData(); return true;
             } catch (error) {
-                console.error('Could not fetch all data:', error);
-                alert(`Failed to fetch data from sheet: ${error.message}`);
-                allSheetData = null; // Reset cache on error
-                captainProfiles = {};
-                return false; // Indicate fetch failed
-            } finally {
-                 isFetching = false; // Allow fetching again
-            }
+                console.error('Could not fetch all data:', error); alert(`Failed to fetch data from sheet: ${error.message}. Check console (F12) and API Key/Sheet settings.`); allSheetData = null; captainProfiles = {}; populateSubmitDropdown(); populateSearchDropdown(); displayList('good'); displayList('bad'); displayAbba(); return false;
+            } finally { isFetching = false; document.body.style.cursor = 'default'; }
         }
 
-        // Processes the raw sheet data into a structured format
-        function processAllData() {
-            if (!allSheetData) return;
-            console.log("Processing fetched data...");
-            captainProfiles = {}; // Reset processed data
-
-            // Assuming columns A-I map to:
-            // 0:Timestamp, 1:Name, 2:Appointment, 3:Experience, 4:Dos, 5:Donts, 6:Questions (JSON), 7:Rating, 8:SubmissionID
-            allSheetData.forEach(row => {
-                const name = row[1];
-                if (!name || name.trim() === '') return; // Skip if no captain name
-
-                if (!captainProfiles[name]) {
-                    captainProfiles[name] = {
-                        name: name,
-                        submissions: [],
-                        appointments: [],
-                        ratings: [],
-                        goodCount: 0,
-                        badCount: 0,
-                        aggregate: { // Store calculated aggregate data
-                            appointment: 'N/A',
-                            status: 'Neutral', // Good, Bad, Neutral
-                        }
-                    };
-                }
-
-                const submission = {
-                    timestamp: row[0] ? new Date(Math.round((row[0] - 25569) * 86400 * 1000)) : null, // Convert Sheets date number to JS Date
-                    appointment: row[2] || '',
-                    experience: row[3] || '',
-                    dos: row[4] || '',
-                    donts: row[5] || '',
-                    questions: [],
-                    rating: row[7] || '',
-                    id: row[8] || ''
-                };
-
-                // Safely parse questions JSON
-                try {
-                     if(row[6]) {
-                         submission.questions = JSON.parse(row[6]);
-                         if (!Array.isArray(submission.questions)) submission.questions = [];
-                     }
-                } catch(e) {
-                     console.warn(`Could not parse questions JSON for ${name}, submission ID ${submission.id}: ${row[6]}`);
-                     submission.questions = []; // Default to empty array on parse error
-                }
-
-
-                captainProfiles[name].submissions.push(submission);
-                if (submission.appointment) captainProfiles[name].appointments.push(submission.appointment);
-                if (submission.rating === 'good') captainProfiles[name].goodCount++;
-                if (submission.rating === 'bad') captainProfiles[name].badCount++;
-                if (submission.rating) captainProfiles[name].ratings.push(submission.rating);
-            });
-
-            // Calculate aggregate status and appointment for each captain
-            Object.values(captainProfiles).forEach(profile => {
-                if (profile.goodCount > profile.badCount) {
-                    profile.aggregate.status = 'Good';
-                } else if (profile.badCount > profile.goodCount) {
-                    profile.aggregate.status = 'Bad';
-                } else {
-                    profile.aggregate.status = 'Neutral'; // Or 'Even'
-                }
-                profile.aggregate.appointment = findMode(profile.appointments) || 'N/A';
-            });
-
-            console.log("Data processed:", captainProfiles);
-             // Update dropdowns that depend on captain names
-             populateSubmitDropdown();
-             populateSearchDropdown();
+        function processAllData() { /* ... function code same as previous ... */
+             if (!allSheetData) return; console.log("Processing fetched data..."); captainProfiles = {};
+             allSheetData.forEach(row => {
+                 const name = row[1]; if (!name || name.trim() === '') return;
+                 if (!captainProfiles[name]) { captainProfiles[name] = { name: name, submissions: [], appointments: [], ratings: [], goodCount: 0, badCount: 0, aggregate: { appointment: 'N/A', status: 'Neutral' } }; }
+                 const submission = { timestamp: row[0] ? new Date(Math.round((row[0] - 25569) * 86400 * 1000)) : null, appointment: row[2] || '', experience: row[3] || '', dos: row[4] || '', donts: row[5] || '', questions: [], rating: row[7] || '', id: row[8] || '' };
+                 try { if(row[6]) { submission.questions = JSON.parse(row[6]); if (!Array.isArray(submission.questions)) submission.questions = []; } } catch(e) { console.warn(`Could not parse questions JSON for ${name}, submission ID ${submission.id}: ${row[6]}`); submission.questions = []; }
+                 captainProfiles[name].submissions.push(submission); if (submission.appointment) captainProfiles[name].appointments.push(submission.appointment); if (submission.rating === 'good') captainProfiles[name].goodCount++; if (submission.rating === 'bad') captainProfiles[name].badCount++; if (submission.rating) captainProfiles[name].ratings.push(submission.rating);
+             });
+             Object.values(captainProfiles).forEach(profile => { if (profile.goodCount > profile.badCount) { profile.aggregate.status = 'Good'; } else if (profile.badCount > profile.goodCount) { profile.aggregate.status = 'Bad'; } else { profile.aggregate.status = 'Neutral'; } profile.aggregate.appointment = findMode(profile.appointments) || 'N/A'; });
+             console.log("Data processed:", captainProfiles); populateSubmitDropdown(); populateSearchDropdown();
         }
 
-        // Populates the dropdown in the Submit form
-        function populateSubmitDropdown() {
-             const selectElement = document.getElementById('captain-name-select');
-             if (!selectElement) return;
-
-             // Get current selection to potentially restore it
-             const currentSelection = selectElement.value;
-
-             // Clear existing options (except the placeholder and "Add New")
-             while (selectElement.options.length > 2) {
-                 selectElement.remove(1); // Remove the second option repeatedly
-             }
-
-             const names = Object.keys(captainProfiles).sort();
-             const addNewOption = selectElement.options[selectElement.options.length - 1];
-             names.forEach(name => {
-                 const option = document.createElement('option');
-                 option.value = name;
-                 option.textContent = name;
-                 selectElement.insertBefore(option, addNewOption);
-             });
-              // Try to restore selection
-              if (names.includes(currentSelection)) {
-                  selectElement.value = currentSelection;
-              } else {
-                   selectElement.value = ""; // Reset to placeholder if previous selection gone
-              }
+        function populateSubmitDropdown() { /* ... function code same as previous ... */
+            const selectElement = document.getElementById('captain-name-select'); if (!selectElement) return; const currentSelection = selectElement.value; while (selectElement.options.length > 2) { selectElement.remove(1); } const names = Object.keys(captainProfiles).sort(); const addNewOption = selectElement.options[selectElement.options.length - 1]; names.forEach(name => { const option = document.createElement('option'); option.value = name; option.textContent = name; selectElement.insertBefore(option, addNewOption); }); if (names.includes(currentSelection)) { selectElement.value = currentSelection; }
+        }
+         function populateSearchDropdown() { /* ... function code same as previous ... */
+            const selectElement = document.getElementById('search-captain-select'); if (!selectElement) return; const currentSelection = selectElement.value; while (selectElement.options.length > 1) { selectElement.remove(1); } const names = Object.keys(captainProfiles).sort(); names.forEach(name => { const option = document.createElement('option'); option.value = name; option.textContent = name; selectElement.appendChild(option); }); if (names.includes(currentSelection)) { selectElement.value = currentSelection; } else { selectElement.value = ""; }
          }
 
-         // Populates the dropdown in the Search view
-         function populateSearchDropdown() {
-              const selectElement = document.getElementById('search-captain-select');
-              if (!selectElement) return;
-
-              // Clear existing options (except the placeholder)
-              while (selectElement.options.length > 1) {
-                  selectElement.remove(1);
-              }
-
-              const names = Object.keys(captainProfiles).sort();
-              names.forEach(name => {
-                  const option = document.createElement('option');
-                  option.value = name;
-                  option.textContent = name;
-                  selectElement.appendChild(option);
-              });
-          }
-
-         // --- Display Logic for Views ---
-
-         function displayList(type) { // type is 'good' or 'bad'
-            const targetDivId = type === 'good' ? 'good-guys-list-content' : 'bad-guys-list-content';
-            const listDiv = document.getElementById(targetDivId);
-            if (!listDiv) return;
-
-            if (!allSheetData) { // Data not loaded yet
-                listDiv.innerHTML = '<div class="placeholder-content">Data not loaded. Try Refreshing.</div>';
-                return;
-            }
-             if (Object.keys(captainProfiles).length === 0) {
-                 listDiv.innerHTML = '<div class="placeholder-content">No captain data processed.</div>';
-                 return;
-             }
-
-            const statusFilter = type === 'good' ? 'Good' : 'Bad';
-            const filteredCaptains = Object.values(captainProfiles).filter(p => p.aggregate.status === statusFilter);
-
-            if (filteredCaptains.length === 0) {
-                listDiv.innerHTML = `<div class="placeholder-content">No captains currently classified as '${statusFilter}'.</div>`;
-                return;
-            }
-
-            let html = '<ul>';
-            filteredCaptains.sort((a, b) => a.name.localeCompare(b.name)).forEach(profile => {
-                html += `<li>
-                            <span class="captain-name">${profile.name}</span>
-                            <span class="captain-details">(Appointment: ${profile.aggregate.appointment})</span>
-                         </li>`;
-            });
-            html += '</ul>';
-            listDiv.innerHTML = html;
+        // --- Display Logic for Views ---
+        function displayList(type) { /* ... function code updated to include clickable span ... */
+            const targetDivId = type === 'good' ? 'good-guys-list-content' : 'bad-guys-list-content'; const listDiv = document.getElementById(targetDivId); if (!listDiv) return;
+            if (!allSheetData) { listDiv.innerHTML = '<div class="placeholder-content">Data not loaded. Try Refreshing.</div>'; return; } if (Object.keys(captainProfiles).length === 0) { listDiv.innerHTML = '<div class="placeholder-content">No captain data processed.</div>'; return; }
+            const statusFilter = type === 'good' ? 'Good' : 'Bad'; const filteredCaptains = Object.values(captainProfiles).filter(p => p.aggregate.status === statusFilter);
+            if (filteredCaptains.length === 0) { listDiv.innerHTML = `<div class="placeholder-content">No captains currently classified as '${statusFilter}'.</div>`; return; }
+            let html = '<ul>'; filteredCaptains.sort((a, b) => a.name.localeCompare(b.name)).forEach(profile => { html += `<li><span class="captain-name" onclick="showProfileView('${escapeHtml(profile.name)}')">${escapeHtml(profile.name)}</span> <span class="captain-details">(Appt: ${escapeHtml(profile.aggregate.appointment)})</span></li>`; }); html += '</ul>'; listDiv.innerHTML = html;
          }
 
-         function displayAbba() {
-             const listDiv = document.getElementById('abba-list-content');
-             if (!listDiv) return;
+        function displayAbba() { /* ... function code same as previous ... */
+             const listDiv = document.getElementById('abba-list-content'); if (!listDiv) return; if (!allSheetData) { listDiv.innerHTML = '<div class="placeholder-content">Data not loaded. Try Refreshing.</div>'; return; } let allQuestions = [];
+             Object.values(captainProfiles).forEach(profile => { profile.submissions.forEach(sub => { if (sub.questions && Array.isArray(sub.questions)) { sub.questions.forEach(qa => { if (qa.q && qa.q.trim() !== '') { allQuestions.push({ captain: profile.name, q: qa.q.trim(), a: (qa.a || '').trim() }); } }); } }); });
+             if (allQuestions.length === 0) { listDiv.innerHTML = '<div class="placeholder-content">No questions submitted yet.</div>'; return; } let html = '<ul>'; allQuestions.sort((a,b) => a.q.localeCompare(b.q) || a.captain.localeCompare(b.captain)).forEach(item => { html += `<li><strong>Q: ${escapeHtml(item.q)}</strong> (For ${escapeHtml(item.captain)}) <br> A: ${item.a ? escapeHtml(item.a) : '<i>No answer provided</i>'}</li>`; }); html += '</ul>'; listDiv.innerHTML = html;
+        }
 
-             if (!allSheetData) {
-                 listDiv.innerHTML = '<div class="placeholder-content">Data not loaded. Try Refreshing.</div>';
-                 return;
-             }
-
-             let allQuestions = [];
-             Object.values(captainProfiles).forEach(profile => {
-                 profile.submissions.forEach(sub => {
-                      if (sub.questions && Array.isArray(sub.questions)) {
-                          sub.questions.forEach(qa => {
-                               if (qa.q && qa.q.trim() !== '') { // Only include if question exists
-                                   allQuestions.push({ captain: profile.name, q: qa.q.trim(), a: (qa.a || '').trim() });
-                               }
-                          });
-                      }
-                 });
-             });
-
-             if (allQuestions.length === 0) {
-                  listDiv.innerHTML = '<div class="placeholder-content">No questions submitted yet.</div>';
-                  return;
-             }
-
-             // Simple display, could group by question later if needed
-             let html = '<ul>';
-             allQuestions.sort((a,b) => a.q.localeCompare(b.q) || a.captain.localeCompare(b.captain)).forEach(item => {
-                  html += `<li>
-                              <strong>Q: ${item.q}</strong> (For ${item.captain}) <br>
-                              A: ${item.a || '<i>No answer provided</i>'}
-                           </li>`;
-             });
-             html += '</ul>';
-             listDiv.innerHTML = html;
-
-         }
-
-          function displayCaptainProfile(captainName) {
-              const profileDiv = document.getElementById('search-profile-content');
-              const profile = captainProfiles[captainName];
-
-              if (!profileDiv || !profile) {
-                  if(profileDiv) profileDiv.innerHTML = '<div class="placeholder-content">Select a captain from the dropdown.</div>';
-                  return;
-              }
-
-              profileDiv.style.display = 'block'; // Show the profile area
-
-              let html = `<h3>Profile: ${profile.name}</h3>`;
-              html += `<p><strong>Calculated Status:</strong> ${profile.aggregate.status} (Good: ${profile.goodCount}, Bad: ${profile.badCount})</p>`;
-              html += `<p><strong>Most Common Appointment:</strong> ${profile.aggregate.appointment}</p>`;
-              html += `<hr>`;
-
+         // Modified to accept targetDivId
+         function displayCaptainProfile(captainName, targetDivId = 'search-profile-content') { /* ... function code same as previous, but uses targetDivId ... */
+              const profileDiv = document.getElementById(targetDivId); const profile = captainProfiles[captainName];
+              if (!profileDiv || !profile) { console.error(`Profile or target div not found for ${captainName} in #${targetDivId}`); if(profileDiv) profileDiv.innerHTML = `<div class="placeholder-content">Could not load profile for ${escapeHtml(captainName)}.</div>`; return; }
+              if (targetDivId === 'profile-view-content') { const profileTitle = document.getElementById('profile-view-captain-name'); if (profileTitle) profileTitle.textContent = `Profile: ${profile.name}`; }
+              profileDiv.style.display = 'block';
+              let html = `<p><strong>Calculated Status:</strong> ${profile.aggregate.status} (Good: ${profile.goodCount}, Bad: ${profile.badCount})</p><p><strong>Most Common Appointment:</strong> ${profile.aggregate.appointment}</p><hr>`;
               if (profile.submissions.length > 0) {
-                   html += `<h4>Individual Submissions (${profile.submissions.length}):</h4>`;
-                   // Sort submissions by timestamp, newest first
-                   profile.submissions.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
+                   html += `<h4>Individual Submissions (${profile.submissions.length}):</h4>`; profile.submissions.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
                    profile.submissions.forEach((sub, index) => {
-                        html += `<div class="profile-section">`;
-                        html += `<h5>Submission ${profile.submissions.length - index} (${sub.timestamp ? sub.timestamp.toLocaleDateString() : 'N/A'}) - Rating: ${sub.rating || 'N/A'}, Appt: ${sub.appointment || 'N/A'}</h5>`;
-
-                        if(sub.experience) html += `<h4>Experience/Remarks:</h4><pre>${escapeHtml(sub.experience)}</pre>`;
-                        if(sub.dos) html += `<h4>Do's:</h4><pre>${escapeHtml(sub.dos)}</pre>`;
-                        if(sub.donts) html += `<h4>Don'ts:</h4><pre>${escapeHtml(sub.donts)}</pre>`;
-
-                        if (sub.questions && sub.questions.length > 0) {
-                             html += `<h4>Q&A:</h4>`;
-                             sub.questions.forEach(qa => {
-                                  if (qa.q) { // Only display if question exists
-                                      html += `<div class="qa-item"><strong>Q: ${escapeHtml(qa.q)}</strong> A: ${escapeHtml(qa.a || 'N/A')}</div>`;
-                                  }
-                             });
-                        }
-                        html += `</div>`; // close profile-section
-                   });
-              } else {
-                   html += `<p>No detailed submissions found.</p>`;
-              }
-
-              profileDiv.innerHTML = html;
+                        html += `<div class="profile-section">`; let subDate = 'N/A'; try { if (sub.timestamp instanceof Date && !isNaN(sub.timestamp)) { subDate = sub.timestamp.toLocaleDateString(); } else if (typeof sub.timestamp === 'number') { subDate = new Date(Math.round((sub.timestamp - 25569) * 86400 * 1000)).toLocaleDateString(); } } catch(e) {}
+                        html += `<h5>Submission ${profile.submissions.length - index} (${subDate}) - Rating: ${sub.rating || 'N/A'}, Appt: ${sub.appointment || 'N/A'}</h5>`;
+                        if(sub.experience) html += `<h4>Experience/Remarks:</h4><pre>${escapeHtml(sub.experience)}</pre>`; if(sub.dos) html += `<h4>Do's:</h4><pre>${escapeHtml(sub.dos)}</pre>`; if(sub.donts) html += `<h4>Don'ts:</h4><pre>${escapeHtml(sub.donts)}</pre>`;
+                        if (sub.questions && sub.questions.length > 0) { html += `<h4>Q&A:</h4>`; sub.questions.forEach(qa => { if (qa.q) { html += `<div class="qa-item"><strong>Q: ${escapeHtml(qa.q)}</strong> A: ${escapeHtml(qa.a || 'N/A')}</div>`; } }); } html += `</div>`; });
+               } else { html += `<p>No detailed submissions found.</p>`; } profileDiv.innerHTML = html;
           }
 
-         // Helper to escape HTML special characters for display in <pre> or similar
-         function escapeHtml(unsafe) {
-             if (!unsafe) return '';
-             return unsafe
-                  .replace(/&/g, "&amp;")
-                  .replace(/</g, "&lt;")
-                  .replace(/>/g, "&gt;")
-                  .replace(/"/g, "&quot;")
-                  .replace(/'/g, "&#039;");
-         }
-
-
-         // --- View Switching ---
-        async function showView(viewId) { // Make async
-            console.log('showView called with ID:', viewId);
-
-             // Fetch or use cached data if needed for the view
-             if (['good-guys-view', 'bad-guys-view', 'search-view', 'abba-view'].includes(viewId)) {
-                 if (!allSheetData && !isFetching) {
-                     // If data isn't loaded and not currently fetching, start fetch
-                     const fetchSuccess = await fetchAllData();
-                     if (!fetchSuccess) {
-                         // Optionally show an error in the target view if fetch failed
-                          const targetDiv = document.getElementById(viewId)?.querySelector('.data-list, .profile-display, #search-dropdown-container');
-                          if (targetDiv) targetDiv.innerHTML = '<div class="placeholder-content" style="color: red;">Failed to load data. Please try Refreshing.</div>';
-                          // Maybe prevent switching view on fetch failure? Or allow but show error.
-                     }
-                 } else if (isFetching) {
-                      // Optionally show a generic loading message if fetch is in progress
-                      const targetDiv = document.getElementById(viewId)?.querySelector('.data-list, .profile-display, #search-dropdown-container');
-                      if (targetDiv) targetDiv.innerHTML = '<div class="placeholder-content">Loading data...</div>';
-                 }
-                 // If data is loaded (allSheetData exists), proceed to display logic
-             }
-
-             // Populate content based on viewId AFTER potentially fetching/processing data
-              if (viewId === 'good-guys-view') {
-                   displayList('good');
-              } else if (viewId === 'bad-guys-view') {
-                   displayList('bad');
-              } else if (viewId === 'abba-view') {
-                   displayAbba();
-              } else if (viewId === 'search-view') {
-                   // Dropdown is populated when data is processed
-                   // Clear previous profile display
-                    const profileDiv = document.getElementById('search-profile-content');
-                    if(profileDiv) {
-                         profileDiv.style.display = 'none';
-                         profileDiv.innerHTML = '';
-                    }
-                    const searchSelect = document.getElementById('search-captain-select');
-                    if (searchSelect) searchSelect.value = ""; // Reset dropdown selection
-              } else if (viewId === 'submit-view') {
-                   // Ensure submit dropdown is up-to-date (uses processed data)
-                   populateSubmitDropdown();
-              }
-
-
-            // Hide all views
-            document.querySelectorAll('.view').forEach(view => {
-                view.classList.remove('active');
-            });
-            // Show the selected view
-            const activeView = document.getElementById(viewId);
-            if (activeView) {
-                activeView.classList.add('active');
-            }
-
-            // Form reset logic (keep as is or refine)
-             if (viewId !== 'submit-view') {
-                 const qaContainer = document.getElementById('qa-container');
-                 if(qaContainer) qaContainer.innerHTML = '';
-                 qaCounter = 0;
-
-                 const addCaptainField = document.getElementById('add-captain-field');
-                 if(addCaptainField) addCaptainField.style.display = 'none';
-
-                 // Don't reset submit dropdown value here, only on explicit back/submit action
-                 // const captainSelect = document.getElementById('captain-name-select');
-                 // if(captainSelect) captainSelect.value = '';
-
-                 const entryForm = document.getElementById('entry-form');
-                 if(entryForm) entryForm.reset();
-             }
+        // --- View Switching & Control ---
+        async function showView(viewId) { /* ... function code same as previous ... */
+             const currentActive = document.querySelector('.view.active'); if(currentActive) previousView = currentActive.id;
+             console.log(`Switching view to: ${viewId}, Previous: ${previousView}`);
+             const dataViews = ['good-guys-view', 'bad-guys-view', 'search-view', 'abba-view', 'profile-view']; const requiresLoad = dataViews.includes(viewId) && viewId !== 'profile-view'; // Profile view loaded on demand
+             let targetContentArea = document.getElementById(viewId)?.querySelector('.data-list, .profile-display, #profile-view-content, #search-dropdown-container');
+             if (requiresLoad || (viewId === 'search-view')) { if (targetContentArea && viewId !== 'search-view') { targetContentArea.innerHTML = '<div class="placeholder-content">Loading data...</div>'; } else if (viewId === 'search-view') { const profileDiv = document.getElementById('search-profile-content'); if (profileDiv) { profileDiv.style.display = 'none'; profileDiv.innerHTML = ''; } const searchSelect = document.getElementById('search-captain-select'); if (searchSelect) searchSelect.value = ""; } }
+             if (requiresLoad) { if (!allSheetData && !isFetching) { const fetchSuccess = await fetchAllData(); if (!fetchSuccess && targetContentArea) { targetContentArea.innerHTML = '<div class="placeholder-content" style="color: red;">Failed to load data.</div>'; } } else if (isFetching && targetContentArea) { /* Already showing loading */ } }
+             document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+             if (allSheetData || !dataViews.includes(viewId) || viewId === 'search-view') { if (viewId === 'good-guys-view') { displayList('good'); } else if (viewId === 'bad-guys-view') { displayList('bad'); } else if (viewId === 'abba-view') { displayAbba(); } else if (viewId === 'search-view') { /* Dropdown updated by processAllData */ } else if (viewId === 'submit-view') { populateSubmitDropdown(); } }
+             const activeView = document.getElementById(viewId); if (activeView) { activeView.classList.add('active'); } else { console.error(`View with ID ${viewId} not found!`); }
+             if (previousView === 'submit-view' && viewId !== 'submit-view') { const qaContainer = document.getElementById('qa-container'); if(qaContainer) qaContainer.innerHTML = ''; qaCounter = 0; const addCaptainField = document.getElementById('add-captain-field'); if(addCaptainField) addCaptainField.style.display = 'none'; const entryForm = document.getElementById('entry-form'); if(entryForm) entryForm.reset(); }
         }
 
-         // --- Handle Captain Selection (Submit Form) ---
-        const captainSelect = document.getElementById('captain-name-select');
-        const newCaptainField = document.getElementById('add-captain-field');
-        const newCaptainInput = document.getElementById('captain-name-new');
+         function showProfileView(captainName) { /* ... function code same as previous ... */
+             if (!captainName) return; console.log(`Showing profile for: ${captainName}`); if (!captainProfiles[captainName]) { alert("Captain data not found. Please refresh data."); return; } displayCaptainProfile(captainName, 'profile-view-content'); showView('profile-view');
+         }
 
-        if (captainSelect) {
-            captainSelect.addEventListener('change', function() {
-                if (this.value === '__add_new__') {
-                    if(newCaptainField) newCaptainField.style.display = 'block';
-                    if(newCaptainInput) { newCaptainInput.required = true; newCaptainInput.focus(); }
-                } else {
-                    if(newCaptainField) newCaptainField.style.display = 'none';
-                    if(newCaptainInput) { newCaptainInput.required = false; newCaptainInput.value = ''; }
-                }
-            });
-        } else { console.error("Captain select dropdown not found!"); }
-
-         // --- Handle Captain Selection (Search View) ---
+         // --- Handle Search Captain Selection ---
          const searchCaptainSelect = document.getElementById('search-captain-select');
-         if (searchCaptainSelect) {
-              searchCaptainSelect.addEventListener('change', function() {
-                   if (this.value) {
-                        displayCaptainProfile(this.value);
-                   } else {
-                        // Clear profile if placeholder selected
-                         const profileDiv = document.getElementById('search-profile-content');
-                         if(profileDiv) {
-                              profileDiv.style.display = 'none';
-                              profileDiv.innerHTML = '';
-                         }
-                   }
-              });
+         if (searchCaptainSelect) { /* ... event listener code same as previous ... */
+              searchCaptainSelect.addEventListener('change', function() { if (this.value) { displayCaptainProfile(this.value, 'search-profile-content'); } else { const profileDiv = document.getElementById('search-profile-content'); if(profileDiv) { profileDiv.style.display = 'none'; profileDiv.innerHTML = ''; } } });
          } else { console.error("Search captain select dropdown not found!"); }
 
 
         // --- Dynamic Q&A Pairs ---
         let qaCounter = 0;
-        function addQaPair() {
-            qaCounter++;
-            const qaContainer = document.getElementById('qa-container');
-            if (!qaContainer) { console.error("Q&A container not found!"); return; }
-
-            const newPair = document.createElement('div');
-            newPair.classList.add('qa-pair');
-            newPair.id = `qa-pair-${qaCounter}`; // Add ID for deletion
-            newPair.innerHTML = `
-                <button type="button" class="button button-delete" onclick="deleteQaPair(${qaCounter})">X</button>
-                <label for="question-${qaCounter}">Q${qaCounter}:</label>
-                <input type="text" id="question-${qaCounter}" name="question_${qaCounter}" placeholder="Enter question...">
-                <label for="answer-${qaCounter}">A${qaCounter}:</label>
-                <input type="text" id="answer-${qaCounter}" name="answer_${qaCounter}" placeholder="Enter answer...">
-            `;
-            qaContainer.appendChild(newPair);
-        }
-
-         function deleteQaPair(pairId) {
-             const pairElement = document.getElementById(`qa-pair-${pairId}`);
-             if (pairElement) {
-                 pairElement.remove();
-                 // Note: This doesn't reset the qaCounter, so IDs remain unique
-                 // Form submission logic needs to handle potentially missing IDs if pairs are deleted.
-                 // The current submission logic iterates from 1 to qaCounter, so it might try to get
-                 // data from deleted pairs. Let's adjust submission logic.
-             }
+         function addQaPair() { /* ... function code same as previous ... */
+             qaCounter++; const qaContainer = document.getElementById('qa-container'); if (!qaContainer) { console.error("Q&A container not found!"); return; } const newPair = document.createElement('div'); newPair.classList.add('qa-pair'); newPair.id = `qa-pair-${qaCounter}`; newPair.innerHTML = ` <button type="button" class="button button-delete" onclick="deleteQaPair(${qaCounter})">X</button> <label for="question-${qaCounter}">Q${qaCounter}:</label> <input type="text" id="question-${qaCounter}" name="question_${qaCounter}" placeholder="Enter question..."> <label for="answer-${qaCounter}">A${qaCounter}:</label> <input type="text" id="answer-${qaCounter}" name="answer_${qaCounter}" placeholder="Enter answer...">`; qaContainer.appendChild(newPair);
          }
+         function deleteQaPair(pairId) { /* ... function code same as previous ... */
+              const pairElement = document.getElementById(`qa-pair-${pairId}`); if (pairElement) { pairElement.remove(); }
+          }
 
 
         // --- Form Submission ---
         const entryForm = document.getElementById('entry-form');
-        if (entryForm) {
-             // !!! REPLACE THIS WITH THE WEB APP URL YOU COPIED !!!
+        if (entryForm) { /* ... Form submission code same as previous ... */
              const WEB_APP_URL = 'YOUR_WEB_APP_URL_HERE';
-
             entryForm.addEventListener('submit', async function(event) {
-                event.preventDefault();
-
-                const submitButton = entryForm.querySelector('button[type="submit"]');
-                const originalButtonText = submitButton.textContent;
-                submitButton.disabled = true;
-                submitButton.textContent = 'Submitting...';
-
-                // Gather form data
-                const formData = new FormData(entryForm);
-                const data = {
-                    // Initialize fields to prevent 'undefined' issues if optional fields are empty
-                    timestamp: new Date().toISOString(), // Add timestamp from client side
-                    captainName: '',
-                    appointment: formData.get('appointment') || '',
-                    experience: formData.get('experience') || '',
-                    dos: formData.get('dos') || '',
-                    donts: formData.get('donts') || '',
-                    rating: formData.get('rating') || '',
-                    questions: '' // Will be JSON string
-                };
-                const questions = [];
-
-                 // Determine Captain Name
-                 const selectedName = formData.get('captainNameSelect');
-                 const newName = formData.get('captainNameNew')?.trim();
-                 if (selectedName === '__add_new__') {
-                     if (!newName) {
-                          alert("Please enter the new Captain's Name.");
-                          submitButton.disabled = false; submitButton.textContent = originalButtonText; return;
-                     }
-                      data.captainName = newName;
-                 } else if (selectedName) {
-                      data.captainName = selectedName;
-                 } else {
-                      alert("Please select or add a Captain Name.");
-                      submitButton.disabled = false; submitButton.textContent = originalButtonText; return;
-                 }
-
-
-                // Consolidate ACTIVE Q&A pairs (check if div exists)
-                const qaPairs = document.querySelectorAll('#qa-container .qa-pair');
-                qaPairs.forEach(pairDiv => {
-                    const qInput = pairDiv.querySelector('input[name^="question_"]');
-                    const aInput = pairDiv.querySelector('input[name^="answer_"]');
-                    if (qInput && aInput) { // Ensure inputs are found
-                         const q = qInput.value.trim();
-                         const a = aInput.value.trim();
-                         if (q || a) { // Only add if at least one field has content
-                            questions.push({ q: q || '', a: a || '' });
-                         }
-                    }
-                });
-                data.questions = JSON.stringify(questions);
-
-                console.log("Collected Form Data for POST:", data);
-
-                // --- Send Data to Google Apps Script Web App ---
-                try {
-                    if (!WEB_APP_URL || WEB_APP_URL === 'YOUR_WEB_APP_URL_HERE') {
-                         throw new Error("Web App URL is not set in the script.");
-                     }
-
-                    const urlEncodedData = new URLSearchParams(data);
-
-                    const response = await fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', },
-                        body: urlEncodedData
-                    });
-
-                     const result = await response.json();
-                     console.log("Response from Web App:", result);
-
-                     if (result.status === 'success') {
-                        alert("Entry submitted successfully!");
-                        // --- Trigger data refresh after successful submission ---
-                        allSheetData = null; // Invalidate cache
-                        captainProfiles = {};
-                        await fetchAllData(); // Refetch and reprocess
-                        // ---------------------------------------------------------
-                        entryForm.reset();
-                        const qaContainer = document.getElementById('qa-container');
-                        if(qaContainer) qaContainer.innerHTML = '';
-                        qaCounter = 0;
-                        if(newCaptainField) newCaptainField.style.display = 'none';
-                        showView('menu-view');
-                     } else {
-                         throw new Error(result.message || "Unknown error from Apps Script.");
-                     }
-
-                } catch (error) {
-                    console.error("Error submitting data:", error);
-                    alert(`Submission failed: ${error.message}`);
-                } finally {
-                     submitButton.disabled = false;
-                     submitButton.textContent = originalButtonText;
-                }
+                 event.preventDefault(); const submitButton = entryForm.querySelector('button[type="submit"]'); const originalButtonText = submitButton.textContent; submitButton.disabled = true; submitButton.textContent = 'Submitting...';
+                 const formData = new FormData(entryForm); const data = { timestamp: new Date().toISOString(), captainName: '', appointment: formData.get('appointment') || '', experience: formData.get('experience') || '', dos: formData.get('dos') || '', donts: formData.get('donts') || '', rating: formData.get('rating') || '', questions: '' }; const questions = [];
+                 const selectedName = formData.get('captainNameSelect'); const newName = formData.get('captainNameNew')?.trim(); if (selectedName === '__add_new__') { if (!newName) { alert("Please enter the new Captain's Name."); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; } data.captainName = newName; } else if (selectedName) { data.captainName = selectedName; } else { alert("Please select or add a Captain Name."); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; }
+                 if (!data.appointment) { alert("Please select an Appointment."); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; } if (!data.rating) { alert("Please select a Rating (Good Guy / Bad Guy)."); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; }
+                 const qaPairs = document.querySelectorAll('#qa-container .qa-pair'); qaPairs.forEach(pairDiv => { const qInput = pairDiv.querySelector('input[name^="question_"]'); const aInput = pairDiv.querySelector('input[name^="answer_"]'); if (qInput && aInput) { const q = qInput.value.trim(); const a = aInput.value.trim(); if (q || a) { questions.push({ q: q || '', a: a || '' }); } } }); data.questions = JSON.stringify(questions); console.log("Collected Form Data for POST:", data);
+                 try {
+                     if (!WEB_APP_URL || WEB_APP_URL === 'YOUR_WEB_APP_URL_HERE') { throw new Error("Web App URL is not set in the script."); } const urlEncodedData = new URLSearchParams(data); const response = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', }, body: urlEncodedData }); const result = await response.json(); console.log("Response from Web App:", result);
+                     if (result.status === 'success') { alert("Entry submitted successfully!"); allSheetData = null; captainProfiles = {}; await fetchAllData(); entryForm.reset(); const qaContainer = document.getElementById('qa-container'); if(qaContainer) qaContainer.innerHTML = ''; qaCounter = 0; if(newCaptainField) newCaptainField.style.display = 'none'; showView('menu-view'); }
+                     else { throw new Error(result.message || "Unknown error from Apps Script."); }
+                 } catch (error) { console.error("Error submitting data:", error); alert(`Submission failed: ${error.message}`); }
+                 finally { submitButton.disabled = false; submitButton.textContent = originalButtonText; }
             });
-        } else { console.error("Entry form not found!"); }
+         } else { console.error("Entry form not found!"); }
 
          // --- Refresh Data Manually ---
-         async function refreshData() {
-             console.log("Manual refresh requested.");
-             allSheetData = null; // Invalidate cache
-             captainProfiles = {};
-             alert("Refreshing data from Google Sheet...");
-             const fetchSuccess = await fetchAllData();
-             if(fetchSuccess) {
-                 alert("Data refreshed successfully!");
-                 // Re-render current view if it depends on data
-                 const currentView = document.querySelector('.view.active');
-                 if (currentView) {
-                      showView(currentView.id); // Re-call showView to re-render content
-                 }
-             } else {
-                  alert("Failed to refresh data.");
-             }
-         }
+         // Function Removed as requested
 
         // --- Initial Setup ---
         document.addEventListener('DOMContentLoaded', async () => {
              console.log("DOM fully loaded and parsed");
-
-             // Set initial dark mode state based on localStorage
-              const savedDarkMode = localStorage.getItem('darkModePref');
-              setDarkMode(savedDarkMode === 'true');
-
-             // Fetch initial data
+             const savedDarkMode = localStorage.getItem('darkModePref');
+             setDarkMode(savedDarkMode === 'true');
              await fetchAllData(); // Fetch and process data on load
-
-             // Initial view
              showView('menu-view');
         });
 
