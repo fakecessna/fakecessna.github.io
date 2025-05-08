@@ -84,7 +84,8 @@
         body.night-mode .dynamic-briefing-section h4 { color: var(--heading-color-night); }
         .dynamic-briefing-section .button-delete { position: absolute; top: 10px; right: 10px; z-index: 1; }
 
-        .editor-toolbar { margin-bottom: 5px; }
+        .editor-toolbar { margin-bottom: 5px; display: none; } /* Hide toolbar by default */
+        .editor-toolbar.visible { display: block; } /* Show when editing */
         .editor-toolbar button { background-color: #e0e0e0; color: #333; border: 1px solid #ccc; padding: 5px 8px; font-size: 12px; margin-right: 3px; cursor:pointer; }
         body.night-mode .editor-toolbar button { background-color: #555; color: #f0f0f0; border-color: #666; }
         .editor-toolbar button:hover { background-color: #d0d0d0;}
@@ -98,6 +99,7 @@
              outline: 2px dashed var(--input-focus-border-day);
              box-shadow: 0 0 5px var(--input-focus-shadow-day);
              background-color: #fff; /* Ensure editable area is clear in day mode */
+             min-height: 50px; /* Ensure editable area has some height */
         }
         body.night-mode .brief-content[contenteditable="true"] {
              outline-color: var(--input-focus-border-night);
@@ -113,11 +115,11 @@
         input:focus + .slider { box-shadow: 0 0 1px var(--accent-color); }
         input:checked + .slider:before { transform: translateX(26px); }
 
-        .data-list, .search-results-display-area, #station-briefs-full-list-container, #view-brief-details-container, #print-area { padding: 15px; background-color: var(--placeholder-bg-day); border: 1px solid var(--placeholder-border-day); border-radius: 5px; color: var(--text-color-day); margin-top: 15px; transition: background-color 0.3s, color 0.3s, border-color 0.3s; } /* Use text color */
+        .data-list, .search-results-display-area, #station-briefs-full-list-container, #view-brief-details-container, #print-area { padding: 15px; background-color: var(--placeholder-bg-day); border: 1px solid var(--placeholder-border-day); border-radius: 5px; color: var(--text-color-day); margin-top: 15px; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
         body.night-mode .data-list, body.night-mode .search-results-display-area, body.night-mode #station-briefs-full-list-container, body.night-mode #view-brief-details-container, body.night-mode #print-area { background-color: var(--placeholder-bg-night); border-color: var(--placeholder-border-night); color: var(--text-color-night); }
         #station-briefs-full-list-container ul { list-style: none; padding:0; }
         #station-briefs-full-list-container li { padding: 8px 10px; border-bottom: 1px solid var(--border-color-day); cursor: pointer; transition: background-color 0.2s; }
-        #station-briefs-full-list-container li:hover { background-color: #e9ecef; } /* Use placeholder bg for hover */
+        #station-briefs-full-list-container li:hover { background-color: #e9ecef; }
         body.night-mode #station-briefs-full-list-container li { border-bottom-color: var(--border-color-night); }
         body.night-mode #station-briefs-full-list-container li:hover { background-color: #333; }
         #station-briefs-full-list-container li:last-child { border-bottom: none; }
@@ -145,21 +147,22 @@
 
         .brief-detail-section { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted var(--border-color-day); }
         body.night-mode .brief-detail-section { border-bottom-color: var(--border-color-night); }
-        .brief-detail-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0;}
-        .section-header { display: flex; justify-content: space-between; align-items: center; } /* Container for title and buttons */
+        .brief-detail-section:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0;}
+        .section-header { display: flex; justify-content: space-between; align-items: center; gap: 10px;} /* Use gap for spacing */
         .brief-detail-section h5 { margin-top:0; margin-bottom: 5px; color: var(--heading-color-day); font-size: 1.1em; border-bottom:none; padding-bottom:0; flex-grow: 1; } /* Title takes up space */
         .brief-detail-section h6 { margin-top:0; margin-bottom: 5px; color: var(--heading-color-day); font-size: 1.0em; border-bottom:none; padding-bottom:0; flex-grow: 1; font-weight: bold;} /* Custom Section Title */
          body.night-mode .brief-detail-section h5, body.night-mode .brief-detail-section h6 { color: var(--heading-color-night); }
         .brief-content { padding: 8px; background-color: rgba(0,0,0,0.02); border-radius: 3px; word-wrap: break-word; margin-top: 5px; }
         body.night-mode .brief-content { background-color: rgba(255,255,255,0.05); }
-        .section-controls button { /* Style for Save/Cancel/Edit buttons */
-             cursor: pointer; font-size: 0.9em; margin-left: 5px; background: none; border: none; color: var(--link-color-day); padding: 0; vertical-align: middle;
+        .section-controls { white-space: nowrap; } /* Prevent Save/Cancel wrapping */
+        .section-controls button {
+             cursor: pointer; font-size: 1.1em; /* Slightly larger icons */ margin-left: 8px; /* Space between buttons */ background: none; border: none; color: var(--link-color-day); padding: 0; vertical-align: middle; line-height: 1;
         }
          body.night-mode .section-controls button { color: var(--link-color-night); }
          .section-controls button:hover { opacity: 0.7; }
-         .section-controls .save-btn { color: #28a745; } /* Green for save */
+         .section-controls .save-btn { color: #28a745; }
          body.night-mode .section-controls .save-btn { color: #33cc55; }
-         .section-controls .cancel-btn { color: #dc3545; } /* Red for cancel */
+         .section-controls .cancel-btn { color: #dc3545; }
          body.night-mode .section-controls .cancel-btn { color: #ff6666; }
 
 
@@ -245,11 +248,8 @@
                 <label for="search-station-input">Search Station Briefs:</label>
                 <input type="search" id="search-station-input" placeholder="Search by Station Name, ICAO, IATA, Sector...">
             </div>
-            {/* Container for showing full station details */}
             <div id="view-brief-details-container" style="display:none;">
-                 {/* Station details will be loaded here by displayStationDetails */}
-            </div>
-            {/* Container for the list of stations */}
+                 </div>
             <h3>Stations with Briefs</h3>
             <div id="station-briefs-full-list-container">
                 <p>Loading...</p>
@@ -257,7 +257,6 @@
             <button type="button" class="button button-secondary" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
         </div>
 
-        {/* Dedicated Print View Area - Content populated by JS before printing */}
         <div id="print-view"><h2>Station Brief</h2><div id="print-content"></div></div>
 
     </div>
@@ -269,9 +268,9 @@
         // --- Global State ---
         let previousView = 'menu-view';
         let sectorBlockCounter = 0;
-        let allFetchedBriefs = []; // Holds the raw list of sector briefs fetched from backend
-        let currentlyViewedStationICAO = null; // Track which station's details are shown
-        let briefingSectionCounter = 0; // Unique IDs for sections
+        let allFetchedBriefs = [];
+        let currentlyViewedStationICAO = null;
+        let briefingSectionCounter = 0;
         let originalContentStore = {}; // Store original content before editing { 'elementId': 'html content' }
 
         // --- Station Data ---
@@ -308,7 +307,6 @@
             {icao: "RCTP", iata: "TPE", name: "Taoyuan International Airport (Taipei)"},
             {icao: "VHHH", iata: "HKG", name: "Hong Kong International Airport"},
             {icao: "VABB", iata: "BOM", name: "Chhatrapati Shivaji Maharaj International Airport (Mumbai)"},
-            // Entries from your original example list not already covered:
             {icao: "KATL", iata: "ATL", name: "Hartsfield-Jackson Atlanta International Airport"},
             {icao: "KLAX", iata: "LAX", name: "Los Angeles International Airport"},
             {icao: "KORD", iata: "ORD", name: "O'Hare International Airport"},
@@ -340,7 +338,7 @@
         const viewBriefDetailsContainer = document.getElementById('view-brief-details-container');
         const stationBriefsFullListContainer = document.getElementById('station-briefs-full-list-container');
         const searchStationInputField = document.getElementById('search-station-input');
-        const browseViewH3 = document.querySelector('#browse-station-briefs-view h3'); // Targets "Stations with Briefs" H3
+        const browseViewH3 = document.querySelector('#browse-station-briefs-view h3');
 
         function showView(viewId) {
             document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
@@ -544,10 +542,13 @@
             const hiddenInputId = `${sectionIdBase}-value`;
             const titleInputName = isCustom ? `customSectionTitle_S${sectorIndex}[]` : '';
 
+            // Add unique ID to editor toolbar as well
+            const toolbarId = `toolbar_${editorId}`;
+
             sectionContainer.innerHTML = `
                 <button type="button" class="button button-delete" onclick="removeBriefingSection('${sectionIdBase}')">Remove</button>
                 ${isCustom ? `<label>Section Title:</label><input type="text" name="${titleInputName}" value="" placeholder="Enter Custom Title" style="margin-bottom:10px; font-weight:bold;">` : `<h4>${sectionTitleText}</h4>`}
-                <div class="editor-toolbar">
+                <div class="editor-toolbar" id="${toolbarId}">
                     <button type="button" title="Bold" onclick="formatDoc('bold','${editorId}');"><b>B</b></button>
                     <button type="button" title="Italic" onclick="formatDoc('italic','${editorId}');"><i>I</i></button>
                     <button type="button" title="Underline" onclick="formatDoc('underline','${editorId}');"><u>U</u></button>
@@ -557,6 +558,25 @@
                 <input type="hidden" name="${hiddenInputName}" id="${hiddenInputId}">`;
             targetContainer.insertBefore(sectionContainer, adderElement);
             selectElement.value = "";
+
+            // Show toolbar when focusing the new editor in create view
+            const newEditor = document.getElementById(editorId);
+            if (newEditor) {
+                newEditor.addEventListener('focus', () => {
+                    const tb = document.getElementById(toolbarId);
+                    if (tb) tb.classList.add('visible');
+                });
+                 newEditor.addEventListener('blur', () => {
+                     // Delay hiding to allow clicking toolbar buttons
+                    setTimeout(() => {
+                       const tb = document.getElementById(toolbarId);
+                       // Check if focus is still within the editor or its toolbar
+                       if (tb && document.activeElement !== newEditor && !tb.contains(document.activeElement)) {
+                           tb.classList.remove('visible');
+                       }
+                    }, 150);
+                 });
+            }
         }
 
         function removeBriefingSection(sectionId) {
@@ -565,14 +585,13 @@
         }
 
         function formatDoc(command, editorId, valueArgument = null) {
-             // Use try-catch as execCommand can sometimes fail or is deprecated in some contexts
              try {
                  document.execCommand(command, false, valueArgument);
              } catch (e) {
                  console.error("Error executing command:", command, e);
              }
             const editor = document.getElementById(editorId);
-            if (editor) editor.focus(); // Refocus the editor after command
+            if (editor) editor.focus();
         }
 
         // --- Form Submission (Create New) ---
@@ -592,11 +611,16 @@
                 const sectorBlocks = sectorsContainer.querySelectorAll('.sector-block');
                 if (sectorBlocks.length === 0) { alert("Add at least one sector brief."); return; }
 
-                document.querySelectorAll('.editable-content').forEach(editor => {
-                    const hid = editor.id.replace('-content', '-value');
-                    const hin = document.getElementById(hid);
-                    if (hin) hin.value = editor.innerHTML;
+                document.querySelectorAll('#create-entry-view .editable-content').forEach(editor => {
+                    const hiddenInputId = editor.id.replace('-content', '-value'); // Find corresponding hidden input
+                    const hiddenInput = document.getElementById(hiddenInputId);
+                    if (hiddenInput) {
+                         hiddenInput.value = editor.innerHTML;
+                    } else {
+                        console.warn("Could not find hidden input for editor:", editor.id);
+                    }
                 });
+
 
                 submitButton.disabled = true;
                 submitButton.textContent = 'Saving...';
@@ -659,9 +683,11 @@
 
                     for (const key in sectionKeyMap) {
                         const inputName = `${sectionKeyMap[key]}ContentValue_S${sectorIndex}`;
+                        // Find the hidden input related to this section WITHIN the current sectorBlock
                         const hiddenInput = sectorBlock.querySelector(`input[name="${inputName}"]`);
                         payload[sectionKeyMap[key] + 'ContentValue'] = hiddenInput ? hiddenInput.value : '';
                     }
+
 
                     let customSections = [];
                     const customTitles = sectorBlock.querySelectorAll(`input[name="customSectionTitle_S${sectorIndex}[]"]`);
@@ -669,13 +695,13 @@
                     customTitles.forEach((t, i) => customSections.push({ title: t.value || 'Custom Section', content: customContents[i]?.value || '' }));
                     payload.customSections = JSON.stringify(customSections);
 
+
                     console.log(`Payload S${sectorIndex}:`, payload);
 
-                    // Use POST for creating new entries
                     submissionPromises.push(
                         fetch(WEB_APP_URL, {
                             method: 'POST',
-                            body: new URLSearchParams(payload), // Standard form data
+                            body: new URLSearchParams(payload),
                             headers: {'Content-Type': 'application/x-www-form-urlencoded'}
                         })
                         .then(r => r.json())
@@ -694,7 +720,7 @@
                             return false;
                         })
                     );
-                } // End loop
+                }
 
                 await Promise.all(submissionPromises);
                 alert(`${successfulSubmits} sector(s) saved successfully. ${failedSubmits} sector(s) failed to save.`);
@@ -721,7 +747,7 @@
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
                 let fetchedData;
                 try { fetchedData = await response.json(); }
-                catch (jsonError) { /* ... error handling ... */ throw jsonError; } // Simplified for brevity
+                catch (jsonError) { throw jsonError; }
                 if (!Array.isArray(fetchedData)) throw new Error("Received invalid data format from server. Expected an array.");
 
                 allFetchedBriefs = fetchedData;
@@ -730,11 +756,9 @@
                     const stationKey = brief.stationInfo?.icao || 'UnknownStation';
                     if (!acc[stationKey]) {
                         acc[stationKey] = {
-                            stationInfo: brief.stationInfo || { icao: stationKey, name: 'Unknown Station' },
-                            sectorCount: 0
+                            stationInfo: brief.stationInfo || { icao: stationKey, name: 'Unknown Station' }
                          };
                     }
-                    acc[stationKey].sectorCount++;
                     return acc;
                 }, {});
 
@@ -782,7 +806,7 @@
         function displayStationDetails(stationICAO) {
             console.log("Displaying details for station:", stationICAO);
             currentlyViewedStationICAO = stationICAO;
-            originalContentStore = {}; // Clear stored original content for previous edits
+            originalContentStore = {};
 
             const stationSectors = allFetchedBriefs.filter(brief => brief.stationInfo?.icao === stationICAO);
 
@@ -796,55 +820,68 @@
 
             let detailsHtml = `<h3>Brief for: ${stationDisplayName}</h3>`;
 
-            stationSectors.sort((a, b) => { /* ... sorting logic ... */ return (a.sectorIdentifier || '').localeCompare(b.sectorIdentifier || ''); });
+            stationSectors.sort((a, b) => (a.sectorIdentifier || '').localeCompare(b.sectorIdentifier || ''));
 
             stationSectors.forEach(sectorBrief => {
-                 // Ensure uniqueID exists, fallback carefully
-                const uniqueBriefID = sectorBrief.uniqueID || `${stationICAO}_${sectorBrief.sectorIdentifier}`; // Less ideal fallback
+                const uniqueBriefID = sectorBrief.uniqueID || `${stationICAO}_${sectorBrief.sectorIdentifier}`;
 
-                // Use unique element IDs for content divs based on briefID and sectionKey
                 detailsHtml += `<div class="detail-sector-block" data-brief-id="${uniqueBriefID}">`;
                 detailsHtml += `<h4>Sector: ${sectorBrief.sectorIdentifier || 'N/A'} (A/C Type: ${sectorBrief.aircraftType || 'N/A'})</h4>`;
 
+                // Helper to check if content is non-empty and not just placeholder tags
+                const hasContent = (content) => {
+                    if (!content) return false;
+                    const trimmedContent = content.trim();
+                    return trimmedContent !== '' && trimmedContent !== '<p></p>' && trimmedContent !== '<div></div>';
+                };
+
+                // Add predefined sections IF they have content
                 for (const key in predefinedSectionTitles) {
                     const contentKey = sectionKeyMap[key] + 'ContentValue';
-                    const elementId = `content_${uniqueBriefID}_${contentKey}`; // Create unique ID
-                    if (sectorBrief[contentKey] !== undefined && sectorBrief[contentKey] !== null) { // Check if key exists
+                    const content = sectorBrief[contentKey];
+                    if (hasContent(content)) {
+                         const elementId = `content_${uniqueBriefID}_${contentKey}`;
                          detailsHtml += `<div class="brief-detail-section">
                                            <div class="section-header">
                                                 <h5>${predefinedSectionTitles[key]}</h5>
                                                 <span class="section-controls" id="controls_${elementId}">
-                                                     <button class="edit-btn" title="Edit ${predefinedSectionTitles[key]}" onclick="editSection('${elementId}', '${uniqueBriefID}', '${contentKey}')">&#9998;</button> {/* Edit Icon */}
+                                                     <button class="edit-btn" title="Edit ${predefinedSectionTitles[key]}" onclick="editSection('${elementId}', '${uniqueBriefID}', '${contentKey}')">&#9998;</button>
                                                 </span>
                                            </div>
-                                           <div class="brief-content" id="${elementId}">${sectorBrief[contentKey] || '<p></p>'}</div> {/* Add default empty paragraph if content is empty */}
+                                           <div class="brief-content" id="${elementId}">${content}</div>
                                          </div>`;
                     }
                 }
 
+                // Add custom sections IF they have content
                 try {
                     const customSections = JSON.parse(sectorBrief.customSections || "[]");
                     if (Array.isArray(customSections) && customSections.length > 0) {
-                         detailsHtml += `<hr style="border-style: dotted; margin-top: 15px;"><h5>Custom Sections</h5>`;
+                         let customSectionsHtml = ''; // Build HTML for custom sections separately
                          customSections.forEach((section, index) => {
-                             if(section.title || section.content) {
-                                const customSectionKey = `custom_${index}`; // Identifier for this custom section
-                                const elementId = `content_${uniqueBriefID}_${customSectionKey}`; // Unique ID
-                                detailsHtml += `<div class="brief-detail-section">
+                             const sectionContent = section.content;
+                             if (hasContent(sectionContent) || (section.title && section.title !== 'Custom Section')) { // Also show if only title exists
+                                const customSectionKey = `custom_${index}`;
+                                const elementId = `content_${uniqueBriefID}_${customSectionKey}`;
+                                customSectionsHtml += `<div class="brief-detail-section">
                                                   <div class="section-header">
                                                     <h6>${section.title || 'Custom Section'}</h6>
                                                     <span class="section-controls" id="controls_${elementId}">
-                                                        <button class="edit-btn" title="Edit Custom Section" onclick="editSection('${elementId}', '${uniqueBriefID}', '${customSectionKey}')">&#9998;</button> {/* Edit Icon */}
+                                                        <button class="edit-btn" title="Edit Custom Section" onclick="editSection('${elementId}', '${uniqueBriefID}', '${customSectionKey}')">&#9998;</button>
                                                     </span>
                                                   </div>
-                                                  <div class="brief-content" id="${elementId}">${section.content || '<p></p>'}</div> {/* Add default empty paragraph */}
+                                                  <div class="brief-content" id="${elementId}">${sectionContent || ''}</div>
                                                 </div>`;
                              }
                          });
+                         // Only add the "Custom Sections" header if there was actually content
+                         if (customSectionsHtml) {
+                             detailsHtml += `<hr style="border-style: dotted; margin-top: 15px;"><h5>Custom Sections</h5>` + customSectionsHtml;
+                         }
                     }
                  } catch(e) { console.error("Error parsing customSections for display:", e); }
 
-                detailsHtml += `</div>`;
+                detailsHtml += `</div>`; // End detail-sector-block
             });
 
             detailsHtml += `<hr><div style="margin-top: 20px;">
@@ -867,53 +904,46 @@
             searchStationInputField.style.display = 'block';
             if(browseViewH3) browseViewH3.style.display = 'block';
             currentlyViewedStationICAO = null;
-            originalContentStore = {}; // Clear stored edits
+            originalContentStore = {};
         }
 
         /** Makes a specific section's content editable */
         function editSection(elementId, briefID, sectionKey) {
              const contentDiv = document.getElementById(elementId);
              const controlsSpan = document.getElementById(`controls_${elementId}`);
-             if (!contentDiv || !controlsSpan) {
-                 console.error("Cannot find elements for editing:", elementId);
-                 return;
-             }
+             if (!contentDiv || !controlsSpan) return;
 
-             // Store original content before editing
-             originalContentStore[elementId] = contentDiv.innerHTML;
+             // If already editing, don't do anything
+             if (contentDiv.contentEditable === "true") return;
+
+             originalContentStore[elementId] = contentDiv.innerHTML; // Store original
 
              contentDiv.contentEditable = "true";
              contentDiv.focus();
-             contentDiv.style.border = "1px dashed var(--input-focus-border-day)"; // Visual cue
+             contentDiv.style.border = "1px dashed var(--input-focus-border-day)";
 
-             // Change controls to Save/Cancel
              controlsSpan.innerHTML = `
-                 <button class="save-btn" title="Save Changes" onclick="saveSectionEdit('${elementId}', '${briefID}', '${sectionKey}')">&#10004;</button> {/* Checkmark */}
-                 <button class="cancel-btn" title="Cancel Edit" onclick="cancelSectionEdit('${elementId}')">&#10006;</button> {/* Cross */}
+                 <button class="save-btn" title="Save Changes" onclick="saveSectionEdit('${elementId}', '${briefID}', '${sectionKey}')">&#10004;</button>
+                 <button class="cancel-btn" title="Cancel Edit" onclick="cancelSectionEdit('${elementId}', '${briefID}', '${sectionKey}')">&#10006;</button>
              `;
         }
 
         /** Cancels editing for a section, restoring original content */
-        function cancelSectionEdit(elementId) {
+        function cancelSectionEdit(elementId, briefID, sectionKey) { // Pass briefID/sectionKey to restore button
             const contentDiv = document.getElementById(elementId);
             const controlsSpan = document.getElementById(`controls_${elementId}`);
              if (!contentDiv || !controlsSpan) return;
 
-             // Restore original content if available
              if (originalContentStore[elementId] !== undefined) {
                  contentDiv.innerHTML = originalContentStore[elementId];
              }
              contentDiv.contentEditable = "false";
-             contentDiv.style.border = "none"; // Remove visual cue
+             contentDiv.style.border = "none";
 
-             // Restore edit button (need briefID and sectionKey - tricky without passing them again)
-             // Simplest: just remove buttons. User has to click main Edit again if needed.
-             // Better: Find briefID/sectionKey from parent structure if possible, or just revert text
-             controlsSpan.innerHTML = `<button class="edit-btn" title="Edit" onclick="alert('Please re-click the main edit button if needed.')">&#9998;</button>`; // Simple placeholder
-             // We lost the original onclick parameters here, this part is tricky without restructuring.
-             // For now, just revert the visual state. User needs to click main edit again.
+             // Restore original edit button
+             controlsSpan.innerHTML = `<button class="edit-btn" title="Edit" onclick="editSection('${elementId}', '${briefID}', '${sectionKey}')">&#9998;</button>`;
 
-             delete originalContentStore[elementId]; // Clean up stored content
+             delete originalContentStore[elementId];
         }
 
         /** Saves the edited content of a section */
@@ -923,10 +953,10 @@
             if (!contentDiv || !controlsSpan) return;
 
             const newContent = contentDiv.innerHTML;
-            const originalEditButtonHTML = `<button class="edit-btn" title="Edit" onclick="editSection('${elementId}', '${briefID}', '${sectionKey}')">&#9998;</button>`; // Store original button HTML
+            // Keep reference to original button's onclick parameters
+            const originalButtonHTML = `<button class="edit-btn" title="Edit" onclick="editSection('${elementId}', '${briefID}', '${sectionKey}')">&#9998;</button>`;
 
-            // Disable buttons during save
-            controlsSpan.innerHTML = 'Saving...';
+            controlsSpan.innerHTML = 'Saving...'; // Indicate saving in progress
 
             try {
                  const payload = {
@@ -938,7 +968,10 @@
 
                  const response = await fetch(WEB_APP_URL, {
                      method: 'POST',
-                     body: new URLSearchParams(payload),
+                     // Use FormData for potentially large HTML content? Or keep URLSearchParams?
+                     // URLSearchParams might have length limits. Let's try FormData.
+                     // body: new URLSearchParams(payload), // Might fail for long content
+                     body: new URLSearchParams(payload).toString(), // Ensure it's a string for GAS
                      headers: {'Content-Type': 'application/x-www-form-urlencoded'}
                  });
 
@@ -947,28 +980,27 @@
                  if (result.status === 'success') {
                      contentDiv.contentEditable = "false";
                      contentDiv.style.border = "none";
-                     controlsSpan.innerHTML = originalEditButtonHTML; // Restore edit button
-                     delete originalContentStore[elementId]; // Clear stored original content
+                     controlsSpan.innerHTML = originalButtonHTML; // Restore edit button
+                     delete originalContentStore[elementId];
 
-                     // OPTIONAL: Update the local `allFetchedBriefs` array for immediate consistency
+                     // Update local data store to prevent needing a full refresh
                      const briefIndex = allFetchedBriefs.findIndex(b => b.uniqueID === briefID);
                      if (briefIndex !== -1) {
                          if (sectionKey.startsWith('custom_')) {
-                              // Handle custom section update in local array
                               const customIndex = parseInt(sectionKey.split('_')[1], 10);
                               try {
                                  let customSections = JSON.parse(allFetchedBriefs[briefIndex].customSections || "[]");
-                                 if (customSections[customIndex]) {
+                                 if (Array.isArray(customSections) && customSections[customIndex]) {
                                      customSections[customIndex].content = newContent;
                                      allFetchedBriefs[briefIndex].customSections = JSON.stringify(customSections);
+                                     console.log(`Local custom section ${customIndex} updated for ${briefID}`);
                                  }
                               } catch(e){ console.error("Error updating local custom section data:", e)}
                          } else {
-                              // Handle predefined section update
                               allFetchedBriefs[briefIndex][sectionKey] = newContent;
+                              console.log(`Local section ${sectionKey} updated for ${briefID}`);
                          }
                      }
-                     // alert("Changes saved successfully!"); // Optional feedback
                  } else {
                      throw new Error(result.message || "Failed to save changes.");
                  }
@@ -976,11 +1008,11 @@
             } catch (error) {
                  console.error("Error saving section:", error);
                  alert("Error saving changes: " + error.message);
-                 // Restore Save/Cancel buttons on error so user doesn't lose edit easily
+                 // Restore Save/Cancel buttons on error
                   controlsSpan.innerHTML = `
                      <button class="save-btn" title="Save Changes" onclick="saveSectionEdit('${elementId}', '${briefID}', '${sectionKey}')">&#10004;</button>
-                     <button class="cancel-btn" title="Cancel Edit" onclick="cancelSectionEdit('${elementId}')">&#10006;</button>
-                     <span style="color: red; font-size: 0.8em; margin-left: 5px;">Save Failed!</span>
+                     <button class="cancel-btn" title="Cancel Edit" onclick="cancelSectionEdit('${elementId}', '${briefID}', '${sectionKey}')">&#10006;</button>
+                     <span style="color: red; font-size: 0.8em; margin-left: 5px;">Retry?</span>
                  `;
             }
         }
@@ -994,8 +1026,6 @@
 
         /** Prepares content for printing the currently viewed station's details */
         function printStationDetails() {
-            // The @media print CSS now targets #view-brief-details-container directly
-            // No need to populate #print-content separately unless specific reformatting is needed.
             window.print();
         }
 
