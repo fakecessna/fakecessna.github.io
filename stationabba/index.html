@@ -32,6 +32,8 @@
         body.night-mode h2, body.night-mode h3, body.night-mode h4, body.night-mode h5 { color: var(--heading-color-night); border-bottom-color: var(--border-color-night); }
         h3 { border-bottom-style: dashed; } /* For Station / Sector headers */
         h4, h5 { border-bottom: none; padding-bottom: 5px; margin-bottom: 10px; }
+        /* Larger font for main station detail header */
+        #view-brief-details-container > h3 { font-size: 1.5em; border-bottom-style: solid; }
         .button { padding: 10px 20px; font-size: 15px; cursor: pointer; border: none; border-radius: 5px; transition: background-color 0.3s ease, color 0.3s ease; margin-right: 10px; margin-top: 5px; margin-bottom: 5px; background-color: var(--accent-color); color: var(--button-text-day); font-weight: bold; }
         .button:hover { opacity: 0.85; }
         body.night-mode .button { background-color: var(--accent-color); color: var(--button-text-night); }
@@ -84,8 +86,8 @@
         body.night-mode .dynamic-briefing-section h4 { color: var(--heading-color-night); }
         .dynamic-briefing-section .button-delete { position: absolute; top: 10px; right: 10px; z-index: 1; }
 
-        .editor-toolbar { margin-bottom: 5px; display: none; } /* Hide toolbar by default */
-        .editor-toolbar.visible { display: block; } /* Show when editing */
+        .editor-toolbar { margin-bottom: 5px; display: none; }
+        .editor-toolbar.visible { display: block; }
         .editor-toolbar button { background-color: #e0e0e0; color: #333; border: 1px solid #ccc; padding: 5px 8px; font-size: 12px; margin-right: 3px; cursor:pointer; }
         body.night-mode .editor-toolbar button { background-color: #555; color: #f0f0f0; border-color: #666; }
         .editor-toolbar button:hover { background-color: #d0d0d0;}
@@ -125,7 +127,7 @@
         #station-briefs-full-list-container li:last-child { border-bottom: none; }
 
         /* Styles for Detail View */
-        #view-brief-details-container h3 { border-bottom-style: solid; } /* Main station header */
+        #view-brief-details-container > h3 { font-size: 1.5em; border-bottom-style: solid; } /* Main station header */
         .detail-sector-block {
             border: 1px solid var(--border-color-day);
             background-color: var(--section-bg-day);
@@ -140,9 +142,11 @@
             font-size: 1.2em; margin-bottom: 15px; padding-bottom: 8px;
             border-bottom: 1px dashed var(--border-color-day);
             transition: border-color 0.3s;
+            color: var(--heading-color-day); /* Ensure heading color */
         }
          body.night-mode .detail-sector-block h4 {
              border-bottom-color: var(--border-color-night);
+             color: var(--heading-color-night); /* Ensure heading color */
          }
 
         .brief-detail-section { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted var(--border-color-day); }
@@ -168,38 +172,39 @@
 
         /* Print Styles */
         @media print {
-            body { background-color: #fff !important; color: #000 !important; font-size: 10pt; }
-            /* Hide everything initially */
+            body { background: #fff !important; color: #000 !important; font-size: 10pt; }
+            /* Hide all direct children of body EXCEPT the print view container */
             body > *:not(#print-view) { display: none !important; }
-            #print-view { display: block !important; } /* Show only the print container */
-            #print-view * { background-color: #fff !important; color: #000 !important; } /* Ensure print content has white background */
+            /* Ensure the print view container itself is visible */
+            #print-view { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; background: #fff !important; }
+            /* Style the content *inside* the print container */
+            #print-content { width: 100% !important; }
+            #print-content * { background-color: transparent !important; color: #000 !important; box-shadow: none !important; border-color: #ccc !important; }
 
-            /* Style the content within #print-view */
             #print-content h2, #print-content h3, #print-content h4, #print-content h5, #print-content h6 {
-                 color: #000 !important; border: none !important; padding-bottom: 5px; margin-bottom: 10px; font-family: sans-serif;
+                 border: none !important; padding-bottom: 5px; margin-bottom: 10px; font-family: sans-serif; page-break-after: avoid;
              }
-            #print-content h2 { font-size: 16pt; }
-            #print-content h3 { font-size: 14pt; margin-top: 15px; }
-            #print-content h4 { font-size: 12pt; border-bottom: 1px dashed #ccc !important; margin-top: 15px; } /* Sector header */
-            #print-content h5, #print-content h6 { font-size: 11pt; } /* Section headers */
+            #print-content h2 { font-size: 16pt; margin-bottom: 15px;} /* Main "Station Brief" title */
+            #print-content h3 { font-size: 14pt; margin-top: 15px; border-bottom: 1px solid #000 !important; } /* Station Name */
+            #print-content h4 { font-size: 12pt; border-bottom: 1px dashed #ccc !important; margin-top: 15px; font-weight: bold; } /* Sector header */
+            #print-content h5, #print-content h6 { font-size: 11pt; font-weight: bold; margin-top: 10px; } /* Section headers */
             #print-content a { text-decoration: none; color: #000 !important; }
-            #print-content .detail-sector-block { border: none !important; background-color: #fff !important; margin-bottom: 15px; padding: 0; page-break-inside: avoid; }
+            #print-content .detail-sector-block { border: none !important; margin-bottom: 15px; padding: 0; page-break-inside: avoid; }
             #print-content .brief-detail-section { border: none !important; margin-bottom: 10px; padding-bottom: 5px; page-break-inside: avoid; }
             #print-content .brief-content {
-                background-color: #f9f9f9 !important;
-                padding: 5px;
-                border: 1px solid #eee !important;
-                word-wrap: break-word;
-                margin-top: 2px;
+                padding: 5px; border: 1px solid #eee !important;
+                word-wrap: break-word; margin-top: 2px; page-break-inside: avoid;
+                background-color: #f9f9f9 !important; /* Keep slight background */
             }
             #print-content ul { padding-left: 20px; margin-top: 5px;}
-             #print-content li { margin-bottom: 2px; }
+            #print-content li { margin-bottom: 2px; }
             #print-content b, #print-content strong { font-weight: bold; }
             #print-content i, #print-content em { font-style: italic; }
             #print-content u { text-decoration: underline; }
-            #print-content .section-controls, #print-content .edit-btn { display: none !important; } /* Ensure edit controls are hidden */
+            #print-content .section-controls, #print-content .edit-btn, #print-content button { display: none !important; } /* Hide all controls */
+            #print-content hr { border-top: 1px solid #ccc; }
         }
-        #print-view { display: none; } /* Hidden by default on screen */
+        #print-view { display: none; }
 
     </style>
 </head>
@@ -302,7 +307,7 @@
         let allFetchedBriefs = [];
         let currentlyViewedStationICAO = null;
         let briefingSectionCounter = 0;
-        let originalContentStore = {}; // Store original content before editing { 'elementId': 'html content' }
+        let originalContentStore = {};
 
         // --- Station Data ---
         const stationMasterList = [
@@ -624,57 +629,36 @@
                 event.preventDefault();
                 const submitButton = stationEntryForm.querySelector('button[type="submit"]');
                 const btnTxt = submitButton.textContent;
-
                 let isManual = stationICAOSelect.value === '__add_new__' || stationIATASelect.value === '__add_new__';
 
                 if (!stationEntryForm.elements['aircraftType'].value) { alert("Select Aircraft Type."); return; }
                 if (!isManual && !stationEntryForm.elements['stationICAO'].value && !stationEntryForm.elements['stationIATA'].value) { alert("Select station or add manually."); return; }
                 if (isManual && (!stationEntryForm.elements['stationICAONew'].value || !stationEntryForm.elements['stationNameNew'].value)) { alert("Manual entry needs ICAO & Name."); return; }
-
                 const sectorBlocks = sectorsContainer.querySelectorAll('.sector-block');
                 if (sectorBlocks.length === 0) { alert("Add at least one sector brief."); return; }
 
-                // Update hidden inputs from contenteditable divs *within the create form*
+                // Update hidden inputs before collecting data
                 document.querySelectorAll('#create-entry-view .editable-content').forEach(editor => {
                     const hiddenInputId = editor.id.replace('-content', '-value');
                     const hiddenInput = document.getElementById(hiddenInputId);
-                    if (hiddenInput) {
-                         hiddenInput.value = editor.innerHTML;
-                    } else { console.warn("Could not find hidden input for editor:", editor.id); }
+                    if (hiddenInput) { hiddenInput.value = editor.innerHTML; }
+                    else { console.warn("Could not find hidden input for editor:", editor.id); }
                 });
 
-
-                submitButton.disabled = true;
-                submitButton.textContent = 'Saving...';
-                let successfulSubmits = 0;
-                let failedSubmits = 0;
+                submitButton.disabled = true; submitButton.textContent = 'Saving...';
+                let successfulSubmits = 0, failedSubmits = 0;
                 const submissionPromises = [];
-
                 let stationInfoPayload;
-                // Logic to determine stationInfoPayload (as before)
-                if (isManual) {
-                    stationInfoPayload = JSON.stringify({
-                        icao: stationEntryForm.elements['stationICAONew'].value.toUpperCase(),
-                        iata: stationEntryForm.elements['stationIATANew'].value.toUpperCase() || '',
-                        name: stationEntryForm.elements['stationNameNew'].value
-                    });
-                } else if (stationEntryForm.elements['stationICAO'].value) {
-                    const f = stationMasterList.find(s => s.icao === stationEntryForm.elements['stationICAO'].value);
-                    stationInfoPayload = JSON.stringify(f ? {...f} : {icao: stationEntryForm.elements['stationICAO'].value, iata: stationEntryForm.elements['stationIATA'].value||'', name:'N/A'});
-                } else if (stationEntryForm.elements['stationIATA'].value) {
-                    const f = stationMasterList.find(s => s.iata === stationEntryForm.elements['stationIATA'].value);
-                    stationInfoPayload = JSON.stringify(f ? {...f} : {icao: '', iata: stationEntryForm.elements['stationIATA'].value, name:'N/A'});
-                }
-
+                if (isManual) { stationInfoPayload = JSON.stringify({ icao: stationEntryForm.elements['stationICAONew'].value.toUpperCase(), iata: stationEntryForm.elements['stationIATANew'].value.toUpperCase() || '', name: stationEntryForm.elements['stationNameNew'].value }); }
+                else if (stationEntryForm.elements['stationICAO'].value) { const f = stationMasterList.find(s => s.icao === stationEntryForm.elements['stationICAO'].value); stationInfoPayload = JSON.stringify(f ? {...f} : {icao: stationEntryForm.elements['stationICAO'].value, iata: stationEntryForm.elements['stationIATA'].value||'', name:'N/A'}); }
+                else if (stationEntryForm.elements['stationIATA'].value) { const f = stationMasterList.find(s => s.iata === stationEntryForm.elements['stationIATA'].value); stationInfoPayload = JSON.stringify(f ? {...f} : {icao: '', iata: stationEntryForm.elements['stationIATA'].value, name:'N/A'}); }
                 const aircraftTypePayload = stationEntryForm.elements['aircraftType'].value;
 
                 for (const sectorBlock of sectorBlocks) {
-                    // Logic to build payload for each sector (as before)
                     const sectorIndex = sectorBlock.dataset.sectorIndex;
-                    const payload = {};
+                    const payload = { action: 'createBrief' }; // Add action for backend routing if needed
                     const flightNumberInputs = sectorBlock.querySelectorAll(`input[name="flightNumber_S${sectorIndex}[]"]`);
-                    const flightNumbers = [];
-                    let firstFlightNumber = null;
+                    const flightNumbers = []; let firstFlightNumber = null;
                     flightNumberInputs.forEach(input => { const val = input.value.trim(); if (val) { flightNumbers.push(val); if (!firstFlightNumber) firstFlightNumber = val; } });
                     if (!firstFlightNumber) { alert(`Sector ${sectorIndex} skipped: missing flight number.`); failedSubmits++; continue; }
                     let sectorIdentifier = /^\d+$/.test(firstFlightNumber) ? "SQ" + firstFlightNumber : firstFlightNumber.toUpperCase();
@@ -688,15 +672,8 @@
 
                 await Promise.all(submissionPromises);
                 alert(`${successfulSubmits} sector(s) saved successfully. ${failedSubmits} sector(s) failed to save.`);
-
-                if (successfulSubmits > 0) {
-                    allFetchedBriefs = [];
-                    resetCreateEntryForm();
-                    showView('browse-station-briefs-view');
-                } else {
-                    submitButton.disabled = false;
-                    submitButton.textContent = btnTxt;
-                }
+                if (successfulSubmits > 0) { allFetchedBriefs = []; resetCreateEntryForm(); showView('browse-station-briefs-view'); }
+                else { submitButton.disabled = false; submitButton.textContent = btnTxt; }
             });
         }
 
@@ -709,57 +686,35 @@
             try {
                 const response = await fetch(`${WEB_APP_URL}?action=getBriefs`);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-                let fetchedData;
-                try { fetchedData = await response.json(); }
-                catch (jsonError) { throw jsonError; }
+                let fetchedData; try { fetchedData = await response.json(); } catch (jsonError) { throw jsonError; }
                 if (!Array.isArray(fetchedData)) throw new Error("Received invalid data format from server. Expected an array.");
-
                 allFetchedBriefs = fetchedData;
 
-                // Group by Station ICAO
                 const briefsByStation = allFetchedBriefs.reduce((acc, brief) => {
                     const stationKey = brief.stationInfo?.icao || 'UnknownStation';
-                    if (!acc[stationKey]) {
-                        acc[stationKey] = {
-                            stationInfo: brief.stationInfo || { icao: stationKey, name: 'Unknown Station' }
-                         };
-                    }
+                    if (!acc[stationKey]) acc[stationKey] = { stationInfo: brief.stationInfo || { icao: stationKey, name: 'Unknown Station' } };
                     return acc;
                 }, {});
 
                 let filteredStations = Object.values(briefsByStation);
-
-                // Filter stations
                 if (searchTerm) {
                     const lowerSearchTerm = searchTerm.toLowerCase();
-                    filteredStations = filteredStations.filter(stationGroup =>
-                        (stationGroup.stationInfo.name && stationGroup.stationInfo.name.toLowerCase().includes(lowerSearchTerm)) ||
-                        (stationGroup.stationInfo.icao && stationGroup.stationInfo.icao.toLowerCase().includes(lowerSearchTerm)) ||
-                        (stationGroup.stationInfo.iata && stationGroup.stationInfo.iata.toLowerCase().includes(lowerSearchTerm)) ||
-                        allFetchedBriefs.some(brief => brief.stationInfo?.icao === stationGroup.stationInfo.icao && brief.sectorIdentifier?.toLowerCase().includes(lowerSearchTerm))
-                    );
+                    filteredStations = filteredStations.filter(sg => (sg.stationInfo.name && sg.stationInfo.name.toLowerCase().includes(lowerSearchTerm)) || (sg.stationInfo.icao && sg.stationInfo.icao.toLowerCase().includes(lowerSearchTerm)) || (sg.stationInfo.iata && sg.stationInfo.iata.toLowerCase().includes(lowerSearchTerm)) || allFetchedBriefs.some(b => b.stationInfo?.icao === sg.stationInfo.icao && b.sectorIdentifier?.toLowerCase().includes(lowerSearchTerm)));
                 }
                  filteredStations.sort((a, b) => (a.stationInfo.name || a.stationInfo.icao).localeCompare(b.stationInfo.name || b.stationInfo.icao));
 
-                if (filteredStations.length === 0) {
-                     stationBriefsFullListContainer.innerHTML = searchTerm ? `<p>No stations found matching "${searchTerm}".</p>` : '<p>No station briefs found. Create one!</p>';
-                    return;
-                }
+                if (filteredStations.length === 0) { stationBriefsFullListContainer.innerHTML = searchTerm ? `<p>No stations found matching "${searchTerm}".</p>` : '<p>No station briefs found. Create one!</p>'; return; }
 
-                // Display simplified station list
                 const ul = document.createElement('ul');
                 filteredStations.forEach(stationGroup => {
                     const li = document.createElement('li');
                     const stationDisplay = stationGroup.stationInfo.name ? `${stationGroup.stationInfo.name} (${stationGroup.stationInfo.icao})` : stationGroup.stationInfo.icao;
-                    li.innerHTML = stationDisplay; // MODIFIED: Simplified display
+                    li.innerHTML = stationDisplay; // Simplified display
                     li.style.cursor = 'pointer';
                     li.onclick = () => displayStationDetails(stationGroup.stationInfo.icao);
                     ul.appendChild(li);
                 });
-
-                stationBriefsFullListContainer.innerHTML = '';
-                stationBriefsFullListContainer.appendChild(ul);
-
+                stationBriefsFullListContainer.innerHTML = ''; stationBriefsFullListContainer.appendChild(ul);
             } catch (error) {
                 console.error('Failed to load station list:', error);
                 stationBriefsFullListContainer.innerHTML = `<p style="color: red;">Error loading station list: ${error.message}. Check console.</p>`;
@@ -775,30 +730,27 @@
             originalContentStore = {};
 
             const stationSectors = allFetchedBriefs.filter(brief => brief.stationInfo?.icao === stationICAO);
-
-            if (!stationSectors || stationSectors.length === 0) {
-                alert(`Error: No brief data found for station ${stationICAO}.`);
-                hideBriefDetails(); return;
-            }
+            if (!stationSectors || stationSectors.length === 0) { alert(`Error: No brief data found for station ${stationICAO}.`); hideBriefDetails(); return; }
 
             const stationInfo = stationSectors[0].stationInfo;
             const stationDisplayName = stationInfo.name ? `${stationInfo.name} (${stationInfo.icao})` : stationICAO;
 
-            let detailsHtml = `<h3>Brief for: ${stationDisplayName}</h3>`;
+            // --- MODIFIED: Changed header tag and removed "Brief for:" prefix ---
+            let detailsHtml = `<h3>${stationDisplayName}</h3>`;
+            // --- END MODIFICATION ---
 
             stationSectors.sort((a, b) => (a.sectorIdentifier || '').localeCompare(b.sectorIdentifier || ''));
 
             stationSectors.forEach(sectorBrief => {
-                const uniqueBriefID = sectorBrief.uniqueID || `${stationICAO}_${sectorBrief.sectorIdentifier}`; // Fallback ID
-
+                const uniqueBriefID = sectorBrief.uniqueID || `${stationICAO}_${sectorBrief.sectorIdentifier}`;
                 detailsHtml += `<div class="detail-sector-block" data-brief-id="${uniqueBriefID}">`;
                 // --- MODIFIED: Sector Header Format ---
                 detailsHtml += `<h4>${sectorBrief.sectorIdentifier || 'N/A'} - ${sectorBrief.aircraftType || 'N/A'}</h4>`;
                 // --- END MODIFICATION ---
 
-                const hasContent = (content) => {
-                    if (!content) return false; const element = document.createElement('div'); element.innerHTML = content; return element.textContent.trim() !== '';
-                };
+                // Helper to check if content is non-empty and not just placeholder tags
+                 const hasContent = (content) => { if (!content) return false; const element = document.createElement('div'); element.innerHTML = content; return element.textContent.trim() !== ''; };
+
 
                 // Add predefined sections IF they have content
                 for (const key in predefinedSectionTitles) {
@@ -825,8 +777,7 @@
                          let customSectionsHtml = '';
                          customSections.forEach((section, index) => {
                              const sectionContent = section.content;
-                             const sectionTitle = section.title || 'Custom Section'; // Use default title if blank
-                             // Show section if it has a non-default title OR actual content
+                             const sectionTitle = section.title || 'Custom Section';
                              if (hasContent(sectionContent) || sectionTitle !== 'Custom Section') {
                                 const customSectionKey = `custom_${index}`;
                                 const elementId = `content_${uniqueBriefID}_${customSectionKey}`;
@@ -865,7 +816,7 @@
         /** Hides the detail view and shows the station list */
         function hideBriefDetails() {
             viewBriefDetailsContainer.style.display = 'none';
-            viewBriefDetailsContainer.innerHTML = ''; // Clear content
+            viewBriefDetailsContainer.innerHTML = '';
             stationBriefsFullListContainer.style.display = 'block';
             searchStationInputField.style.display = 'block';
             if(browseViewH3) browseViewH3.style.display = 'block';
@@ -878,7 +829,7 @@
              const contentDiv = document.getElementById(elementId);
              const controlsSpan = document.getElementById(`controls_${elementId}`);
              if (!contentDiv || !controlsSpan) return;
-             if (contentDiv.contentEditable === "true") return;
+             if (contentDiv.isContentEditable) return; // Already editing
 
              originalContentStore[elementId] = contentDiv.innerHTML;
              contentDiv.contentEditable = "true";
@@ -903,7 +854,9 @@
              contentDiv.contentEditable = "false";
              contentDiv.style.border = "none";
 
-             controlsSpan.innerHTML = `<button class="edit-btn" title="Edit" onclick="editSection('${elementId}', '${briefID}', '${sectionKey}')">&#9998;</button>`;
+             // Restore original edit button
+             const sectionTitle = contentDiv.parentElement.querySelector('h5, h6')?.textContent || 'Section';
+             controlsSpan.innerHTML = `<button class="edit-btn" title="Edit ${sectionTitle}" onclick="editSection('${elementId}', '${briefID}', '${sectionKey}')">&#9998;</button>`;
              delete originalContentStore[elementId];
         }
 
@@ -914,17 +867,14 @@
             if (!contentDiv || !controlsSpan) return;
 
             const newContent = contentDiv.innerHTML;
-            const originalButtonHTML = `<button class="edit-btn" title="Edit" onclick="editSection('${elementId}', '${briefID}', '${sectionKey}')">&#9998;</button>`;
+            const sectionTitle = contentDiv.parentElement.querySelector('h5, h6')?.textContent || 'Section';
+            const originalButtonHTML = `<button class="edit-btn" title="Edit ${sectionTitle}" onclick="editSection('${elementId}', '${briefID}', '${sectionKey}')">&#9998;</button>`;
 
             controlsSpan.innerHTML = 'Saving...';
 
             try {
                  const payload = { action: 'updateSection', uniqueID: briefID, sectionKey: sectionKey, newContent: newContent };
-                 const response = await fetch(WEB_APP_URL, {
-                     method: 'POST',
-                     body: new URLSearchParams(payload).toString(),
-                     headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-                 });
+                 const response = await fetch(WEB_APP_URL, { method: 'POST', body: new URLSearchParams(payload).toString(), headers: {'Content-Type': 'application/x-www-form-urlencoded'} });
                  const result = await response.json();
 
                  if (result.status === 'success') {
@@ -945,9 +895,7 @@
                                      allFetchedBriefs[briefIndex].customSections = JSON.stringify(customSections);
                                  }
                               } catch(e){ console.error("Error updating local custom section data:", e)}
-                         } else {
-                              allFetchedBriefs[briefIndex][sectionKey] = newContent;
-                         }
+                         } else { allFetchedBriefs[briefIndex][sectionKey] = newContent; }
                      }
                  } else { throw new Error(result.message || "Failed to save changes."); }
             } catch (error) {
@@ -985,12 +933,22 @@
             contentToPrint.querySelectorAll('.section-controls').forEach(el => el.remove());
             contentToPrint.querySelectorAll('.button').forEach(el => el.remove()); // Remove main print/close buttons
 
+            // Ensure contenteditable is false on all copied elements for printing
+            contentToPrint.querySelectorAll('[contenteditable="true"]').forEach(el => el.contentEditable = "false");
+            // Optionally remove inline style border if applied during editing
+            contentToPrint.querySelectorAll('.brief-content').forEach(el => el.style.border = "none");
+
+
             // Populate the dedicated print area
             printContentDiv.innerHTML = ''; // Clear previous print content
-            printContentDiv.appendChild(contentToPrint);
+            printContentDiv.appendChild(contentToPrint); // Add the cloned, cleaned content
 
-            console.log("Populated #print-content, initiating print...");
-            window.print(); // Trigger the browser's print dialog
+            console.log("Populated #print-content, initiating print..."); // For debugging
+
+            // Use setTimeout to ensure content is rendered before printing
+            setTimeout(() => {
+                window.print(); // Trigger the browser's print dialog
+            }, 10); // Small delay
         }
 
 
