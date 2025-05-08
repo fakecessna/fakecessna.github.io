@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Station Database - Alpha</title>
     <style>
-        /* General Styles */
-        :root { /* ... CSS Variables as before ... */ }
+        /* Styles including updates for dynamic tabs */
+        :root { /* ... CSS Variables ... */ }
         html, body { /* ... */ }
         body.night-mode { /* ... */ }
         .header-controls { /* ... */ }
@@ -27,7 +27,7 @@
         button:disabled { /* ... */ }
         body.night-mode button:disabled { /* ... */ }
         .menu-buttons button { /* ... */ }
-        .form-section { margin-bottom: 20px; }
+        .form-section { /* ... */ }
         .form-section label { /* ... */ }
         body.night-mode .form-section label { /* ... */ }
         .form-section input[type="text"], .form-section input[type="search"], .form-section select, .form-section textarea { /* ... */ }
@@ -45,29 +45,15 @@
         #add-station-manual-fields .form-section { /* ... */ }
          @media (max-width: 768px) { /* ... */ }
 
-        /* Sector Block Styling */
-        .sector-block {
-            border: 2px dashed var(--input-border-day);
-            padding: 20px;
-            margin-top: 20px;
-            border-radius: 8px;
-            position: relative; /* For delete button */
-        }
-        body.night-mode .sector-block { border-color: var(--input-border-night); }
-        .sector-block h3 { border: none; margin-bottom: 15px; padding-bottom: 0; font-size: 1.2em; }
-         .sector-block .button-delete-sector { /* Specific delete button for sector */
-            position: absolute; top: 10px; right: 10px;
-            background-color: #bb2d3b; /* Darker red */
-         }
-         body.night-mode .sector-block .button-delete-sector { background-color: #a52834; }
+        /* Sector Block Styling (Removed - Using Tabs Now) */
 
+        /* Flight numbers are now per-sector, handled within the dynamic section */
+         .flight-number-input-group { /* ... */ }
+         .flight-number-input-group span.sq-prefix { /* ... */ }
+         body.night-mode .flight-number-input-group span.sq-prefix { /* ... */ }
+         .flight-number-input-group input[name^="flightNumber_S"] { /* Now targets per-sector inputs */ width: 70px; flex-grow: 0; flex-shrink: 0; padding: 10px 8px; margin-bottom: 0; box-sizing: border-box; }
+         .flight-number-input-group .button-delete { /* ... */ }
 
-        #flight-numbers-section-per-sector { margin-bottom: 20px; } /* Renamed ID just in case */
-        .flight-number-input-group { /* ... */ }
-        .flight-number-input-group span.sq-prefix { /* ... */ }
-        body.night-mode .flight-number-input-group span.sq-prefix { /* ... */ }
-        .flight-number-input-group input[name^="flightNumber_S"] { /* Targeting flight numbers within sectors */ width: 70px; flex-grow: 0; flex-shrink: 0; padding: 10px 8px; margin-bottom: 0; box-sizing: border-box; }
-        .flight-number-input-group .button-delete { /* ... */ }
 
         .briefing-section-adder { /* ... */ }
         body.night-mode .briefing-section-adder { /* ... */ }
@@ -79,6 +65,22 @@
         .dynamic-briefing-section h4 { /* ... */ }
         body.night-mode .dynamic-briefing-section h4 { /* ... */ }
         .dynamic-briefing-section .button-delete { /* ... */ }
+
+        /* Dynamic Sector Tabs */
+        .sector-tabs { margin-bottom: 15px; border-bottom: 1px solid var(--border-color-day); padding-bottom: 0; display: flex; align-items: center; flex-wrap: wrap; /* Allow wrapping */ }
+        body.night-mode .sector-tabs { border-bottom-color: var(--border-color-night); }
+        .sector-tab { background-color: var(--placeholder-bg-day); color: var(--text-color-day); border: 1px solid var(--border-color-day); border-bottom: none; padding: 8px 10px; cursor: pointer; display: inline-flex; /* Use flex for button+delete */ align-items: center; margin-right: 3px; margin-bottom: -1px; /* Overlap border */ border-radius: 4px 4px 0 0; opacity: 0.7; font-size: 0.9em;}
+        body.night-mode .sector-tab { background-color: var(--placeholder-bg-night); border-color: var(--border-color-night); color: var(--text-color-night);}
+        .sector-tab.active { opacity: 1; font-weight: bold; background-color: var(--section-bg-day); border-bottom: 1px solid var(--section-bg-day); /* Hide bottom border */ }
+        body.night-mode .sector-tab.active { background-color: var(--section-bg-night); border-bottom-color: var(--section-bg-night); }
+        .sector-tab .tab-remove-btn { background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; cursor: pointer; margin-left: 8px; padding: 0; }
+        body.night-mode .sector-tab .tab-remove-btn { background: #d43f3f; }
+        .add-sector-tab-btn { background: #5cb85c; color: white; border: none; border-radius: 4px; width: 25px; height: 25px; font-size: 16px; line-height: 25px; text-align: center; cursor: pointer; margin-left: 10px; padding: 0; font-weight: bold;}
+        body.night-mode .add-sector-tab-btn { background: #4cae4c; }
+
+        .sector-content { display: none; margin-top:10px; }
+        .sector-content.active { display: block; }
+
 
         .editor-toolbar { /* ... */ }
         .editor-toolbar button { /* ... */ }
@@ -109,11 +111,11 @@
         body.night-mode #view-brief-details-container .brief-detail-section h5 { /* ... */ }
         #view-brief-details-container .brief-content { /* ... */ }
         body.night-mode #view-brief-details-container .brief-content { /* ... */ }
-        #view-brief-details-container .sector-heading { /* ... Removed as view is per-sector */ }
-        body.night-mode #view-brief-details-container .sector-heading { /* ... Removed ... */ }
+        #view-brief-details-container .sector-heading { font-weight: bold; margin-top: 15px; margin-bottom: 8px; display: block; font-size: 1.15em; color: var(--heading-color-day); border-bottom: 1px solid var(--border-color-day); padding-bottom: 5px;} /* Style for sector titles in view */
+        body.night-mode #view-brief-details-container .sector-heading { color: var(--heading-color-night); border-bottom-color: var(--border-color-night);}
 
         /* Print Styles */
-        @media print { /* ... as before ... */ }
+        @media print { /* ... styles as before ... */ }
         #print-view { display: none; }
 
     </style>
@@ -125,11 +127,11 @@
     <div class="container">
         <div id="menu-view" class="view active">
             <h2>Station Database</h2>
-            <div class="menu-buttons"> <button class="button" onclick="showView('create-entry-view')">Create New Station Brief(s)</button> <button class="button" onclick="showView('browse-station-briefs-view')">Browse Station Briefs</button> </div>
+            <div class="menu-buttons"> <button class="button" onclick="showView('create-entry-view')">Create New Station Brief</button> <button class="button" onclick="showView('browse-station-briefs-view')">Browse Station Briefs</button> </div>
         </div>
 
         <div id="create-entry-view" class="view">
-            <h2>Create New Station Brief(s)</h2>
+            <h2>Create New Station Brief</h2>
             <form id="station-entry-form">
                 {/* --- Common Info --- */}
                 <div class="top-row-layout">
@@ -138,26 +140,24 @@
                     <div class="form-section" id="station-iata-section"> <label for="station-iata">Station IATA</label> <select id="station-iata" name="stationIATA"> <option value="" selected disabled>-- Select IATA --</option> </select> </div>
                 </div>
                 <div id="add-station-manual-fields">
-                    <p>Manually adding new station:</p>
-                    <div class="form-section"><label>New ICAO:</label><input type="text" name="stationICAONew" value=""></div>
-                    <div class="form-section"><label>New IATA:</label><input type="text" name="stationIATANew" value=""></div>
-                    <div class="form-section"><label>New Name:</label><input type="text" name="stationNameNew" value=""></div>
+                     <p>Manually adding new station:</p> <div class="form-section"><label>New ICAO:</label><input type="text" name="stationICAONew" value=""></div> <div class="form-section"><label>New IATA:</label><input type="text" name="stationIATANew" value=""></div> <div class="form-section"><label>New Name:</label><input type="text" name="stationNameNew" value=""></div>
                 </div>
+                 {/* Flight numbers moved inside sector blocks */}
                 <hr>
 
-                {/* --- Container for Dynamic Sector Blocks --- */}
-                <div id="sectors-container">
-                    {/* Sector blocks will be added here by JS */}
-                </div>
+                 <h3>Sector Details</h3>
+                 <div id="sector-tabs-container" class="sector-tabs">
+                     {/* Tabs added dynamically by JS */}
+                     <button type="button" class="add-sector-tab-btn" onclick="addSectorTab()" title="Add New Sector">+</button>
+                 </div>
 
-                {/* --- Add Sector Button --- */}
-                <div class="form-section">
-                    <button type="button" class="button button-secondary" onclick="addSectorBlock()">+ Add Sector Brief</button>
-                </div>
-                <hr>
+                 {/* Container for Sector Specific Inputs (Flight No, Sections) */}
+                 <div id="sector-details-container">
+                     {/* Content for each sector (including flight numbers and briefing sections) will be managed here by JS */}
+                 </div>
 
-                {/* --- Final Save/Back Buttons --- */}
-                <div class="form-section" style="margin-top:30px;"> <button type="submit" class="button">Save All Added Briefs</button> <button type="button" class="button button-secondary" onclick="showView('menu-view')">Back to Menu</button> </div>
+
+                <div class="form-section" style="margin-top:30px;"> <button type="submit" class="button">Save Station Brief</button> <button type="button" class="button button-secondary" onclick="showView('menu-view')">Back to Menu</button> </div>
             </form>
         </div>
 
@@ -176,162 +176,227 @@
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyV76pZNEbhDsVTiLl4y-oNkfYFFpL6oE88GhlkQv99vtYvg9kar_vvsnbhgWLEideu/exec'; // !!! PASTE YOUR URL HERE !!!
 
         // --- Global State ---
-        let previousView = 'menu-view'; let sectorBlockCounter = 0; let allFetchedBriefs = []; let currentlyViewedBrief = null;
+        let previousView = 'menu-view'; let sectorTabCounter = 0; let briefingSectionCounter = 0; let allFetchedBriefs = []; let currentlyViewedBrief = null;
 
-        // --- Station Data (For Dropdowns) ---
-        const stationMasterList = [ /* ... same list as before ... */ ];
+        // --- Station Data ---
+        const stationMasterList = [ /* ... list as before ... */ ];
 
         // --- Night Mode ---
         const darkModeToggle = document.getElementById('darkModeToggle'); function setDarkMode(isNight) { /* ... */ } if (darkModeToggle) { /* ... */ }
 
-        // --- View Switching & Control ---
+        // --- View Switching ---
         const viewBriefDetailsContainer = document.getElementById('view-brief-details-container'); const stationBriefsFullListContainer = document.getElementById('station-briefs-full-list-container'); const searchStationInputField = document.getElementById('search-station-input'); const browseViewH3 = document.querySelector('#browse-station-briefs-view h3');
-        function showView(viewId) { /* ... same as before ... */ }
+        function showView(viewId) { /* ... logic as before ... */ }
 
         function resetCreateEntryForm() {
             const form = document.getElementById('station-entry-form'); if(form) form.reset();
-             // Clear dynamically added sector blocks
-            document.getElementById('sectors-container').innerHTML = ''; sectorBlockCounter = 0;
+            document.getElementById('sector-tabs-container').innerHTML = '<button type="button" class="add-sector-tab-btn" onclick="addSectorTab()" title="Add New Sector">+</button>'; // Clear tabs except add button
+            document.getElementById('sector-details-container').innerHTML = ''; // Clear sector details
+            sectorTabCounter = 0; briefingSectionCounter = 0;
             const manualFields = document.getElementById('add-station-manual-fields'); manualFields.style.display = 'none';
-            document.getElementById('station-icao-new').required = false; document.getElementById('station-iata-new').required = false; document.getElementById('station-name-new').required = false;
-            document.getElementById('station-icao-new').value = ""; document.getElementById('station-iata-new').value = ""; document.getElementById('station-name-new').value = "";
+            document.getElementById('station-icao-new').required = false; /* ... clear manual fields ... */ document.getElementById('station-name-new').value = "";
             document.getElementById('aircraft-type').selectedIndex = 0; document.getElementById('station-icao').selectedIndex = 0; document.getElementById('station-iata').selectedIndex = 0;
-            addSectorBlock(); // Add one initial sector block on reset/load
+            addSectorTab(); // Add the first sector tab automatically
         }
 
-        // --- Populate Station Dropdowns & Handle Linking ---
-        const stationICAOSelect = document.getElementById('station-icao'); const stationIATASelect = document.getElementById('station-iata'); const manualStationFieldsDiv = document.getElementById('add-station-manual-fields'); const stationICAONewInput = document.getElementById('station-icao-new'); const stationIATANewInput = document.getElementById('station-iata-new'); const stationNameNewInput = document.getElementById('station-name-new');
-        function populateStationDropdowns() { /* ... same sorting logic as before ... */ }
-        function handleStationSelectChange(changedSelect, otherSelect) { /* ... same logic as before ... */ }
-        stationICAOSelect.addEventListener('change', function() { handleStationSelectChange(this, stationIATASelect); });
-        stationIATASelect.addEventListener('change', function() { handleStationSelectChange(this, stationIATASelect); });
+        // --- Station Dropdowns ---
+        const stationICAOSelect = document.getElementById('station-icao'); /* ... other vars ... */ function populateStationDropdowns() { /* ... */ } function handleStationSelectChange(changedSelect, otherSelect) { /* ... */ }
+        stationICAOSelect.addEventListener('change', function() { handleStationSelectChange(this, stationIATASelect); }); stationIATASelect.addEventListener('change', function() { handleStationSelectChange(this, stationICAOSelect); });
 
-        // --- Sector Block Management ---
-        const sectorsContainer = document.getElementById('sectors-container');
-        const predefinedSectionTitles = { station_overview: "Station Overview", operational_policy: "Operational Policy", preflight: "Preflight", pushback_taxi: "Pushback & Taxi", climb_enroute: "Climb & Enroute", arrival: "Arrival", taxi_in_parking: "Taxi-In and Parking", tem: "Threat and Error Management (TEM)", night_stop_info: "Night Stop Information", things_to_do: "Things To Do" };
-        const sectionKeyMap = { station_overview: "StationOverview", operational_policy: "OperationalPolicy", preflight: "Preflight", pushback_taxi: "PushbackTaxi", climb_enroute: "ClimbEnroute", arrival: "Arrival", taxi_in_parking: "TaxiInParking", tem: "TEM", night_stop_info: "NightStopInfo", things_to_do: "ThingsToDo" };
-        let briefingSectionCounter = 0; // Counter for unique section IDs across all sectors
+        // --- Dynamic Sector Tab and Content Management ---
+        const sectorTabsContainer = document.getElementById('sector-tabs-container');
+        const sectorDetailsContainer = document.getElementById('sector-details-container');
+        const addSectorTabButton = sectorTabsContainer.querySelector('.add-sector-tab-btn'); // Keep reference to the add button
 
-        function addSectorBlock() {
-            sectorBlockCounter++;
-            const sectorDiv = document.createElement('div');
-            sectorDiv.classList.add('sector-block');
-            sectorDiv.id = `sector-block-${sectorBlockCounter}`;
-            sectorDiv.dataset.sectorIndex = sectorBlockCounter; // Store index
+         const predefinedSectionTitles = { /* ... */ };
+         const sectionKeyMap = { /* ... */ };
 
-            // Generate unique IDs for elements within this sector
-            const sectorIdInputId = `sector-identifier-${sectorBlockCounter}`;
-            const flightContainerId = `flight-numbers-container-${sectorBlockCounter}`;
-            const sectionsContainerId = `active-briefing-sections-container-${sectorBlockCounter}`;
-            const sectionAdderId = `section-adder-${sectorBlockCounter}`;
-            const sectionSelectId = `add-section-select-${sectorBlockCounter}`;
 
-            sectorDiv.innerHTML = `
-                <button type="button" class="button button-delete button-delete-sector" onclick="this.parentElement.remove()">Remove Sector ${sectorBlockCounter}</button>
-                <h3>Sector ${sectorBlockCounter} Details</h3>
+        function addSectorTab(makeActive = true) {
+            sectorTabCounter++;
+            const sectorIndex = sectorTabCounter; // Use counter for unique index
 
-                <div class="form-section">
-                    <label for="${sectorIdInputId}">Sector Identifier / Description</label>
-                    <input type="text" id="${sectorIdInputId}" name="sectorIdentifier_${sectorBlockCounter}" required value="" placeholder="e.g., Outbound, SQ123">
-                </div>
+            // 1. Create Tab Button
+            const tabButton = document.createElement('button');
+            tabButton.type = 'button';
+            tabButton.classList.add('sector-tab');
+            tabButton.textContent = `Sector ${sectorIndex}`;
+            tabButton.dataset.sectorIndex = sectorIndex;
+            tabButton.onclick = function() { switchSectorTab(this, sectorIndex); };
 
-                <div class="form-section" id="flight-numbers-section-per-sector">
-                    <label>Flight Number(s) Applicable (for Sector ${sectorBlockCounter})</label>
+            // Add remove button only if it's not the first tab
+            if (sectorIndex > 1) {
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.classList.add('tab-remove-btn');
+                removeBtn.textContent = 'x';
+                removeBtn.title = `Remove Sector ${sectorIndex}`;
+                removeBtn.onclick = function(event) {
+                    event.stopPropagation(); // Prevent tab switch when clicking remove
+                    removeSectorTab(sectorIndex);
+                };
+                tabButton.appendChild(removeBtn);
+            }
+            sectorTabsContainer.insertBefore(tabButton, addSectorTabButton); // Insert before the '+' button
+
+            // 2. Create Sector Details Container
+            const detailsDiv = document.createElement('div');
+            detailsDiv.classList.add('sector-content'); // Initially hidden unless activated
+            detailsDiv.id = `sector-details-${sectorIndex}`;
+            detailsDiv.dataset.sectorIndex = sectorIndex; // Link content to tab index
+
+             // Add Flight Numbers section for this sector
+             const flightContainerId = `flight-numbers-container-S${sectorIndex}`;
+             detailsDiv.innerHTML += `
+                <div class="form-section" id="flight-numbers-section-${sectorIndex}">
+                    <label>Flight Number(s) Applicable (Sector ${sectorIndex})</label>
                     <div id="${flightContainerId}">
                         <div class="flight-number-input-group">
                             <span class="sq-prefix">SQ</span>
-                            <input type="text" name="flightNumber_S${sectorBlockCounter}[]" value="">
+                            <input type="text" name="flightNumber_S${sectorIndex}[]" value="">
                         </div>
                     </div>
-                    <button type="button" class="button button-secondary add-flight-no-btn" onclick="addFlightNumberField('${flightContainerId}', ${sectorBlockCounter})" style="font-size: 0.8em; padding: 3px 8px; margin-top: 5px;">+ Flight No.</button>
+                    <button type="button" class="button button-secondary add-flight-no-btn" onclick="addFlightNumberField('${flightContainerId}', ${sectorIndex})" style="font-size: 0.8em; padding: 3px 8px; margin-top: 5px;">+ Flight No.</button>
                 </div>
-
-                <h4>Briefing Sections (for Sector ${sectorBlockCounter})</h4>
-                <div id="${sectionsContainerId}" class="active-briefing-sections-container-per-sector">
-                     <div class="briefing-section-adder" id="${sectionAdderId}">
-                        <label for="${sectionSelectId}">Add briefing section:</label>
-                        <select id="${sectionSelectId}" onchange="addSelectedBriefingSection(this, ${sectorBlockCounter})">
+                 <hr>
+                 <h4>Briefing Sections (Sector ${sectorIndex})</h4>
+                 <div id="active-briefing-sections-container-${sectorIndex}" class="active-briefing-sections-container-per-sector">
+                     <div class="briefing-section-adder" id="section-adder-${sectorIndex}">
+                        <label for="add-section-select-${sectorIndex}">Add briefing section:</label>
+                        <select id="add-section-select-${sectorIndex}" onchange="addSelectedBriefingSection(this, ${sectorIndex})">
                             <option value="" disabled selected>-- Select to Add --</option>
-                            <option value="station_overview">Station Overview</option>
-                            <option value="operational_policy">Operational Policy</option>
-                            <option value="preflight">Preflight</option>
-                            <option value="pushback_taxi">Pushback & Taxi</option>
-                            <option value="climb_enroute">Climb & Enroute</option>
-                            <option value="arrival">Arrival</option>
-                            <option value="taxi_in_parking">Taxi-In and Parking</option>
-                            <option value="tem">TEM</option>
-                            <option value="night_stop_info">Night Stop Information</option>
-                            <option value="things_to_do">Things To Do</option>
+                             ${Object.keys(predefinedSectionTitles).map(key => `<option value="${key}">${predefinedSectionTitles[key]}</option>`).join('')}
                             <option value="custom">Custom Section</option>
                         </select>
                     </div>
-                </div>
-            `;
-            sectorsContainer.appendChild(sectorDiv);
-        }
+                 </div>
+             `;
+            sectorDetailsContainer.appendChild(detailsDiv);
 
-         function addFlightNumberField(containerId, sectorIndex) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            const newFieldGroup = document.createElement('div');
-            newFieldGroup.classList.add('flight-number-input-group');
-            // Make sure name includes sector index
-            newFieldGroup.innerHTML = `
-                <span class="sq-prefix">SQ</span>
-                <input type="text" name="flightNumber_S${sectorIndex}[]" value="">
-                <button type="button" class="button-delete" onclick="this.parentElement.remove()">X</button>
-            `;
-            container.appendChild(newFieldGroup);
-        }
+             // 3. Add existing section types to this new sector's details container
+             const existingSectionKeys = new Set();
+             document.querySelectorAll('#sector-details-container .dynamic-briefing-section[data-section-key]').forEach(el => {
+                 if(el.closest('.sector-content').dataset.sectorIndex === "1") { // Check sections in the first sector
+                     existingSectionKeys.add(el.dataset.sectionKey);
+                 }
+             });
+              existingSectionKeys.forEach(sectionValue => {
+                  // Pass the original select element from the first sector to reuse its value? No, just the key.
+                  addSelectedBriefingSection({ value: sectionValue }, sectorIndex, true); // Pass true to skip alert
+              });
+              // Add custom sections too
+               const existingCustomTitles = [];
+               document.querySelectorAll('#sector-details-1 .dynamic-briefing-section[id^="custom-section-"]').forEach(el => {
+                    const titleInput = el.querySelector('input[name="customSectionTitle[]"]'); // Adjust name if needed based on structure
+                    if (titleInput) existingCustomTitles.push(titleInput.value || `Custom Section ${el.id.split('-').pop()}`); // Get title
+               });
+                 existingCustomTitles.forEach(title => {
+                     addSelectedBriefingSection({ value: 'custom' }, sectorIndex, true, title); // Pass title if needed
+                 });
 
-        function addSelectedBriefingSection(selectElement, sectorIndex) {
-            const sectionValue = selectElement.value;
-            if (!sectionValue) return;
-            const targetContainer = document.getElementById(`active-briefing-sections-container-${sectorIndex}`);
-            const adderElement = document.getElementById(`section-adder-${sectorIndex}`); // Adder within this sector block
 
-            if (!targetContainer || !adderElement) { console.error("Target container or adder not found for sector " + sectorIndex); return; }
-
-            const sectionKey = sectionValue !== 'custom' ? sectionKeyMap[sectionValue] : null;
-
-            // Check if section already exists WITHIN THIS SECTOR BLOCK
-            if (sectionValue !== 'custom' && targetContainer.querySelector(`.dynamic-briefing-section[data-section-key="${sectionValue}"]`)) {
-                alert(`"${predefinedSectionTitles[sectionValue]}" section already added for Sector ${sectorIndex}.`);
-                selectElement.value = ""; return;
+            // 4. Activate the new tab if requested
+            if (makeActive) {
+                switchSectorTab(tabButton, sectorIndex);
+            } else {
+                 detailsDiv.style.display = 'none'; // Ensure it's hidden
             }
 
-            briefingSectionCounter++; // Global counter for unique element IDs
-            const sectionIdBase = (sectionValue === 'custom') ? `custom-section-${briefingSectionCounter}` : `briefing-section-${sectionValue}-${briefingSectionCounter}`; // Make unique
-            const sectionContainer = document.createElement('div'); sectionContainer.classList.add('dynamic-briefing-section'); sectionContainer.id = sectionIdBase;
-            if (sectionValue !== 'custom') sectionContainer.dataset.sectionKey = sectionValue; // Store original key
-
-            let sectionTitleText = (sectionValue === 'custom') ? `Custom Section` : predefinedSectionTitles[sectionValue]; // Custom title is now editable
-            const isCustom = (sectionValue === 'custom');
-
-            const editorId = `${sectionIdBase}-content`;
-            // IMPORTANT: Names must include sector index for formData collection
-            const hiddenInputName = isCustom ? `customSectionContentValue_S${sectorIndex}[]` : `${sectionKey}ContentValue_S${sectorIndex}`;
-            const hiddenInputId = `${sectionIdBase}-value`;
-            const titleInputName = isCustom ? `customSectionTitle_S${sectorIndex}[]` : '';
-
-             sectionContainer.innerHTML = `
-                <button type="button" class="button button-delete" onclick="removeBriefingSection('${sectionIdBase}')">Remove</button>
-                ${isCustom ? `<label for="title-${sectionIdBase}">Section Title:</label><input type="text" id="title-${sectionIdBase}" name="${titleInputName}" value="" style="margin-bottom:10px; font-weight:bold;" placeholder="Enter Custom Title">` : `<h4>${sectionTitleText}</h4>`}
-                <div class="editor-toolbar"> <button type="button" title="Bold" onclick="formatDoc('bold','${editorId}');"><b>B</b></button> <button type="button" title="Italic" onclick="formatDoc('italic','${editorId}');"><i>I</i></button> <button type="button" title="Underline" onclick="formatDoc('underline','${editorId}');"><u>U</u></button> <button type="button" title="Unordered List" onclick="formatDoc('insertUnorderedList','${editorId}');">&bull;&equiv;</button> </div>
-                <div id="${editorId}" class="editable-content" contenteditable="true"></div>
-                <input type="hidden" name="${hiddenInputName}" id="${hiddenInputId}">`;
-
-            targetContainer.insertBefore(sectionContainer, adderElement); // Insert section before its adder
-            selectElement.value = ""; // Reset this specific dropdown
+             return sectorIndex; // Return index if needed
         }
 
-        function removeBriefingSection(sectionId) { /* ... same as before ... */ }
-        function formatDoc(command, editorId, valueArgument = null) { /* ... same as before ... */ }
 
-        // --- Form Submission (Multiple Sectors) ---
+        function removeSectorTab(sectorIndexToRemove) {
+            if (sectorIndexToRemove <= 1) { alert("Cannot remove the first sector."); return; } // Prevent removing the first tab
+
+            if (confirm(`Are you sure you want to remove Sector ${sectorIndexToRemove} and all its content?`)) {
+                // Remove Tab Button
+                const tabButton = sectorTabsContainer.querySelector(`.sector-tab[data-sector-index="${sectorIndexToRemove}"]`);
+                if (tabButton) tabButton.remove();
+
+                // Remove Details Container
+                const detailsDiv = sectorDetailsContainer.querySelector(`#sector-details-${sectorIndexToRemove}`);
+                if (detailsDiv) detailsDiv.remove();
+
+                // Switch to the previous tab if the removed one was active
+                if (!sectorTabsContainer.querySelector('.sector-tab.active')) {
+                    const prevTabIndex = sectorIndexToRemove - 1;
+                    const prevTabButton = sectorTabsContainer.querySelector(`.sector-tab[data-sector-index="${prevTabIndex}"]`);
+                    if (prevTabButton) switchSectorTab(prevTabButton, prevTabIndex);
+                    else { // Fallback if somehow the previous doesn't exist, go to first
+                         const firstTabButton = sectorTabsContainer.querySelector('.sector-tab');
+                         if(firstTabButton) switchSectorTab(firstTabButton, firstTabButton.dataset.sectorIndex);
+                    }
+                }
+            }
+        }
+
+        function switchSectorTab(tabButtonToActivate, sectorIndexToActivate) {
+            // Deactivate all tabs and content
+            sectorTabsContainer.querySelectorAll('.sector-tab').forEach(tab => tab.classList.remove('active'));
+            sectorDetailsContainer.querySelectorAll('.sector-content').forEach(content => content.classList.remove('active')); // Use class now
+
+            // Activate the selected tab and content
+            tabButtonToActivate.classList.add('active');
+            const contentDiv = sectorDetailsContainer.querySelector(`#sector-details-${sectorIndexToActivate}`);
+            if (contentDiv) contentDiv.classList.add('active');
+        }
+
+
+         function addFlightNumberField(containerId, sectorIndex) {
+             const container = document.getElementById(containerId); if (!container) return;
+             const newFieldGroup = document.createElement('div'); newFieldGroup.classList.add('flight-number-input-group');
+             newFieldGroup.innerHTML = `<span class="sq-prefix">SQ</span><input type="text" name="flightNumber_S${sectorIndex}[]" value=""><button type="button" class="button-delete" onclick="this.parentElement.remove()">X</button>`;
+             container.appendChild(newFieldGroup);
+         }
+
+        function addSelectedBriefingSection(selectElementOrValue, sectorIndex, suppressAlert = false, customTitleSeed = '') {
+             const sectionValue = typeof selectElementOrValue === 'string' ? selectElementOrValue : selectElementOrValue.value;
+             const isInitialAddForNewTab = typeof selectElementOrValue === 'string'; // Check if called during tab creation
+
+             if (!sectionValue) return;
+             const targetContainer = document.getElementById(`active-briefing-sections-container-${sectorIndex}`);
+             const adderElement = document.getElementById(`section-adder-${sectorIndex}`);
+             if (!targetContainer || !adderElement) { console.error("Target/adder missing S" + sectorIndex); return; }
+
+             const sectionKey = sectionValue !== 'custom' ? sectionKeyMap[sectionValue] : null;
+
+             if (!suppressAlert && sectionValue !== 'custom' && targetContainer.querySelector(`.dynamic-briefing-section[data-section-key="${sectionValue}"]`)) {
+                 alert(`"${predefinedSectionTitles[sectionValue]}" already added for Sector ${sectorIndex}.`);
+                 if (!isInitialAddForNewTab) selectElementOrValue.value = ""; return; // Only reset if user interaction
+             }
+
+             briefingSectionCounter++; // Use global counter for unique IDs across sectors
+             const sectionIdBase = (sectionValue === 'custom') ? `custom-section-${briefingSectionCounter}` : `briefing-section-${sectionValue}-${briefingSectionCounter}`;
+             const sectionContainer = document.createElement('div'); sectionContainer.classList.add('dynamic-briefing-section'); sectionContainer.id = sectionIdBase;
+             if (sectionValue !== 'custom') sectionContainer.dataset.sectionKey = sectionValue;
+
+             const isCustom = (sectionValue === 'custom');
+             let sectionTitleText = isCustom ? (customTitleSeed || `Custom Section`) : predefinedSectionTitles[sectionValue];
+
+             const editorId = `${sectionIdBase}-content`;
+             const hiddenInputName = isCustom ? `customSectionContentValue_S${sectorIndex}[]` : `${sectionKey}ContentValue_S${sectorIndex}`;
+             const hiddenInputId = `${sectionIdBase}-value`;
+             const titleInputName = isCustom ? `customSectionTitle_S${sectorIndex}[]` : '';
+
+             sectionContainer.innerHTML = `
+                 <button type="button" class="button button-delete" onclick="removeBriefingSection('${sectionIdBase}')">Remove</button>
+                 ${isCustom ? `<label>Section Title:</label><input type="text" name="${titleInputName}" value="${sectionTitleText}" placeholder="Enter Custom Title" style="margin-bottom:10px; font-weight:bold;">` : `<h4>${sectionTitleText}</h4>`}
+                 <div class="editor-toolbar"> <button type="button" title="Bold" onclick="formatDoc('bold','${editorId}');"><b>B</b></button> <button type="button" title="Italic" onclick="formatDoc('italic','${editorId}');"><i>I</i></button> <button type="button" title="Underline" onclick="formatDoc('underline','${editorId}');"><u>U</u></button> <button type="button" title="Unordered List" onclick="formatDoc('insertUnorderedList','${editorId}');">&bull;&equiv;</button> </div>
+                 <div id="${editorId}" class="editable-content" contenteditable="true"></div> <input type="hidden" name="${hiddenInputName}" id="${hiddenInputId}">`;
+
+             targetContainer.insertBefore(sectionContainer, adderElement);
+             if (!isInitialAddForNewTab) selectElementOrValue.value = ""; // Reset dropdown only if triggered by user change
+         }
+
+
+        function removeBriefingSection(sectionId) { /* ... as before ... */ }
+        function formatDoc(command, editorId, valueArgument = null) { /* ... as before ... */ }
+
+        // --- Form Submission (Dynamic Tabs - Sends Multiple POSTs) ---
         const stationEntryForm = document.getElementById('station-entry-form');
         if (stationEntryForm) {
-            stationEntryForm.addEventListener('submit', async function(event) { // Make async
+            stationEntryForm.addEventListener('submit', async function(event) {
                 event.preventDefault();
                 const submitButton = stationEntryForm.querySelector('button[type="submit"]'); const btnTxt = submitButton.textContent;
 
@@ -341,150 +406,88 @@
                  if (!isManual && !stationEntryForm.elements['stationICAO'].value && !stationEntryForm.elements['stationIATA'].value) { alert("Select station or add manually."); return; }
                  if (isManual && (!stationEntryForm.elements['stationICAONew'].value || !stationEntryForm.elements['stationNameNew'].value)) { alert("Manual entry needs ICAO & Name."); return; }
                  if (!isManual && !stationEntryForm.elements['stationICAO'].value && !stationEntryForm.elements['stationIATA'].value) { alert("Select station."); return; }
-                 // --- End Common Validation ---
-
                  const sectorBlocks = sectorsContainer.querySelectorAll('.sector-block');
-                 if (sectorBlocks.length === 0) { alert("Please add at least one sector brief using the '+ Add Sector Brief' button."); return; }
+                 if (sectorBlocks.length === 0) { alert("Please add at least one sector brief."); return; }
+                 // --- End Validation ---
 
                  submitButton.disabled = true; submitButton.textContent = 'Saving...';
-                 let allSubmissionsSuccessful = true;
+                 let successfulSubmits = 0; let failedSubmits = 0;
                  const submissionPromises = [];
 
-                 // Collect common station info once
-                 let stationInfoPayload;
-                 if (isManual) { stationInfoPayload = JSON.stringify({ icao: stationEntryForm.elements['stationICAONew'].value.toUpperCase(), iata: stationEntryForm.elements['stationIATANew'].value.toUpperCase() || '', name: stationEntryForm.elements['stationNameNew'].value }); }
-                 else if (stationEntryForm.elements['stationICAO'].value) { const f = stationMasterList.find(s=>s.icao===stationEntryForm.elements['stationICAO'].value); stationInfoPayload = JSON.stringify(f ? {...f} : {icao: stationEntryForm.elements['stationICAO'].value, iata: stationEntryForm.elements['stationIATA'].value||'', name:'N/A'}); }
-                 else if (stationEntryForm.elements['stationIATA'].value) { const f = stationMasterList.find(s=>s.iata===stationEntryForm.elements['stationIATA'].value); stationInfoPayload = JSON.stringify(f ? {...f} : {icao: '', iata: stationEntryForm.elements['stationIATA'].value, name:'N/A'}); }
-                 const aircraftTypePayload = stationEntryForm.elements['aircraftType'].value;
+                  // Update all hidden inputs before looping
+                  document.querySelectorAll('.editable-content').forEach(editor => { const hid = editor.id.replace('-content', '-value'); const hin = document.getElementById(hid); if (hin) hin.value = editor.innerHTML; });
 
 
-                 // Iterate through each sector block
+                 // Loop through each sector block and create a submission promise for it
                  for (const sectorBlock of sectorBlocks) {
                      const sectorIndex = sectorBlock.dataset.sectorIndex;
                      const payload = {}; // Payload for this specific sector
 
-                      // Update hidden inputs within this block *only*
-                     sectorBlock.querySelectorAll('.editable-content').forEach(editor => { const hid = editor.id.replace('-content', '-value'); const hin = document.getElementById(hid); if (hin) hin.value = editor.innerHTML; });
+                     const sectorIdentifierInput = sectorBlock.querySelector(`input[name="sectorIdentifier_${sectorIndex}"]`);
+                     if (!sectorIdentifierInput || !sectorIdentifierInput.value) {
+                         alert(`Please enter a Sector Identifier for Sector ${sectorIndex}. Skipping this sector.`);
+                         failedSubmits++; // Count as failed if identifier is missing
+                         continue; // Skip this sector block
+                     }
+                     payload.sectorIdentifier = sectorIdentifierInput.value; // Add sector ID
 
-                      const sectorIdentifierInput = sectorBlock.querySelector(`input[name="sectorIdentifier_${sectorIndex}"]`);
-                      if (!sectorIdentifierInput || !sectorIdentifierInput.value) {
-                          alert(`Please enter a Sector Identifier for Sector ${sectorIndex}.`);
-                          sectorIdentifierInput?.focus();
-                          allSubmissionsSuccessful = false;
-                          break; // Stop processing further sectors if one is invalid
-                      }
+                      // Get common info (could be cached outside loop)
+                     if (isManual) { payload.stationInfo = JSON.stringify({ icao: stationEntryForm.elements['stationICAONew'].value.toUpperCase(), iata: stationEntryForm.elements['stationIATANew'].value.toUpperCase() || '', name: stationEntryForm.elements['stationNameNew'].value }); }
+                     else if (stationEntryForm.elements['stationICAO'].value) { const f = stationMasterList.find(s=>s.icao===stationEntryForm.elements['stationICAO'].value); payload.stationInfo = JSON.stringify(f ? {...f} : {icao: stationEntryForm.elements['stationICAO'].value, iata: stationEntryForm.elements['stationIATA'].value||'', name:'N/A'}); }
+                     else if (stationEntryForm.elements['stationIATA'].value) { const f = stationMasterList.find(s=>s.iata===stationEntryForm.elements['stationIATA'].value); payload.stationInfo = JSON.stringify(f ? {...f} : {icao: '', iata: stationEntryForm.elements['stationIATA'].value, name:'N/A'}); }
+                     payload.aircraftType = stationEntryForm.elements['aircraftType'].value;
 
-                      payload.stationInfo = stationInfoPayload;
-                      payload.aircraftType = aircraftTypePayload;
-                      payload.sectorIdentifier = sectorIdentifierInput.value;
+                     // Collect flight numbers for this sector
+                     const flightNumbers = []; sectorBlock.querySelectorAll(`input[name="flightNumber_S${sectorIndex}[]"]`).forEach(input => { if (input.value.trim()) flightNumbers.push(input.value.trim()); });
+                     payload.flightNumbers = JSON.stringify(flightNumbers);
 
-                      // Collect flight numbers for this sector
-                      const flightNumbers = [];
-                      sectorBlock.querySelectorAll(`input[name="flightNumber_S${sectorIndex}[]"]`).forEach(input => { if (input.value.trim()) flightNumbers.push(input.value.trim()); });
-                      payload.flightNumbers = JSON.stringify(flightNumbers);
-
-                      // Collect predefined sections for this sector
-                      for (const key in sectionKeyMap) {
-                         const inputName = `${sectionKeyMap[key]}ContentValue_S${sectorIndex}`; // Correct name format
-                         const hiddenInput = sectorBlock.querySelector(`input[name="${inputName}"]`);
-                         payload[sectionKeyMap[key] + 'ContentValue'] = hiddenInput ? hiddenInput.value : ''; // Map to simple key for backend
-                      }
+                     // Collect predefined sections for this sector
+                     for (const key in sectionKeyMap) { const inputName = `${sectionKeyMap[key]}ContentValue_S${sectorIndex}`; const hiddenInput = sectorBlock.querySelector(`input[name="${inputName}"]`); payload[sectionKeyMap[key] + 'ContentValue'] = hiddenInput ? hiddenInput.value : ''; }
 
                       // Collect custom sections for this sector
-                      let customSections = [];
-                      const customTitles = sectorBlock.querySelectorAll(`input[name="customSectionTitle_S${sectorIndex}[]"]`); // Use unique names if needed, or rely on structure - using structure here
-                      const customContents = sectorBlock.querySelectorAll(`input[name="customSectionContentValue_S${sectorIndex}[]"]`);
-                      customTitles.forEach((titleInput, index) => {
-                          customSections.push({ title: titleInput.value, content: customContents[index]?.value || '' });
-                      });
-                      payload.customSections = JSON.stringify(customSections);
+                     let customSections = []; const customTitles = sectorBlock.querySelectorAll(`input[name="customSectionTitle_S${sectorIndex}[]"]`); const customContents = sectorBlock.querySelectorAll(`input[name="customSectionContentValue_S${sectorIndex}[]"]`);
+                     customTitles.forEach((titleInput, index) => { customSections.push({ title: titleInput.value, content: customContents[index]?.value || '' }); });
+                     payload.customSections = JSON.stringify(customSections);
 
-                      console.log(`Submitting Payload for Sector ${sectorIndex}:`, payload);
+                     console.log(`Payload S${sectorIndex}:`, payload);
 
-                      // Add the fetch promise to the array
-                      submissionPromises.push(
-                          fetch(WEB_APP_URL, {
-                              method: 'POST',
-                              body: new URLSearchParams(payload),
-                              headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-                          }).then(response => response.json())
-                            .then(result => {
-                                if (result.status !== 'success') {
-                                    allSubmissionsSuccessful = false; // Mark failure if any sector fails
-                                    console.error(`Error saving Sector ${sectorIndex}:`, result.message);
-                                    alert(`Error saving Sector ${sectorIndex}: ${result.message}`);
-                                } else {
-                                    console.log(`Sector ${sectorIndex} saved successfully. ID: ${result.briefId}`);
-                                }
-                                return result; // Return result for Promise.all
-                            }).catch(error => {
-                                allSubmissionsSuccessful = false;
-                                console.error(`Workspace Error for Sector ${sectorIndex}:`, error);
-                                alert(`Network or script error saving Sector ${sectorIndex}: ${error.message}`);
-                                return { status: "error", message: error.message }; // Return error status
-                            })
-                      ); // End push fetch promise
+                     // Add fetch promise (using simplified backend)
+                     submissionPromises.push(
+                         fetch(WEB_APP_URL, { method: 'POST', body: new URLSearchParams(payload), headers: {'Content-Type': 'application/x-www-form-urlencoded'} })
+                         .then(res => res.json())
+                         .then(res => { if (res.status === 'success') { successfulSubmits++; return true; } else { throw new Error(res.message || `Sector ${sectorIndex} failed`); } })
+                         .catch(err => { failedSubmits++; console.error(`Error Sector ${sectorIndex}:`, err); return false; })
+                     );
+                 } // End loop
 
-                      if (!allSubmissionsSuccessful) break; // Stop if validation failed earlier
+                 // Wait for all promises
+                 await Promise.all(submissionPromises);
 
-                 } // End loop through sector blocks
+                 alert(`${successfulSubmits} sector brief(s) saved successfully. ${failedSubmits} failed.`);
 
-                 // Wait for all submissions to complete
-                 if(allSubmissionsSuccessful && submissionPromises.length > 0) {
-                     try {
-                         await Promise.all(submissionPromises); // Wait for all fetch calls
-                         if (allSubmissionsSuccessful) { // Check again after promises resolve
-                             alert(`All ${submissionPromises.length} sector brief(s) saved successfully!`);
-                             allFetchedBriefs = []; // Clear cache
-                             resetCreateEntryForm();
-                             showView('browse-station-briefs-view');
-                         } else {
-                             alert("Some sectors failed to save. Please check the console for details and try again.");
-                         }
-                     } catch (error) {
-                         // This catch might not be necessary if individual fetches handle errors
-                         console.error("Error processing submissions:", error);
-                         alert("An error occurred while processing submissions.");
-                     }
+                 if (successfulSubmits > 0) { // Only reset and navigate if at least one worked
+                     allFetchedBriefs = []; // Clear cache
+                     resetCreateEntryForm();
+                     showView('browse-station-briefs-view');
+                 } else { // Stay on page if all failed
+                     submitButton.disabled = false; submitButton.textContent = btnTxt;
                  }
-
-                 // Re-enable button regardless of outcome if we didn't navigate away
-                 submitButton.disabled = false; submitButton.textContent = btnTxt;
 
             }); // End form submit listener
         }
 
         // --- Browse Station Briefs Logic ---
-        // displayBriefDetails, hideBriefDetails, loadAndDisplayAllBriefs, printBriefDetails
-        // remain mostly the same as the *previous* version (single-sector display logic)
-        // because each row fetched now represents a single sector.
-        // Make sure loadAndDisplayAllBriefs shows the 'SectorIdentifier' in the list item.
-        async function loadAndDisplayAllBriefs(searchTerm = '') {
-             stationBriefsFullListContainer.innerHTML = '<p>Loading...</p>'; searchResultsDisplayArea.style.display = 'none';
-             if (!WEB_APP_URL || WEB_APP_URL === 'YOUR_DEPLOYED_WEB_APP_URL_HERE') { stationBriefsFullListContainer.innerHTML = '<p style="color:red;">Error: URL not set.</p>'; return; }
-             try {
-                 const response = await fetch(`${WEB_APP_URL}?action=getAllBriefs`); if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                 const result = await response.json(); if (result.status !== 'success') throw new Error(result.message);
-                 allFetchedBriefs = result.data.map(b => ({ ...b, stationInfo: typeof b.stationInfo === 'string' ? JSON.parse(b.stationInfo || '{}') : b.stationInfo || {}, FlightNumbers: Array.isArray(b.FlightNumbers) ? b.FlightNumbers : [], CustomSections: Array.isArray(b.CustomSections) ? b.CustomSections : [] }));
-             } catch (error) { console.error("Fetch Error:", error); stationBriefsFullListContainer.innerHTML = `<p>Error: ${error.message}.</p>`; return; }
-             let briefsToDisplay = [...allFetchedBriefs];
-             if (searchTerm) { const lSearch = searchTerm.toLowerCase(); briefsToDisplay = briefsToDisplay.filter(b => (b.stationInfo.icao?.toLowerCase().includes(lSearch)) || (b.stationInfo.iata?.toLowerCase().includes(lSearch)) || (b.stationInfo.name?.toLowerCase().includes(lSearch)) || (b.AircraftType?.toLowerCase().includes(lSearch)) || (b.SectorIdentifier?.toLowerCase().includes(lSearch)) || (b.FlightNumbers?.some(fn => fn.toLowerCase().includes(lSearch))) ); }
-             if (briefsToDisplay.length === 0) { stationBriefsFullListContainer.innerHTML = `<p>No briefs found${searchTerm ? ' matching' : ''}.</p>`; return; }
-             let listHtml = '<ul>'; briefsToDisplay.sort((a,b)=>(a.stationInfo.icao||"").localeCompare(b.stationInfo.icao||"")).forEach(b=>{const i=b.stationInfo?.icao||'N/A';const n=b.stationInfo?.name||'N/A';const a=b.AircraftType||'N/A';const u=b.LastUpdated||'N/A';const f=b.FlightNumbers?.length>0?`(SQ ${b.FlightNumbers.join('/')})`:'';const s=b.SectorIdentifier||'General';const id=b.rowId||b.BriefID;if(id){listHtml+=`<li onclick="displayBriefDetails('${id}')"><strong>${i} (${n})</strong> [${s}] - ${a}${f} - <em>Updated: ${u}</em></li>`;}else{listHtml+=`<li><strong>${i} (${n})</strong> [${s}] - ${a}${f} - <em>Updated: ${u}</em> (No ID)</li>`;}}); listHtml += '</ul>'; stationBriefsFullListContainer.innerHTML = listHtml;
-        }
-        function displayBriefDetails(briefId) { /* ... same as before (simplified view) ... */ }
-        function hideBriefDetails() { /* ... same as before ... */ }
-        function printBriefDetails() { /* ... same as before (simplified view) ... */ }
-        if (searchStationInputField) { /* ... event listener as before ... */ }
-
+        function displayBriefDetails(briefId) { /* ... Same as simplified version (shows one sector's details) ... */ }
+        function hideBriefDetails() { /* ... Same as simplified version ... */ }
+        async function loadAndDisplayAllBriefs(searchTerm = '') { /* ... Same as simplified version (shows SectorIdentifier) ... */ }
+        if (searchStationInputField) { /* ... Same as simplified version ... */ }
+        function printBriefDetails() { /* ... Same as simplified version ... */ }
 
         // --- Initial Setup ---
         document.addEventListener('DOMContentLoaded', () => {
             const savedDarkMode = localStorage.getItem('darkModePrefStationDB'); setDarkMode(savedDarkMode === 'true');
             populateStationDropdowns();
-            // Don't initially place the adder, add the first sector block instead
-            // if (sectionAdderElement) activeSectionsContainer.appendChild(sectionAdderElement);
-             resetCreateEntryForm(); // Includes adding the first sector block
+            resetCreateEntryForm(); // Add the first sector block
             showView('menu-view');
         });
     </script>
