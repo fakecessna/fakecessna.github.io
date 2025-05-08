@@ -640,13 +640,10 @@
                 await Promise.all(submissionPromises);
                 alert(`${successfulSubmits} sector(s) saved successfully. ${failedSubmits} sector(s) failed to save.`);
 
-                // If ANY save was successful, clear the form and show browse view
-                // User is already alerted about failures.
                 if (successfulSubmits > 0) {
-                    // No need to clear allFetchedBriefs here, loadAndDisplayAllBriefs will fetch fresh data
                     resetCreateEntryForm();
                     showView('browse-station-briefs-view');
-                } else { // Only re-enable button if ALL saves failed
+                } else {
                     submitButton.disabled = false;
                     submitButton.textContent = btnTxt;
                 }
@@ -655,21 +652,29 @@
 
         // --- Browse & View Logic (Uses simplified backend data structure) ---
         function displayBriefDetails(briefId) {
-            // TODO: Implement the logic to fetch full details for the selected briefId
-            // and display them in the #view-brief-details-container div.
             console.log("Attempting to display details for briefId:", briefId);
+            // Ensure allFetchedBriefs is an array before proceeding
+            if (!Array.isArray(allFetchedBriefs)) {
+                 console.error("Cannot display details because allFetchedBriefs is not an array:", allFetchedBriefs);
+                 alert("Error: Could not load brief details. Data format issue.");
+                 return;
+            }
 
-            // Find the full brief data in the allFetchedBriefs array
-            currentlyViewedBrief = allFetchedBriefs.find(b => b.uniqueID === briefId || b.sectorIdentifier === briefId); // Adjust based on what unique ID backend returns
+            currentlyViewedBrief = allFetchedBriefs.find(b => b.uniqueID === briefId || b.sectorIdentifier === briefId);
 
             if (currentlyViewedBrief) {
                 console.log("Found brief:", currentlyViewedBrief);
-                // Populate the #view-brief-details-container
-                // Example structure (customize as needed):
                 let detailsHtml = `<h3>Brief: ${currentlyViewedBrief.stationInfo.name || currentlyViewedBrief.stationInfo.icao} (${currentlyViewedBrief.aircraftType}) - Sector ${currentlyViewedBrief.sectorIdentifier}</h3>`;
-                detailsHtml += `<p><strong>Flight Numbers:</strong> ${JSON.parse(currentlyViewedBrief.flightNumbers || "[]").join(', ')}</p><hr>`;
+                // Ensure flightNumbers is valid JSON before parsing
+                let flightNos = "N/A";
+                try {
+                   const parsedFlightNos = JSON.parse(currentlyViewedBrief.flightNumbers || "[]");
+                   if (Array.isArray(parsedFlightNos)) {
+                       flightNos = parsedFlightNos.join(', ') || "N/A";
+                   }
+                } catch (e) { console.error("Error parsing flightNumbers:", e); }
+                detailsHtml += `<p><strong>Flight Numbers:</strong> ${flightNos}</p><hr>`;
 
-                // Add predefined sections
                 for (const key in predefinedSectionTitles) {
                     const contentKey = sectionKeyMap[key] + 'ContentValue';
                     if (currentlyViewedBrief[contentKey]) {
@@ -677,16 +682,19 @@
                     }
                 }
 
-                // Add custom sections
-                const customSections = JSON.parse(currentlyViewedBrief.customSections || "[]");
-                if (customSections.length > 0) {
-                     detailsHtml += `<hr><h5>Custom Sections</h5>`;
-                     customSections.forEach(section => {
-                         if(section.title || section.content) { // Only show if title or content exists
-                            detailsHtml += `<div class="brief-detail-section"><h6>${section.title || 'Custom Section'}</h6><div class="brief-content">${section.content || 'N/A'}</div></div>`;
-                         }
-                     });
-                }
+                // Ensure customSections is valid JSON before parsing
+                 try {
+                    const customSections = JSON.parse(currentlyViewedBrief.customSections || "[]");
+                    if (Array.isArray(customSections) && customSections.length > 0) {
+                         detailsHtml += `<hr><h5>Custom Sections</h5>`;
+                         customSections.forEach(section => {
+                             if(section.title || section.content) {
+                                detailsHtml += `<div class="brief-detail-section"><h6>${section.title || 'Custom Section'}</h6><div class="brief-content">${section.content || 'N/A'}</div></div>`;
+                             }
+                         });
+                    }
+                 } catch(e) { console.error("Error parsing customSections:", e); }
+
 
                  detailsHtml += `<hr><div style="margin-top: 20px;">
                                     <button class="button" onclick="printBriefDetails()">Print Brief</button>
@@ -696,49 +704,66 @@
                 viewBriefDetailsContainer.innerHTML = detailsHtml;
                 viewBriefDetailsContainer.style.display = 'block';
                 stationBriefsFullListContainer.style.display = 'none';
-                searchStationInputField.style.display = 'none'; // Hide search while viewing details
-                if(browseViewH3) browseViewH3.style.display = 'none'; // Hide "All Station Briefs" header
+                searchStationInputField.style.display = 'none';
+                if(browseViewH3) browseViewH3.style.display = 'none';
 
             } else {
                 console.error("Could not find brief details for ID:", briefId);
                 alert("Error: Could not load brief details.");
-                hideBriefDetails(); // Go back to list view if details can't be found
+                hideBriefDetails();
             }
         }
-
 
         function hideBriefDetails() {
             viewBriefDetailsContainer.style.display = 'none';
             viewBriefDetailsContainer.innerHTML = '';
             stationBriefsFullListContainer.style.display = 'block';
-            searchStationInputField.style.display = 'block'; // Show search again
-            if(browseViewH3) browseViewH3.style.display = 'block'; // Show "All Station Briefs" header again
+            searchStationInputField.style.display = 'block';
+            if(browseViewH3) browseViewH3.style.display = 'block';
             currentlyViewedBrief = null;
-            // No need to call loadAndDisplayAllBriefs unless data might have changed
         }
 
-        // --- UPDATED Function to Fetch and Display Briefs ---
+        // --- Function to Fetch and Display Briefs (with Array Check) ---
         async function loadAndDisplayAllBriefs(searchTerm = '') {
             stationBriefsFullListContainer.innerHTML = '<p>Loading briefs...</p>';
             try {
-                // Fetch data from backend
                 const response = await fetch(`${WEB_APP_URL}?action=getBriefs`);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
                 }
-                // Assuming backend returns an array of brief objects.
-                // Each object needs at least: { uniqueID: '...', stationInfo: { name: '...', icao: '...' }, aircraftType: '...', sectorIdentifier: '...', flightNumbers: '["..."]', customSections: '[{...}]', /* other section keys like StationOverviewContentValue */ }
-                allFetchedBriefs = await response.json();
 
-                let filteredBriefs = allFetchedBriefs;
+                // Attempt to parse JSON, handle potential errors
+                let fetchedData;
+                try {
+                    fetchedData = await response.json();
+                } catch (jsonError) {
+                    console.error("Error parsing JSON response:", jsonError);
+                    // Try getting the response as text to see what was actually returned
+                    const textResponse = await response.text();
+                    console.error("Backend response text:", textResponse);
+                    throw new Error(`Failed to parse JSON response from backend. Check backend script. Response text: ${textResponse.substring(0, 100)}...`);
+                }
+
+
+                // *** CHECK IF FETCHED DATA IS AN ARRAY ***
+                if (!Array.isArray(fetchedData)) {
+                    console.error("Data fetched from backend is not an array:", fetchedData);
+                    throw new Error("Received invalid data format from server. Expected an array.");
+                }
+                // *** END CHECK ***
+
+                allFetchedBriefs = fetchedData; // Store globally ONLY if it's an array
+
+                let filteredBriefs = allFetchedBriefs; // Now we know allFetchedBriefs is an array
 
                 // Apply search filter
                 if (searchTerm) {
                     const lowerSearchTerm = searchTerm.toLowerCase();
+                    // Ensure filtering happens on the valid array
                     filteredBriefs = allFetchedBriefs.filter(brief =>
-                        (brief.stationInfo.name && brief.stationInfo.name.toLowerCase().includes(lowerSearchTerm)) ||
-                        (brief.stationInfo.icao && brief.stationInfo.icao.toLowerCase().includes(lowerSearchTerm)) ||
-                        (brief.stationInfo.iata && brief.stationInfo.iata.toLowerCase().includes(lowerSearchTerm)) ||
+                        (brief.stationInfo?.name && brief.stationInfo.name.toLowerCase().includes(lowerSearchTerm)) ||
+                        (brief.stationInfo?.icao && brief.stationInfo.icao.toLowerCase().includes(lowerSearchTerm)) ||
+                        (brief.stationInfo?.iata && brief.stationInfo.iata.toLowerCase().includes(lowerSearchTerm)) ||
                         (brief.sectorIdentifier && brief.sectorIdentifier.toLowerCase().includes(lowerSearchTerm)) ||
                         (brief.aircraftType && brief.aircraftType.toLowerCase().includes(lowerSearchTerm))
                     );
@@ -754,20 +779,25 @@
                 }
 
                 const ul = document.createElement('ul');
-                filteredBriefs.forEach(brief => {
+                filteredBriefs.forEach(brief => { // This is now safe to call
                     const li = document.createElement('li');
-                    // Make sure brief.stationInfo exists and has name or icao
                     const stationDisplay = brief.stationInfo ? (brief.stationInfo.name || brief.stationInfo.icao) : 'Unknown Station';
                     li.textContent = `${stationDisplay} (${brief.aircraftType || 'N/A'}) - Sector: ${brief.sectorIdentifier || 'N/A'}`;
 
-                    // Ensure brief has a unique identifier provided by the backend (e.g., 'uniqueID')
                     if (brief.uniqueID) {
                        li.onclick = () => displayBriefDetails(brief.uniqueID);
-                       li.style.cursor = 'pointer'; // Indicate it's clickable
+                       li.style.cursor = 'pointer';
                     } else {
                        console.warn("Brief object missing uniqueID:", brief);
-                       li.onclick = () => alert("Error: Cannot display details for this brief (missing unique identifier). Check backend script.");
-                       li.style.cursor = 'not-allowed';
+                       // Fallback to using sectorIdentifier if uniqueID is missing, but warn user this might not be unique
+                       if(brief.sectorIdentifier) {
+                            li.onclick = () => displayBriefDetails(brief.sectorIdentifier);
+                            li.style.cursor = 'pointer';
+                            li.title = "Using Sector ID as unique ID - may not be unique if multiple entries exist for the same sector."
+                       } else {
+                            li.onclick = () => alert("Error: Cannot display details (missing unique identifier). Check backend script.");
+                            li.style.cursor = 'not-allowed';
+                       }
                     }
                     ul.appendChild(li);
                 });
@@ -776,54 +806,59 @@
 
             } catch (error) {
                 console.error('Failed to load station briefs:', error);
-                stationBriefsFullListContainer.innerHTML = `<p style="color: red;">Error loading briefs: ${error.message}. Check console and ensure backend script handles 'action=getBriefs'.</p>`;
-                allFetchedBriefs = [];
+                stationBriefsFullListContainer.innerHTML = `<p style="color: red;">Error loading briefs: ${error.message}. Check console and ensure backend script handles 'action=getBriefs' and returns a valid JSON array.</p>`;
+                allFetchedBriefs = []; // Clear cache on error
             }
         }
 
 
         if (searchStationInputField) {
             searchStationInputField.addEventListener('input', (e) => {
-                // Filter the already fetched briefs instead of re-fetching on every keypress
+                // Re-filter the existing allFetchedBriefs data instead of fetching again
                 loadAndDisplayAllBriefs(e.target.value);
             });
         }
 
         function printBriefDetails() {
-            // This function prepares the #print-content with the details of currentlyViewedBrief
-            // and then calls window.print().
             if (!currentlyViewedBrief) {
                 alert("No brief selected to print.");
                 return;
             }
             const printContentDiv = document.getElementById('print-content');
 
-            // --- Populate print content --- (Similar to displayBriefDetails, but potentially simplified for print)
             let printHtml = `<h2>Station Brief: ${currentlyViewedBrief.stationInfo.name || currentlyViewedBrief.stationInfo.icao} (${currentlyViewedBrief.aircraftType})</h2>`;
             printHtml += `<h3>Sector: ${currentlyViewedBrief.sectorIdentifier}</h3>`;
-            printHtml += `<p><strong>Flight Numbers:</strong> ${JSON.parse(currentlyViewedBrief.flightNumbers || "[]").join(', ')}</p><hr>`;
+             // Ensure flightNumbers is valid JSON before parsing
+             let flightNos = "N/A";
+             try {
+                const parsedFlightNos = JSON.parse(currentlyViewedBrief.flightNumbers || "[]");
+                if (Array.isArray(parsedFlightNos)) {
+                    flightNos = parsedFlightNos.join(', ') || "N/A";
+                }
+             } catch (e) { console.error("Error parsing flightNumbers for print:", e); }
+            printHtml += `<p><strong>Flight Numbers:</strong> ${flightNos}</p><hr>`;
 
-            // Add predefined sections
             for (const key in predefinedSectionTitles) {
                 const contentKey = sectionKeyMap[key] + 'ContentValue';
                 if (currentlyViewedBrief[contentKey]) {
                      printHtml += `<div class="brief-detail-section"><h4>${predefinedSectionTitles[key]}</h4><div class="brief-content">${currentlyViewedBrief[contentKey]}</div></div>`;
                 }
             }
-            // Add custom sections
-            const customSections = JSON.parse(currentlyViewedBrief.customSections || "[]");
-             if (customSections.length > 0) {
-                 printHtml += `<hr><h4>Custom Sections</h4>`;
-                 customSections.forEach(section => {
-                    if(section.title || section.content){
-                       printHtml += `<div class="brief-detail-section"><h5>${section.title || 'Custom Section'}</h5><div class="brief-content">${section.content || 'N/A'}</div></div>`;
-                    }
-                 });
-            }
-            // --- End Populate ---
 
-            printContentDiv.innerHTML = printHtml; // Set the content for the print view
-            window.print(); // Trigger the browser's print dialog
+            try {
+                const customSections = JSON.parse(currentlyViewedBrief.customSections || "[]");
+                if (Array.isArray(customSections) && customSections.length > 0) {
+                     printHtml += `<hr><h4>Custom Sections</h4>`;
+                     customSections.forEach(section => {
+                        if(section.title || section.content){
+                           printHtml += `<div class="brief-detail-section"><h5>${section.title || 'Custom Section'}</h5><div class="brief-content">${section.content || 'N/A'}</div></div>`;
+                        }
+                     });
+                }
+             } catch(e) { console.error("Error parsing customSections for print:", e); }
+
+            printContentDiv.innerHTML = printHtml;
+            window.print();
         }
 
         // --- Initial Setup ---
@@ -832,7 +867,7 @@
             setDarkMode(savedDarkMode === 'true');
             populateStationDropdowns();
             resetCreateEntryForm();
-            showView('menu-view'); // Start at menu view
+            showView('menu-view');
         });
     </script>
 </body>
