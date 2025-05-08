@@ -218,7 +218,7 @@
         // --- Global State ---
         let previousView = 'menu-view';
         let sectorBlockCounter = 0;
-        let allFetchedBriefs = [];
+        let allFetchedBriefs = []; // Holds the master list fetched from backend
         let currentlyViewedBrief = null;
         let briefingSectionCounter = 0; // Unique IDs for sections
 
@@ -304,7 +304,7 @@
                 stationBriefsFullListContainer.style.display = 'block';
                 searchStationInputField.style.display = 'block';
                 if(browseViewH3) browseViewH3.style.display = 'block';
-                loadAndDisplayAllBriefs();
+                loadAndDisplayAllBriefs(); // Load fresh data when switching to browse view
             }
             if (viewId === 'create-entry-view' && document.getElementById('sectors-container').children.length === 0) {
                 addSectorBlock(); // Ensure at least one block exists when view loads
@@ -364,7 +364,7 @@
             const v = changedSelect.value;
             manualStationFieldsDiv.style.display='none';
             stationICAONewInput.required=false;
-            stationIATANewInput.required=false; 
+            stationIATANewInput.required=false;
             stationNameNewInput.required=false;
 
             if (v === "__add_new__") {
@@ -530,7 +530,7 @@
                 if (!stationEntryForm.elements['aircraftType'].value) { alert("Select Aircraft Type."); return; }
                 if (!isManual && !stationEntryForm.elements['stationICAO'].value && !stationEntryForm.elements['stationIATA'].value) { alert("Select station or add manually."); return; }
                 if (isManual && (!stationEntryForm.elements['stationICAONew'].value || !stationEntryForm.elements['stationNameNew'].value)) { alert("Manual entry needs ICAO & Name."); return; }
-                
+
                 const sectorBlocks = sectorsContainer.querySelectorAll('.sector-block');
                 if (sectorBlocks.length === 0) { alert("Add at least one sector brief."); return; }
 
@@ -584,19 +584,19 @@
                     if (!firstFlightNumber) {
                         alert(`Sector ${sectorIndex} must have at least one flight number to serve as its identifier. Skipping this sector.`);
                         failedSubmits++;
-                        continue; 
+                        continue;
                     }
-                    
+
                     let sectorIdentifier;
-                    if (/^\d+$/.test(firstFlightNumber)) { 
+                    if (/^\d+$/.test(firstFlightNumber)) {
                         sectorIdentifier = "SQ" + firstFlightNumber;
                     } else {
-                        sectorIdentifier = firstFlightNumber.toUpperCase(); 
+                        sectorIdentifier = firstFlightNumber.toUpperCase();
                     }
 
                     payload.stationInfo = stationInfoPayload;
                     payload.aircraftType = aircraftTypePayload;
-                    payload.sectorIdentifier = sectorIdentifier; 
+                    payload.sectorIdentifier = sectorIdentifier;
                     payload.flightNumbers = JSON.stringify(flightNumbers);
 
                     for (const key in sectionKeyMap) {
@@ -640,11 +640,13 @@
                 await Promise.all(submissionPromises);
                 alert(`${successfulSubmits} sector(s) saved successfully. ${failedSubmits} sector(s) failed to save.`);
 
-                if (successfulSubmits > 0 && failedSubmits === 0) { 
-                    allFetchedBriefs = []; 
+                // If ANY save was successful, clear the form and show browse view
+                // User is already alerted about failures.
+                if (successfulSubmits > 0) {
+                    // No need to clear allFetchedBriefs here, loadAndDisplayAllBriefs will fetch fresh data
                     resetCreateEntryForm();
                     showView('browse-station-briefs-view');
-                } else {
+                } else { // Only re-enable button if ALL saves failed
                     submitButton.disabled = false;
                     submitButton.textContent = btnTxt;
                 }
@@ -653,28 +655,84 @@
 
         // --- Browse & View Logic (Uses simplified backend data structure) ---
         function displayBriefDetails(briefId) {
-            console.log("Displaying details for briefId (which might be a composite key or unique ID from backend):", briefId);
-            alert("displayBriefDetails function needs to be fully implemented.");
+            // TODO: Implement the logic to fetch full details for the selected briefId
+            // and display them in the #view-brief-details-container div.
+            console.log("Attempting to display details for briefId:", briefId);
+
+            // Find the full brief data in the allFetchedBriefs array
+            currentlyViewedBrief = allFetchedBriefs.find(b => b.uniqueID === briefId || b.sectorIdentifier === briefId); // Adjust based on what unique ID backend returns
+
+            if (currentlyViewedBrief) {
+                console.log("Found brief:", currentlyViewedBrief);
+                // Populate the #view-brief-details-container
+                // Example structure (customize as needed):
+                let detailsHtml = `<h3>Brief: ${currentlyViewedBrief.stationInfo.name || currentlyViewedBrief.stationInfo.icao} (${currentlyViewedBrief.aircraftType}) - Sector ${currentlyViewedBrief.sectorIdentifier}</h3>`;
+                detailsHtml += `<p><strong>Flight Numbers:</strong> ${JSON.parse(currentlyViewedBrief.flightNumbers || "[]").join(', ')}</p><hr>`;
+
+                // Add predefined sections
+                for (const key in predefinedSectionTitles) {
+                    const contentKey = sectionKeyMap[key] + 'ContentValue';
+                    if (currentlyViewedBrief[contentKey]) {
+                         detailsHtml += `<div class="brief-detail-section"><h5>${predefinedSectionTitles[key]}</h5><div class="brief-content">${currentlyViewedBrief[contentKey]}</div></div>`;
+                    }
+                }
+
+                // Add custom sections
+                const customSections = JSON.parse(currentlyViewedBrief.customSections || "[]");
+                if (customSections.length > 0) {
+                     detailsHtml += `<hr><h5>Custom Sections</h5>`;
+                     customSections.forEach(section => {
+                         if(section.title || section.content) { // Only show if title or content exists
+                            detailsHtml += `<div class="brief-detail-section"><h6>${section.title || 'Custom Section'}</h6><div class="brief-content">${section.content || 'N/A'}</div></div>`;
+                         }
+                     });
+                }
+
+                 detailsHtml += `<hr><div style="margin-top: 20px;">
+                                    <button class="button" onclick="printBriefDetails()">Print Brief</button>
+                                    <button class="button button-secondary" onclick="hideBriefDetails()">Close Details</button>
+                                    </div>`;
+
+                viewBriefDetailsContainer.innerHTML = detailsHtml;
+                viewBriefDetailsContainer.style.display = 'block';
+                stationBriefsFullListContainer.style.display = 'none';
+                searchStationInputField.style.display = 'none'; // Hide search while viewing details
+                if(browseViewH3) browseViewH3.style.display = 'none'; // Hide "All Station Briefs" header
+
+            } else {
+                console.error("Could not find brief details for ID:", briefId);
+                alert("Error: Could not load brief details.");
+                hideBriefDetails(); // Go back to list view if details can't be found
+            }
         }
+
 
         function hideBriefDetails() {
             viewBriefDetailsContainer.style.display = 'none';
             viewBriefDetailsContainer.innerHTML = '';
             stationBriefsFullListContainer.style.display = 'block';
-            searchStationInputField.style.display = 'block';
-            if(browseViewH3) browseViewH3.style.display = 'block';
+            searchStationInputField.style.display = 'block'; // Show search again
+            if(browseViewH3) browseViewH3.style.display = 'block'; // Show "All Station Briefs" header again
             currentlyViewedBrief = null;
-            loadAndDisplayAllBriefs(searchStationInputField.value); 
+            // No need to call loadAndDisplayAllBriefs unless data might have changed
         }
 
+        // --- UPDATED Function to Fetch and Display Briefs ---
         async function loadAndDisplayAllBriefs(searchTerm = '') {
             stationBriefsFullListContainer.innerHTML = '<p>Loading briefs...</p>';
             try {
-                // MOCKUP / PLACEHOLDER - Replace with actual fetch
-                if (!allFetchedBriefs || allFetchedBriefs.length === 0 && !searchTerm) {
-                     console.log("Simulating fetch for allFetchedBriefs.");
+                // Fetch data from backend
+                const response = await fetch(`${WEB_APP_URL}?action=getBriefs`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                // Assuming backend returns an array of brief objects.
+                // Each object needs at least: { uniqueID: '...', stationInfo: { name: '...', icao: '...' }, aircraftType: '...', sectorIdentifier: '...', flightNumbers: '["..."]', customSections: '[{...}]', /* other section keys like StationOverviewContentValue */ }
+                allFetchedBriefs = await response.json();
+
                 let filteredBriefs = allFetchedBriefs;
+
+                // Apply search filter
                 if (searchTerm) {
                     const lowerSearchTerm = searchTerm.toLowerCase();
                     filteredBriefs = allFetchedBriefs.filter(brief =>
@@ -685,17 +743,32 @@
                         (brief.aircraftType && brief.aircraftType.toLowerCase().includes(lowerSearchTerm))
                     );
                 }
-                // END MOCKUP
 
-                if (filteredBriefs.length === 0) {
-                    stationBriefsFullListContainer.innerHTML = '<p>No station briefs found.</p>';
+                if (!filteredBriefs || filteredBriefs.length === 0) {
+                    if (searchTerm) {
+                        stationBriefsFullListContainer.innerHTML = `<p>No station briefs found matching "${searchTerm}".</p>`;
+                    } else {
+                        stationBriefsFullListContainer.innerHTML = '<p>No station briefs found in the database.</p>';
+                    }
                     return;
                 }
+
                 const ul = document.createElement('ul');
-                filteredBriefs.forEach(brief => { 
+                filteredBriefs.forEach(brief => {
                     const li = document.createElement('li');
-                    li.textContent = `${brief.stationInfo.name || brief.stationInfo.icao} (${brief.aircraftType}) - Sector: ${brief.sectorIdentifier}`;
-                    li.onclick = () => alert(`Display details for ${brief.sectorIdentifier} - Implement displayBriefDetails and ensure backend provides unique IDs for each brief entry.`);
+                    // Make sure brief.stationInfo exists and has name or icao
+                    const stationDisplay = brief.stationInfo ? (brief.stationInfo.name || brief.stationInfo.icao) : 'Unknown Station';
+                    li.textContent = `${stationDisplay} (${brief.aircraftType || 'N/A'}) - Sector: ${brief.sectorIdentifier || 'N/A'}`;
+
+                    // Ensure brief has a unique identifier provided by the backend (e.g., 'uniqueID')
+                    if (brief.uniqueID) {
+                       li.onclick = () => displayBriefDetails(brief.uniqueID);
+                       li.style.cursor = 'pointer'; // Indicate it's clickable
+                    } else {
+                       console.warn("Brief object missing uniqueID:", brief);
+                       li.onclick = () => alert("Error: Cannot display details for this brief (missing unique identifier). Check backend script.");
+                       li.style.cursor = 'not-allowed';
+                    }
                     ul.appendChild(li);
                 });
                 stationBriefsFullListContainer.innerHTML = '';
@@ -703,24 +776,54 @@
 
             } catch (error) {
                 console.error('Failed to load station briefs:', error);
-                stationBriefsFullListContainer.innerHTML = `<p>Error loading briefs: ${error.message}. Check console for details.</p>`;
+                stationBriefsFullListContainer.innerHTML = `<p style="color: red;">Error loading briefs: ${error.message}. Check console and ensure backend script handles 'action=getBriefs'.</p>`;
+                allFetchedBriefs = [];
             }
         }
 
+
         if (searchStationInputField) {
             searchStationInputField.addEventListener('input', (e) => {
+                // Filter the already fetched briefs instead of re-fetching on every keypress
                 loadAndDisplayAllBriefs(e.target.value);
             });
         }
 
         function printBriefDetails() {
+            // This function prepares the #print-content with the details of currentlyViewedBrief
+            // and then calls window.print().
             if (!currentlyViewedBrief) {
                 alert("No brief selected to print.");
                 return;
             }
             const printContentDiv = document.getElementById('print-content');
-            alert("printBriefDetails function needs to be fully implemented with the brief's content.");
-            // window.print();
+
+            // --- Populate print content --- (Similar to displayBriefDetails, but potentially simplified for print)
+            let printHtml = `<h2>Station Brief: ${currentlyViewedBrief.stationInfo.name || currentlyViewedBrief.stationInfo.icao} (${currentlyViewedBrief.aircraftType})</h2>`;
+            printHtml += `<h3>Sector: ${currentlyViewedBrief.sectorIdentifier}</h3>`;
+            printHtml += `<p><strong>Flight Numbers:</strong> ${JSON.parse(currentlyViewedBrief.flightNumbers || "[]").join(', ')}</p><hr>`;
+
+            // Add predefined sections
+            for (const key in predefinedSectionTitles) {
+                const contentKey = sectionKeyMap[key] + 'ContentValue';
+                if (currentlyViewedBrief[contentKey]) {
+                     printHtml += `<div class="brief-detail-section"><h4>${predefinedSectionTitles[key]}</h4><div class="brief-content">${currentlyViewedBrief[contentKey]}</div></div>`;
+                }
+            }
+            // Add custom sections
+            const customSections = JSON.parse(currentlyViewedBrief.customSections || "[]");
+             if (customSections.length > 0) {
+                 printHtml += `<hr><h4>Custom Sections</h4>`;
+                 customSections.forEach(section => {
+                    if(section.title || section.content){
+                       printHtml += `<div class="brief-detail-section"><h5>${section.title || 'Custom Section'}</h5><div class="brief-content">${section.content || 'N/A'}</div></div>`;
+                    }
+                 });
+            }
+            // --- End Populate ---
+
+            printContentDiv.innerHTML = printHtml; // Set the content for the print view
+            window.print(); // Trigger the browser's print dialog
         }
 
         // --- Initial Setup ---
@@ -728,8 +831,8 @@
             const savedDarkMode = localStorage.getItem('darkModePrefStationDB');
             setDarkMode(savedDarkMode === 'true');
             populateStationDropdowns();
-            resetCreateEntryForm(); 
-            showView('menu-view');
+            resetCreateEntryForm();
+            showView('menu-view'); // Start at menu view
         });
     </script>
 </body>
