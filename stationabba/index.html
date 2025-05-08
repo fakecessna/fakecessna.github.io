@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Station Database - Alpha</title>
     <style>
-        /* General Styles - Verified */
+        /* General Styles - Copied from stationabba.html */
         :root {
             --bg-color-day: #f4f4f4; --container-bg-day: #ffffff; --text-color-day: #333; --heading-color-day: #0056b3;
             --border-color-day: #eee; --input-border-day: #ccc; --input-focus-border-day: #007bff; --input-focus-shadow-day: rgba(0, 123, 255, 0.5);
@@ -35,7 +35,7 @@
         body.night-mode .button { background-color: var(--accent-color); color: var(--button-text-night); }
         .button-secondary { background-color: #6c757d; color: white; }
         body.night-mode .button-secondary { background-color: #5a6268; color: var(--text-color-night); }
-        .button-delete { background-color: #dc3545; color: white; padding: 3px 8px; font-size: 12px; margin-left: 10px; vertical-align: middle; cursor: pointer;} /* Added cursor */
+        .button-delete { background-color: #dc3545; color: white; padding: 3px 8px; font-size: 12px; margin-left: 10px; vertical-align: middle; cursor: pointer; }
         body.night-mode .button-delete { background-color: #c82333; color: white;}
         button:disabled { background-color: #adb5bd; cursor: not-allowed; opacity: 0.7; }
         body.night-mode button:disabled { background-color: #5a6268; }
@@ -120,7 +120,6 @@
         /* Print Styles */
         @media print { body { background-color: #fff !important; color: #000 !important; font-size: 10pt; } .header-controls, .container > .view:not(#print-view), .menu-buttons, form button, .button-secondary, .button-delete, .editor-toolbar, .briefing-section-adder, .add-flight-no-btn, #darkModeToggle, .switch, #search-station-input, #browse-station-briefs-view h3, #station-briefs-full-list-container, .sector-tabs, #view-brief-details-container button, .add-sector-tab-btn, .button-delete-sector { display: none !important; } .container { width: 100%; margin: 0; padding: 0; border: none; box-shadow: none; background-color: #fff !important; } #print-view { display: block !important; } h2, h3, h4, h5 { color: #000 !important; border: none !important; padding-bottom: 5px; margin-bottom: 10px;} h2 { font-size: 16pt; } h3 { font-size: 14pt; } h4 { font-size: 12pt; } h5 { font-size: 11pt; } a { text-decoration: none; color: #000 !important; } .brief-detail-section { border: none !important; margin-bottom: 10px; padding-bottom: 5px; page-break-inside: avoid; } .brief-content { background-color: #fff !important; padding: 0; border: none; } ul { padding-left: 20px; } b, strong { font-weight: bold; } i, em { font-style: italic; } u { text-decoration: underline; } }
         #print-view { display: none; }
-
     </style>
 </head>
 <body>
@@ -136,7 +135,7 @@
         <div id="create-entry-view" class="view">
             <h2>Create New Station Brief(s)</h2>
             <form id="station-entry-form">
-                {/* Common Info */}
+                {/* --- Common Info --- */}
                 <div class="top-row-layout">
                     <div class="form-section" id="aircraft-type-section"> <label for="aircraft-type">Aircraft Type</label> <select id="aircraft-type" name="aircraftType" required> <option value="" selected disabled>-- Select --</option> <option value="B737">B737</option> <option value="B787">B787</option> <option value="B777">B777</option> <option value="A350">A350</option> <option value="A380">A380</option> <option value="B747">B747</option> </select> </div>
                     <div class="form-section" id="station-icao-section"> <label for="station-icao">Station ICAO</label> <select id="station-icao" name="stationICAO"> <option value="" selected disabled>-- Select ICAO --</option> </select> </div>
@@ -147,16 +146,16 @@
                 </div>
                 <hr>
 
-                {/* Container for Dynamic Sector Blocks */}
+                {/* --- Container for Dynamic Sector Blocks --- */}
                 <div id="sectors-container">
                     {/* Sector blocks added here by JS */}
                 </div>
 
-                {/* Add Sector Button */}
+                {/* --- Add Sector Button --- */}
                 <div class="form-section"> <button type="button" class="button button-secondary" onclick="addSectorBlock()">+ Add Sector Brief</button> </div>
                 <hr>
 
-                {/* Final Save/Back Buttons */}
+                {/* --- Final Save/Back Buttons --- */}
                 <div class="form-section" style="margin-top:30px;"> <button type="submit" class="button">Save All Added Briefs</button> <button type="button" class="button button-secondary" onclick="showView('menu-view')">Back to Menu</button> </div>
             </form>
         </div>
@@ -201,47 +200,47 @@
         const sectionKeyMap = { station_overview: "StationOverview", operational_policy: "OperationalPolicy", preflight: "Preflight", pushback_taxi: "PushbackTaxi", climb_enroute: "ClimbEnroute", arrival: "Arrival", taxi_in_parking: "TaxiInParking", tem: "TEM", night_stop_info: "NightStopInfo", things_to_do: "ThingsToDo" };
 
         function addSectorBlock() {
-             try {
-                 sectorBlockCounter++; const sectorIndex = sectorBlockCounter;
-                 const sectorDiv = document.createElement('div'); sectorDiv.className = 'sector-block'; sectorDiv.id = `sector-block-${sectorIndex}`; sectorDiv.dataset.sectorIndex = sectorIndex;
+            // Using more robust element creation
+            try {
+                sectorBlockCounter++; const sectorIndex = sectorBlockCounter;
+                const sectorDiv = document.createElement('div'); sectorDiv.className = 'sector-block'; sectorDiv.id = `sector-block-${sectorIndex}`; sectorDiv.dataset.sectorIndex = sectorIndex;
 
-                 // Remove Button (if not first)
-                 if (sectorIndex > 1) { const remBtn=document.createElement('button'); remBtn.type='button'; remBtn.className='button button-delete button-delete-sector'; remBtn.textContent=`Remove Sector ${sectorIndex}`; remBtn.onclick=()=>removeSectorBlock(sectorIndex); sectorDiv.appendChild(remBtn); }
+                // Remove Button (if not first)
+                if (sectorIndex > 1) { const remBtn=document.createElement('button'); remBtn.type='button'; remBtn.className='button button-delete button-delete-sector'; remBtn.textContent=`Remove Sector ${sectorIndex}`; remBtn.onclick=()=>removeSectorBlock(sectorIndex); sectorDiv.appendChild(remBtn); }
 
-                 const h3=document.createElement('h3'); h3.textContent=`Sector ${sectorIndex} Details`; sectorDiv.appendChild(h3);
+                const h3=document.createElement('h3'); h3.textContent=`Sector ${sectorIndex} Details`; sectorDiv.appendChild(h3);
 
-                 // ** REMOVED Sector Identifier Input Field **
+                // Flight Numbers Section
+                const fnSection=document.createElement('div'); fnSection.className='form-section'; fnSection.id=`flight-numbers-section-per-sector-${sectorIndex}`;
+                const fnLabel=document.createElement('label'); fnLabel.textContent=`Flight Number(s) Applicable (Sector ${sectorIndex} Identifier)`; fnSection.appendChild(fnLabel);
+                const fnContainer=document.createElement('div'); fnContainer.id=`flight-numbers-container-S${sectorIndex}`;
+                fnSection.appendChild(fnContainer);
+                addFlightNumberField(fnContainer.id, sectorIndex); // Add the initial field
+                const addFnBtn=document.createElement('button'); addFnBtn.type='button'; addFnBtn.className='button button-secondary add-flight-no-btn'; addFnBtn.textContent='+ Flight No.'; addFnBtn.style.cssText='font-size: 0.8em; padding: 3px 8px; margin-top: 5px;'; addFnBtn.onclick=()=>addFlightNumberField(fnContainer.id, sectorIndex); fnSection.appendChild(addFnBtn);
+                sectorDiv.appendChild(fnSection); sectorDiv.appendChild(document.createElement('hr'));
 
-                 // Flight Numbers Section
-                 const fnSection=document.createElement('div'); fnSection.className='form-section'; fnSection.id=`flight-numbers-section-per-sector-${sectorIndex}`;
-                 const fnLabel=document.createElement('label'); fnLabel.textContent=`Flight Number(s) Applicable (Sector ${sectorIndex} Identifier)`; fnSection.appendChild(fnLabel);
-                 const fnContainer=document.createElement('div'); fnContainer.id=`flight-numbers-container-S${sectorIndex}`;
-                 fnSection.appendChild(fnContainer);
-                 addFlightNumberField(fnContainer.id, sectorIndex); // Add the initial flight number field
-                 const addFnBtn=document.createElement('button'); addFnBtn.type='button'; addFnBtn.className='button button-secondary add-flight-no-btn'; addFnBtn.textContent='+ Flight No.'; addFnBtn.style.cssText='font-size: 0.8em; padding: 3px 8px; margin-top: 5px;'; addFnBtn.onclick=()=>addFlightNumberField(`flight-numbers-container-S${sectorIndex}`, sectorIndex); fnSection.appendChild(addFnBtn);
-                 sectorDiv.appendChild(fnSection); sectorDiv.appendChild(document.createElement('hr'));
+                // Briefing Sections Title
+                const bsH4=document.createElement('h4'); bsH4.textContent=`Briefing Sections (Sector ${sectorIndex})`; sectorDiv.appendChild(bsH4);
 
-                 // Briefing Sections Title
-                 const bsH4=document.createElement('h4'); bsH4.textContent=`Briefing Sections (Sector ${sectorIndex})`; sectorDiv.appendChild(bsH4);
+                // Briefing Sections Container
+                const bsOuterContainer=document.createElement('div'); bsOuterContainer.id=`active-briefing-sections-container-${sectorIndex}`; bsOuterContainer.className='active-briefing-sections-container-per-sector';
 
-                 // Briefing Sections Container
-                 const bsOuterContainer=document.createElement('div'); bsOuterContainer.id=`active-briefing-sections-container-${sectorIndex}`; bsOuterContainer.className='active-briefing-sections-container-per-sector';
+                // Section Adder for this block
+                const adderDiv=document.createElement('div'); adderDiv.className='briefing-section-adder'; adderDiv.id=`section-adder-${sectorIndex}`;
+                const adderLabel=document.createElement('label'); const adderSelectId = `add-section-select-${sectorIndex}`; adderLabel.htmlFor=adderSelectId; adderLabel.textContent='Add briefing section:'; adderDiv.appendChild(adderLabel);
+                const adderSelect=document.createElement('select'); adderSelect.id=adderSelectId; adderSelect.onchange=(event)=>addSelectedBriefingSection(event.target, sectorIndex);
+                let selectOptions = `<option value="" disabled selected>-- Select to Add --</option>`;
+                for(const key in predefinedSectionTitles) { selectOptions += `<option value="${key}">${predefinedSectionTitles[key]}</option>`; } selectOptions += `<option value="custom">Custom Section</option>`;
+                adderSelect.innerHTML=selectOptions; adderDiv.appendChild(adderSelect);
+                bsOuterContainer.appendChild(adderDiv);
 
-                 // Section Adder for this block
-                 const adderDiv=document.createElement('div'); adderDiv.className='briefing-section-adder'; adderDiv.id=`section-adder-${sectorIndex}`;
-                 const adderLabel=document.createElement('label'); const adderSelectId = `add-section-select-${sectorIndex}`; adderLabel.htmlFor=adderSelectId; adderLabel.textContent='Add briefing section:'; adderDiv.appendChild(adderLabel);
-                 const adderSelect=document.createElement('select'); adderSelect.id=adderSelectId; adderSelect.onchange=(event)=>addSelectedBriefingSection(event.target, sectorIndex);
-                 let selectOptions = `<option value="" disabled selected>-- Select to Add --</option>`;
-                 for(const key in predefinedSectionTitles) { selectOptions += `<option value="${key}">${predefinedSectionTitles[key]}</option>`; } selectOptions += `<option value="custom">Custom Section</option>`;
-                 adderSelect.innerHTML=selectOptions; adderDiv.appendChild(adderSelect);
-                 bsOuterContainer.appendChild(adderDiv);
+                sectorDiv.appendChild(bsOuterContainer);
+                sectorsContainer.appendChild(sectorDiv);
+            } catch (error) { console.error("Error in addSectorBlock:", error); alert("Failed to add sector block."); }
+        }
 
-                 sectorDiv.appendChild(bsOuterContainer);
-                 sectorsContainer.appendChild(sectorDiv);
-             } catch (error) { console.error("Error adding sector block:", error); alert("Error adding sector block."); }
-         }
-        function removeSectorBlock(sectorIndexToRemove) { /* ... same as before ... */ }
-        function addFlightNumberField(containerId, sectorIndex) { const c=document.getElementById(containerId); if(!c)return; const n=document.createElement('div');n.className='flight-number-input-group';n.innerHTML=`<span class="sq-prefix">SQ</span><input type="text" name="flightNumber_S${sectorIndex}[]" value=""><button type="button" class="button-delete" onclick="this.parentElement.remove()">X</button>`;c.appendChild(n); }
+        function removeSectorBlock(sectorIndexToRemove) { if (sectorIndexToRemove <= 1 && sectorsContainer.querySelectorAll('.sector-block').length <= 1) { alert("Cannot remove the only sector block."); return; } if (confirm(`Remove Sector ${sectorIndexToRemove}?`)) { const block = document.getElementById(`sector-block-${sectorIndexToRemove}`); if (block) block.remove(); } }
+        function addFlightNumberField(containerId, sectorIndex) { const c = document.getElementById(containerId); if (!c) return; const n = document.createElement('div'); n.classList.add('flight-number-input-group'); n.innerHTML = `<span class="sq-prefix">SQ</span><input type="text" name="flightNumber_S${sectorIndex}[]" value=""><button type="button" class="button-delete" onclick="this.parentElement.remove()">X</button>`; c.appendChild(n); }
 
         function addSelectedBriefingSection(selectElement, sectorIndex) {
              try {
@@ -250,8 +249,8 @@
                  const sectionKey = sectionValue !== 'custom' ? sectionKeyMap[sectionValue] : null;
                  if (sectionValue !== 'custom' && targetContainer.querySelector(`.dynamic-briefing-section[data-section-key="${sectionValue}"]`)) { alert(`"${predefinedSectionTitles[sectionValue]}" added for S${sectorIndex}.`); selectElement.value = ""; return; }
                  briefingSectionCounter++; const sectionIdBase = (sectionValue === 'custom') ? `custom-section-${briefingSectionCounter}` : `briefing-section-${sectionValue}-${briefingSectionCounter}`;
-                 const sectionContainer = document.createElement('div'); sectionContainer.className = 'dynamic-briefing-section'; sectionContainer.id = sectionIdBase; if (sectionValue !== 'custom') sectionContainer.dataset.sectionKey = sectionValue;
-                 const isCustom = (sectionValue === 'custom'); let sectionTitleText = isCustom ? '' : predefinedSectionTitles[sectionValue];
+                 const sectionContainer = document.createElement('div'); sectionContainer.classList.add('dynamic-briefing-section'); sectionContainer.id = sectionIdBase; if (sectionValue !== 'custom') sectionContainer.dataset.sectionKey = sectionValue;
+                 const isCustom = (sectionValue === 'custom'); let sectionTitleText = isCustom ? `` : predefinedSectionTitles[sectionValue];
                  const editorId = `${sectionIdBase}-content`; const hiddenInputName = isCustom ? `customSectionContentValue_S${sectorIndex}[]` : `${sectionKey}ContentValue_S${sectorIndex}`; const hiddenInputId = `${sectionIdBase}-value`; const titleInputName = isCustom ? `customSectionTitle_S${sectorIndex}[]` : '';
                  // Create elements programmatically
                  const removeBtn=document.createElement('button'); removeBtn.type='button'; removeBtn.className='button button-delete'; removeBtn.textContent='Remove'; removeBtn.onclick=()=>removeBriefingSection(sectionIdBase); sectionContainer.appendChild(removeBtn);
@@ -265,17 +264,19 @@
         function removeBriefingSection(sectionId) { const el = document.getElementById(sectionId); if (el) el.remove(); }
         function formatDoc(command, editorId, valueArgument = null) { const editor = document.getElementById(editorId); if (editor) { editor.focus(); document.execCommand(command, false, valueArgument); } else console.error("Editor missing:", editorId); }
 
-        // --- Form Submission (Uses FNs as identifier) ---
+        // --- Form Submission (Multiple POSTs, uses FNs as identifier) ---
         const stationEntryForm = document.getElementById('station-entry-form');
         if (stationEntryForm) {
             stationEntryForm.addEventListener('submit', async function(event) {
                 event.preventDefault(); const submitButton = stationEntryForm.querySelector('button[type="submit"]'); const btnTxt = submitButton.textContent;
                 let isManual = stationICAOSelect.value === '__add_new__' || stationIATASelect.value === '__add_new__';
+                // Validation
                 if (!stationEntryForm.elements['aircraftType'].value) { alert("Select Aircraft Type."); return; } if (!isManual && !stationEntryForm.elements['stationICAO'].value && !stationEntryForm.elements['stationIATA'].value) { alert("Select station or add manually."); return; } if (isManual && (!stationEntryForm.elements['stationICAONew'].value || !stationEntryForm.elements['stationNameNew'].value)) { alert("Manual entry needs ICAO & Name."); return; } if (!isManual && !stationEntryForm.elements['stationICAO'].value && !stationEntryForm.elements['stationIATA'].value) { alert("Select station."); return; }
                 const sectorBlocks = sectorsContainer.querySelectorAll('.sector-block'); if (sectorBlocks.length === 0) { alert("Add at least one sector brief."); return; }
-                document.querySelectorAll('.editable-content').forEach(editor => { const hid = editor.id.replace('-content', '-value'); const hin = document.getElementById(hid); if (hin) hin.value = editor.innerHTML; });
+                // Update hidden fields right before processing
+                try { document.querySelectorAll('.editable-content').forEach(editor => { const hid = editor.id.replace('-content', '-value'); const hin = document.getElementById(hid); if (hin) { hin.value = editor.innerHTML; } else { console.warn("Missing hidden input for editor:", editor.id); } }); } catch(e) { console.error("Error updating hidden fields:", e); }
                 submitButton.disabled = true; submitButton.textContent = 'Saving...'; let successfulSubmits = 0; let failedSubmits = 0; const submissionPromises = [];
-                let stationInfoPayload; if (isManual) { stationInfoPayload = JSON.stringify({ icao: stationEntryForm.elements['stationICAONew'].value.toUpperCase(), iata: stationEntryForm.elements['stationIATANew'].value.toUpperCase() || '', name: stationEntryForm.elements['stationNameNew'].value }); } else if (stationEntryForm.elements['stationICAO'].value) { const f = stationMasterList.find(s=>s.icao===stationEntryForm.elements['stationICAO'].value); stationInfoPayload = JSON.stringify(f ? {...f} : {icao: stationEntryForm.elements['stationICAO'].value, iata: stationEntryForm.elements['stationIATA'].value||'', name:'N/A'}); } else if (stationEntryForm.elements['stationIATA'].value) { const f = stationMasterList.find(s=>s.iata===stationEntryForm.elements['stationIATA'].value); stationInfoPayload = JSON.stringify(f ? {...f} : {icao: '', iata: stationEntryForm.elements['stationIATA'].value, name:'N/A'}); }
+                let stationInfoPayload; try { if (isManual) { stationInfoPayload = JSON.stringify({ icao: stationEntryForm.elements['stationICAONew'].value.toUpperCase(), iata: stationEntryForm.elements['stationIATANew'].value.toUpperCase() || '', name: stationEntryForm.elements['stationNameNew'].value }); } else if (stationEntryForm.elements['stationICAO'].value) { const f = stationMasterList.find(s=>s.icao===stationEntryForm.elements['stationICAO'].value); stationInfoPayload = JSON.stringify(f ? {...f} : {icao: stationEntryForm.elements['stationICAO'].value, iata: stationEntryForm.elements['stationIATA'].value||'', name:'N/A'}); } else if (stationEntryForm.elements['stationIATA'].value) { const f = stationMasterList.find(s=>s.iata===stationEntryForm.elements['stationIATA'].value); stationInfoPayload = JSON.stringify(f ? {...f} : {icao: '', iata: stationEntryForm.elements['stationIATA'].value, name:'N/A'}); } } catch(e){ console.error("Error creating stationInfoPayload", e); alert("Error processing station info."); submitButton.disabled = false; submitButton.textContent = btnTxt; return;}
                 const aircraftTypePayload = stationEntryForm.elements['aircraftType'].value;
 
                 for (const sectorBlock of sectorBlocks) {
@@ -289,9 +290,9 @@
                         let customSections = []; const customTitles = sectorBlock.querySelectorAll(`input[name="customSectionTitle_S${sectorIndex}[]"]`); const customContents = sectorBlock.querySelectorAll(`input[name="customSectionContentValue_S${sectorIndex}[]"]`); customTitles.forEach((t, i) => customSections.push({ title: t.value, content: customContents[i]?.value || '' })); payload.customSections = JSON.stringify(customSections);
                         console.log(`Payload S${sectorIndex}:`, payload);
                         submissionPromises.push( fetch(WEB_APP_URL, { method: 'POST', body: new URLSearchParams(payload), headers: {'Content-Type': 'application/x-www-form-urlencoded'} }).then(r=>r.json()).then(res => { if (res.status==='success'){successfulSubmits++; return true;} else {throw new Error(res.message||`S${sectorIndex} fail`);} }).catch(err => { failedSubmits++; console.error(`Err S${sectorIndex}:`, err); return false; }) );
-                    } catch (blockError) { console.error(`Error processing Sector Block ${sectorBlock.dataset.sectorIndex}:`, blockError); failedSubmits++; }
+                    } catch (blockError) { console.error(`Error processing Block ${sectorBlock.dataset.sectorIndex}:`, blockError); failedSubmits++; }
                 } // End loop
-                try { await Promise.all(submissionPromises); } catch (e) { console.error("Error during Promise.all:", e); }
+                try { await Promise.all(submissionPromises); } catch (e) { console.error("Error awaiting submissions:", e); }
                 alert(`${successfulSubmits} sector(s) saved. ${failedSubmits} failed.`);
                 if (successfulSubmits > 0) { allFetchedBriefs = []; resetCreateEntryForm(); showView('browse-station-briefs-view'); }
                  else { submitButton.disabled = false; submitButton.textContent = btnTxt; }
@@ -299,16 +300,16 @@
         }
 
         // --- Browse & View Logic ---
-        function displayBriefDetails(briefId) { /* ... as before (displays single sector) ... */ }
-        function hideBriefDetails() { /* ... as before ... */ }
-        async function loadAndDisplayAllBriefs(searchTerm = '') { /* ... as before (shows SectorIdentifier in list) ... */ }
-        if (searchStationInputField) { /* ... as before ... */ }
-        function printBriefDetails() { /* ... as before (prints single sector) ... */ }
+        function displayBriefDetails(briefId) { currentlyViewedBrief = allFetchedBriefs.find(b => String(b.rowId) === String(briefId)); if (!currentlyViewedBrief) { viewBriefDetailsContainer.innerHTML = "<p>Brief not found.</p><button type='button' class='button button-secondary' onclick='hideBriefDetails()'>Back</button>"; viewBriefDetailsContainer.style.display='block'; stationBriefsFullListContainer.style.display='none'; searchStationInputField.style.display='none'; if(browseViewH3) browseViewH3.style.display='none'; return; } const b = currentlyViewedBrief; let dHtml = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><button type='button' class='button button-secondary' onclick='hideBriefDetails()'>Back</button><button type='button' class='button' onclick='printBriefDetails()'>Print</button></div>`; dHtml+=`<h4>Brief: ${b.stationInfo?.icao||'N/A'} (${b.stationInfo?.name||'N/A'}) - ${b.AircraftType||'N/A'}</h4>`; dHtml+=`<p><strong>Sector:</strong> ${b.SectorIdentifier||'N/A'}</p>`; dHtml+=`<p><strong>Updated:</strong> ${b.LastUpdated||'N/A'}</p>`; if (b.FlightNumbers?.length>0) dHtml+=`<p><strong>Flights:</strong> SQ ${b.FlightNumbers.join(', SQ ')}</p>`; const sKeys={StationOverview:"Overview",OperationalPolicy:"Ops Policy",Preflight:"Preflight",PushbackTaxi:"Pushback/Taxi",ClimbEnroute:"Climb/Enroute",Arrival:"Arrival",TaxiInParking:"Taxi-In/Parking",TEM:"TEM",NightStopInfo:"Night Stop",ThingsToDo:"Things To Do"}; let content=false; for (const k in sKeys){if(b[k]&&String(b[k]).trim()&&String(b[k]).trim()!=='<div></div>'){dHtml+=`<div class='brief-detail-section'><h5>${sKeys[k]}</h5><div class='brief-content'>${b[k]}</div></div>`;content=true;}} if(b.CustomSections?.length>0){b.CustomSections.forEach(c=>{if(c.content&&c.content.trim()&&c.content.trim()!=='<div></div>'){dHtml+=`<div class='brief-detail-section'><h5>${c.title||'Custom'}</h5><div class='brief-content'>${c.content}</div></div>`;content=true;}});} if(!content)dHtml+=`<p><i>No sections entered.</i></p>`; viewBriefDetailsContainer.innerHTML=dHtml; viewBriefDetailsContainer.style.display='block'; stationBriefsFullListContainer.style.display='none'; searchStationInputField.style.display='none'; if(browseViewH3) browseViewH3.style.display='none'; }
+        function hideBriefDetails() { viewBriefDetailsContainer.style.display = 'none'; stationBriefsFullListContainer.style.display = 'block'; searchStationInputField.style.display = 'block'; if(browseViewH3) browseViewH3.style.display = 'block'; loadAndDisplayAllBriefs(searchStationInputField.value.trim()); }
+        async function loadAndDisplayAllBriefs(searchTerm = '') { stationBriefsFullListContainer.innerHTML = '<p>Loading...</p>'; searchResultsDisplayArea.style.display = 'none'; if (!WEB_APP_URL || WEB_APP_URL === 'YOUR_DEPLOYED_WEB_APP_URL_HERE') { stationBriefsFullListContainer.innerHTML = '<p style="color:red;">Error: URL not set.</p>'; return; } try { const r = await fetch(`${WEB_APP_URL}?action=getAllBriefs`); if (!r.ok) throw new Error(`HTTP ${r.status}`); const res = await r.json(); if (res.status !== 'success') throw new Error(res.message); allFetchedBriefs = res.data.map(b => ({ ...b, stationInfo: typeof b.stationInfo==='string' ? JSON.parse(b.stationInfo||'{}'):b.stationInfo||{}, FlightNumbers: Array.isArray(b.FlightNumbers)?b.FlightNumbers:[], CustomSections: Array.isArray(b.CustomSections)?b.CustomSections:[] })); } catch (error) { console.error("Fetch Error:", error); stationBriefsFullListContainer.innerHTML = `<p>Error loading: ${error.message}.</p>`; return; } let displayList = [...allFetchedBriefs]; if (searchTerm) { const lSearch = searchTerm.toLowerCase(); displayList = displayList.filter(b => (b.stationInfo.icao?.toLowerCase().includes(lSearch)) || (b.stationInfo.iata?.toLowerCase().includes(lSearch)) || (b.stationInfo.name?.toLowerCase().includes(lSearch)) || (b.AircraftType?.toLowerCase().includes(lSearch)) || (b.SectorIdentifier?.toLowerCase().includes(lSearch)) || (b.FlightNumbers?.some(fn => fn.toLowerCase().includes(lSearch))) ); } if (displayList.length === 0) { stationBriefsFullListContainer.innerHTML = `<p>No briefs found${searchTerm ? ' matching' : ''}.</p>`; return; } let listHtml = '<ul>'; displayList.sort((a,b)=>(a.stationInfo.icao||"").localeCompare(b.stationInfo.icao||"")).forEach(b=>{const i=b.stationInfo?.icao||'N/A';const n=b.stationInfo?.name||'N/A';const a=b.AircraftType||'N/A';const u=b.LastUpdated||'N/A';const s=b.SectorIdentifier||'General';const id=b.rowId||b.BriefID;if(id){listHtml+=`<li onclick="displayBriefDetails('${id}')"><strong>${i} (${n})</strong> [${s}] - ${a} - <em>Updated: ${u}</em></li>`;}else{listHtml+=`<li><strong>${i} (${n})</strong> [${s}] - ${a} - <em>Updated: ${u}</em> (No ID)</li>`;}}); listHtml += '</ul>'; stationBriefsFullListContainer.innerHTML = listHtml; }
+        if (searchStationInputField) { searchStationInputField.addEventListener('input', function() { const s=this.value.trim(); viewBriefDetailsContainer.style.display='none'; stationBriefsFullListContainer.style.display='block'; if(browseViewH3)browseViewH3.style.display='block'; if(s.length===0)loadAndDisplayAllBriefs(); else if(s.length>=1)loadAndDisplayAllBriefs(s); }); }
+        function printBriefDetails() { if (!currentlyViewedBrief) { alert("No brief viewed."); return; } const b = currentlyViewedBrief; const printDiv = document.getElementById('print-content'); let pHtml = `<h2>Station Brief: ${b.stationInfo?.icao||'N/A'} (${b.stationInfo?.name||'N/A'})</h2>`; pHtml+=`<p><strong>Aircraft Type:</strong> ${b.AircraftType||'N/A'}</p>`; pHtml+=`<p><strong>Sector / Context:</strong> ${b.SectorIdentifier||'N/A'}</p>`; pHtml+=`<p><strong>Last Updated:</strong> ${b.LastUpdated||'N/A'}</p>`; if (b.FlightNumbers?.length>0) pHtml+=`<p><strong>Flights:</strong> SQ ${b.FlightNumbers.join(', SQ ')}</p>`; pHtml+="<hr>"; const sKeys={StationOverview:"Overview",OperationalPolicy:"Ops Policy",Preflight:"Preflight",PushbackTaxi:"Pushback/Taxi",ClimbEnroute:"Climb/Enroute",Arrival:"Arrival",TaxiInParking:"Taxi-In/Parking",TEM:"TEM",NightStopInfo:"Night Stop",ThingsToDo:"Things To Do"}; let hasCnt=false; for(const k in sKeys){if(b[k]&&String(b[k]).trim()&&String(b[k]).trim()!=='<div></div>'){pHtml+=`<h4>${sKeys[k]}</h4><div>${b[k]}</div>`;hasCnt=true;}} if(b.CustomSections?.length>0){b.CustomSections.forEach(c=>{if(c.content&&c.content.trim()&&c.content.trim()!=='<div></div>'){pHtml+=`<h4>${c.title||'Custom'}</h4><div>${c.content}</div>`;hasCnt=true;}});} if(!hasCnt)pHtml+=`<p><i>No sections entered.</i></p>`; printDiv.innerHTML=pHtml; window.print(); }
 
         // --- Initial Setup ---
         document.addEventListener('DOMContentLoaded', () => {
-             try { const savedDarkMode = localStorage.getItem('darkModePrefStationDB'); setDarkMode(savedDarkMode === 'true'); populateStationDropdowns(); resetCreateEntryForm(); showView('menu-view'); }
-             catch(initError) { console.error("Initialization Error:", initError); alert("Page failed to initialize. Check console."); document.body.innerHTML = '<h1 style="color:red; padding:20px;">Page Initialization Failed - Check Console (F12)</h1>'; }
+             try { console.log("DOM Loaded. Initializing..."); const savedDarkMode = localStorage.getItem('darkModePrefStationDB'); setDarkMode(savedDarkMode === 'true'); populateStationDropdowns(); resetCreateEntryForm(); showView('menu-view'); console.log("Initialization complete."); }
+             catch(initError) { console.error("Initialization Error:", initError); alert("Page failed to initialize. Check console (F12) for errors."); document.body.innerHTML = '<h1 style="color:red; padding:20px;">Page Initialization Failed - Check Console (F12)</h1>'; }
          });
     </script>
 
