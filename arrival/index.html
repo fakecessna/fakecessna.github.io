@@ -130,9 +130,20 @@
       color: #333;
       transition: border-color 0.3s, background-color 0.3s, color 0.3s;
     }
+    /* Style for editable textarea */
+     #announcementOutput {
+        background-color: #fff; /* Ensure editable background is white */
+        border: 1px solid #ccc;
+     }
+     #announcementOutput:focus {
+        border-color: #00529b;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 82, 155, 0.2);
+     }
+
     .form-group input:focus,
     .form-group select:focus,
-    .form-group textarea:focus {
+    .form-group textarea:focus { /* General focus style */
       border-color: #00529b;
       outline: none;
       box-shadow: 0 0 0 2px rgba(0, 82, 155, 0.2);
@@ -144,7 +155,7 @@
     }
     .form-group textarea {
         resize: vertical;
-        min-height: 80px;
+        min-height: 150px; /* Keep min-height for output */
     }
     .time-input-group {
         display: flex;
@@ -231,13 +242,11 @@
     #announcementOutput {
       margin-top: 20px;
       padding: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      background-color: #f9f9f9;
+      /* background-color: #f9f9f9; /* Initial background */
       white-space: pre-wrap;
-      min-height: 150px;
       font-size: 14px;
       line-height: 1.6;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s; /* Added transitions */
     }
 
     .switch {
@@ -297,17 +306,24 @@
         color: #ecf0f1;
         border: 1px solid #566573;
     }
+     /* Editable textarea night mode */
+     .night-mode #announcementOutput {
+        background-color: #2c3e50;
+        color: #ecf0f1;
+        border: 1px solid #566573;
+     }
+     .night-mode #announcementOutput:focus {
+        border-color: #5dade2;
+        box-shadow: 0 0 0 2px rgba(93, 173, 226, 0.2);
+     }
+
     .night-mode .form-group input:focus,
     .night-mode .form-group select:focus,
-    .night-mode .form-group textarea:focus {
+    .night-mode .form-group textarea:focus { /* General focus */
       border-color: #5dade2;
       box-shadow: 0 0 0 2px rgba(93, 173, 226, 0.2);
     }
-    .night-mode #announcementOutput {
-      background-color: #2c3e50;
-      border: 1px solid #566573;
-      color: #ecf0f1;
-    }
+
     .night-mode .button {
         background-color: #5dade2;
         color: #2c3e50;
@@ -451,9 +467,7 @@
 
 
     <div class="form-group" style="margin-top: 20px;">
-        <label for="announcementOutput">Generated Announcement (Singapore Airlines)</label>
-        <textarea id="announcementOutput" readonly rows="10"></textarea>
-    </div>
+        <label for="announcementOutput">Generated Announcement (Editable)</label> <textarea id="announcementOutput" rows="10"></textarea> </div>
 
   </div>
 
@@ -484,13 +498,13 @@
       "VRMM": { iata: "MLE", name: "Malé Velana International Airport", standardGmtOffset: 5, announcementName: "Malé Velana International Airport", shortName: "Malé" },
       "VNKT": { iata: "KTM", name: "Kathmandu Tribhuvan International Airport", standardGmtOffset: 5.75, announcementName: "Kathmandu Tribhuvan International Airport", shortName: "Kathmandu" },
       "RKSI": { iata: "ICN", name: "Seoul Incheon International Airport", standardGmtOffset: 9, announcementName: "Seoul Incheon International Airport", shortName: "Seoul" },
-      "RJAA": { iata: "NRT", name: "Tokyo Narita International Airport", standardGmtOffset: 9, announcementName: "Tokyo Narita International Airport", shortName: "Tokyo" }, // Could also be Haneda HND
+      "RJAA": { iata: "NRT", name: "Tokyo Narita International Airport", standardGmtOffset: 9, announcementName: "Tokyo Narita International Airport", shortName: "Tokyo" }, 
       "RJBB": { iata: "KIX", name: "Osaka Kansai International Airport", standardGmtOffset: 9, announcementName: "Osaka Kansai International Airport", shortName: "Osaka" },
       "RJFF": { iata: "FUK", name: "Fukuoka Airport", standardGmtOffset: 9, announcementName: "Fukuoka Airport", shortName: "Fukuoka" },
       "RJGG": { iata: "NGO", name: "Nagoya Chubu Centrair International Airport", standardGmtOffset: 9, announcementName: "Nagoya Chubu Centrair International Airport", shortName: "Nagoya" },
       "ROAH": { iata: "OKA", name: "Naha Airport (Okinawa)", standardGmtOffset: 9, announcementName: "Naha Airport", shortName: "Naha" },
       "VTBS": { iata: "BKK", name: "Bangkok Suvarnabhumi Airport", standardGmtOffset: 7, announcementName: "Bangkok Suvarnabhumi Airport", shortName: "Bangkok" },
-      "VTSG": { iata: "HKT", name: "Phuket International Airport", standardGmtOffset: 7, announcementName: "Phuket International Airport", shortName: "Phuket" },
+      "VTSG": { iata: "HKT", name: "Phuket International Airport", standardGmtOffset: 7, announcementName: "Phuket International Airport", shortName: "Phuket"},
       "ZBAA": { iata: "PEK", name: "Beijing Capital International Airport", standardGmtOffset: 8, announcementName: "Beijing Capital International Airport", shortName: "Beijing" },
       "ZBAD": { iata: "PKX", name: "Beijing Daxing International Airport", standardGmtOffset: 8, announcementName: "Beijing Daxing International Airport", shortName: "Beijing" },
       "ZSPD": { iata: "PVG", name: "Shanghai Pudong International Airport", standardGmtOffset: 8, announcementName: "Shanghai Pudong International Airport", shortName: "Shanghai" },
@@ -552,7 +566,6 @@
     function populateAirportDropdowns() {
       const originSelect = document.getElementById('originAirport');
       const arrivalSelect = document.getElementById('arrivalAirport');
-      // Sort by announcement name or name
       const sortedAirportCodes = Object.keys(airportData).sort((a,b) => 
         (airportData[a].announcementName || airportData[a].name).localeCompare(airportData[b].announcementName || airportData[b].name)
       );
@@ -563,12 +576,10 @@
       sortedAirportCodes.forEach(code => {
         const airport = airportData[code];
         const optionText = `${airport.announcementName || airport.name} (${code}${airport.iata ? '/' + airport.iata : ''})`;
-        
         const optionOrigin = document.createElement('option');
         optionOrigin.value = code;
         optionOrigin.textContent = optionText;
         originSelect.appendChild(optionOrigin);
-        
         const optionArrival = document.createElement('option');
         optionArrival.value = code;
         optionArrival.textContent = optionText;
@@ -599,19 +610,16 @@
             homeBaseCheckbox.checked = false; 
             if (!searchTerm) return;
             let foundAirportICAO = null;
-            // Prioritize exact IATA match, then starting ICAO match
             for (const icao in airportData) {
                  const airport = airportData[icao];
                  if (airport.iata && airport.iata.toUpperCase() === searchTerm) {
-                      foundAirportICAO = icao;
-                      break;
+                      foundAirportICAO = icao; break;
                  }
             }
             if (!foundAirportICAO) {
                  for (const icao in airportData) {
                       if (icao.toUpperCase().startsWith(searchTerm)) {
-                           foundAirportICAO = icao; 
-                           break; 
+                           foundAirportICAO = icao; break; 
                       }
                  }
             }
@@ -642,6 +650,13 @@
             if (this.checked) {
                 if (otherCheckbox.checked) {
                     otherCheckbox.checked = false;
+                    // Also update the dropdown linked to the other checkbox if needed
+                    const otherDropdownId = otherCheckboxId === 'originHomeBaseCheck' ? 'originAirport' : 'arrivalAirport';
+                    const otherDropdown = document.getElementById(otherDropdownId);
+                    if (otherDropdown.value === 'WSSS') {
+                        // If the other was home base, maybe reset it or leave as is
+                        // For now, just uncheck the box. User needs to reselect.
+                    }
                 }
                 selectDropdown.value = 'WSSS';
                 searchInput.value = ''; 
@@ -719,11 +734,11 @@
         if (minutes === 0) {
             if (hours24 === 12) return "12 noon";
             if (hours24 === 0) return "12 midnight";
-            return `${h12} ${period}`; // e.g., "6 PM"
+            return `${h12} ${period}`; 
         }
         if (minutes === 30) {
              const descriptivePeriod = getDescriptivePeriod(hours24);
-             return `half past ${h12} ${descriptivePeriod}`; // e.g., "half past 6 in the morning"
+             return `half past ${h12} ${descriptivePeriod}`; 
         }
         // Only use "X minutes to Y" if minutes are 55-59
         if (minutes >= 55 && minutes <= 59) {
@@ -731,9 +746,9 @@
              let nextHour12 = (hours24 + 1) % 12;
              if (nextHour12 === 0) nextHour12 = 12;
              const descriptivePeriod = getDescriptivePeriod((hours24 + 1) % 24);
-             return `${minutesToNextHour} minute${minutesToNextHour > 1 ? 's' : ''} to ${nextHour12} ${descriptivePeriod}`; // e.g., "5 minutes to 7 in the morning"
+             return `${minutesToNextHour} minute${minutesToNextHour > 1 ? 's' : ''} to ${nextHour12} ${descriptivePeriod}`;
         }
-        // Default to H:MM AM/PM for all other cases (e.g., 05:25 -> 5:25 AM)
+        // Default to H:MM AM/PM for all other cases
         return `${h12}:${minutesPadded} ${period}`; 
     }
 
@@ -762,11 +777,9 @@
       if (effectiveArrivalGmt === null) { alert("Could not determine effective GMT offset for arrival airport."); return; }
 
       const localArrivalTime = calculateLocalTime(arrivalZuluHH, arrivalZuluMM, effectiveArrivalGmt);
-      // Format the time using the refined function
       const conversationalLocalTime = formatLocalTimeConversational(localArrivalTime.hours, localArrivalTime.minutes);
       
       const displayArrivalFullName = arrivalAirportDetails.announcementName || arrivalAirportDetails.name;
-      // Use specific shortName if available, otherwise fallback to first word
       const displayArrivalShortName = arrivalAirportDetails.shortName || displayArrivalFullName.split(",")[0].split(" ")[0]; 
       const displayOriginShortName = originAirportDetails.shortName || (originAirportDetails.announcementName || originAirportDetails.name).split(" ")[0];
 
@@ -774,7 +787,6 @@
       const originGmt = originAirportDetails.standardGmtOffset;
 
       if (originGmt === effectiveArrivalGmt) {
-        // Append "local time" here as conversational time doesn't include it unless descriptive
         timeAndLandingStatement = `We expect to land at approximately ${conversationalLocalTime} local time`;
       } else {
         const diff = effectiveArrivalGmt - originGmt;
@@ -783,15 +795,13 @@
         let diffStr = `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
         if (diffMinutes > 0) diffStr += ` and ${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
         const relation = diff > 0 ? 'ahead of' : 'behind';
-        // Append "local time" here
         timeAndLandingStatement = `${displayArrivalShortName} is ${diffStr} ${relation} ${displayOriginShortName}, and we expect to land at approximately ${conversationalLocalTime} local time`;
       }
       
       const weatherFull = `${weatherPhenomenon} with a temperature of ${temperature} degrees Celsius`;
-      // Adjusted speaker phrasing
+      // Corrected speaker phrasing
       const speakerIdentifier = speakerRole === "Pilot" ? "your pilot speaking" : `your ${speakerRole}`; 
 
-      // Final announcement construction with all phrasing adjustments
       const announcement = `Ladies and Gentlemen, this is ${speakerIdentifier}. We will be commencing our descent into ${displayArrivalFullName} in about ${todMinutes} minutes time.
 Current Weather at ${displayArrivalShortName} is ${weatherFull}.
 ${timeAndLandingStatement}, and another ${taxiTimeValue} minutes thereafter to the gate.
@@ -814,7 +824,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
     function toggleDarkMode(isNight) {
         document.body.classList.toggle('night-mode', isNight);
-        localStorage.setItem('darkModePrefArrivalToolV9', isNight ? 'true' : 'false'); // Updated key
+        localStorage.setItem('darkModePrefArrivalToolV10', isNight ? 'true' : 'false'); // Updated key
         document.getElementById('darkModeToggle').checked = isNight; 
     }
     
@@ -911,7 +921,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
       const darkModeToggle = document.getElementById('darkModeToggle');
       darkModeToggle.addEventListener('change', () => toggleDarkMode(darkModeToggle.checked));
-      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV9') === 'true'); // Updated localStorage key
+      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV10') === 'true'); // Updated localStorage key
       handleArrivalAirportChange(); 
     });
   </script>
