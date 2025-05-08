@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Station Database - Alpha</title>
+    <style>
+        /* General Styles - Adapted from Captain's Database */
+        :root {
+            --bg-color-day: #f4f4f4; --container-bg-day: #ffffff; --text-color-day: #333; --heading-color-day: #0056b3;
+            --border-color-day: #eee; --input-border-day: #ccc; --input-focus-border-day: #007bff; --input-focus-shadow-day: rgba(0, 123, 255, 0.5);
+            --placeholder-bg-day: #e9ecef; --placeholder-border-day: #ced4da; --placeholder-text-day: #6c757d; --section-bg-day: #f9f9f9;
+            --section-border-day: #ddd; --link-color-day: #0056b3;
+
+            --bg-color-night: #121212; --container-bg-night: #1e1e1e; --text-color-night: #e0e0e0; --heading-color-night: #FCB130;
+            --border-color-night: #444; --input-border-night: #555; --input-focus-border-night: #FCB130; --input-focus-shadow-night: rgba(252, 177, 48, 0.5);
+            --placeholder-bg-night: #2a2a2a; --placeholder-border-night: #555; --placeholder-text-night: #888; --section-bg-night: #252525;
+            --section-border-night: #444; --link-color-night: #ffcc66;
+
+            /* Theme Colors */
+            --primary-bg: #1D4886; --accent-color: #FCB130; --button-text-day: #fff; --button-text-night: #333;
+        }
+        html, body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 14px; box-sizing: border-box; width: 100%; min-height: 100vh; background-color: var(--primary-bg); color: var(--text-color-day); transition: background-color 0.3s, color 0.3s; }
+        body.night-mode { background-color: var(--primary-bg); color: var(--text-color-night); }
+        .header-controls { position: fixed; top: 10px; right: 10px; z-index: 1001; }
+        .container { width: 90%; max-width: 1000px; background-color: var(--container-bg-day); color: var(--text-color-day); padding: 25px; margin-top: 60px; margin-bottom: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: background-color 0.3s, color 0.3s; }
+        body.night-mode .container { background-color: var(--container-bg-night); color: var(--text-color-night); }
+        .view { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        h2, h3, h4 { color: var(--heading-color-day); margin-top: 0; border-bottom: 1px solid var(--border-color-day); padding-bottom: 10px; margin-bottom: 20px; transition: color 0.3s, border-color 0.3s; }
+        body.night-mode h2, body.night-mode h3, body.night-mode h4 { color: var(--heading-color-night); border-bottom-color: var(--border-color-night); }
+        .button { padding: 10px 20px; font-size: 15px; cursor: pointer; border: none; border-radius: 5px; transition: background-color 0.3s ease, color 0.3s ease; margin-right: 10px; margin-top: 5px; margin-bottom: 5px; background-color: var(--accent-color); color: var(--button-text-day); font-weight: bold; }
+        .button:hover { opacity: 0.85; }
+        body.night-mode .button { background-color: var(--accent-color); color: var(--button-text-night); }
+        .button-secondary { background-color: #6c757d; color: white; }
+        body.night-mode .button-secondary { background-color: #5a6268; color: var(--text-color-night); }
+        .button-delete { background-color: #dc3545; color: white; padding: 3px 8px; font-size: 12px; margin-left: 10px; vertical-align: middle; }
+        body.night-mode .button-delete { background-color: #c82333; color: white;}
+        button:disabled { background-color: #adb5bd; cursor: not-allowed; opacity: 0.7; }
+        body.night-mode button:disabled { background-color: #5a6268; }
+        .menu-buttons button { display: block; width: 100%; padding: 15px; margin-bottom: 10px; font-size: 16px; }
+        .form-section { margin-bottom: 20px; }
+        .form-section label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color-day); }
+        body.night-mode .form-section label { color: var(--text-color-night); }
+        .form-section input[type="text"], .form-section input[type="search"], .form-section select, .form-section textarea { width: 100%; padding: 10px; border: 1px solid var(--input-border-day); border-radius: 4px; box-sizing: border-box; font-size: 14px; margin-bottom: 10px; background-color: var(--container-bg-day); color: var(--text-color-day); transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+        body.night-mode .form-section input[type="text"], body.night-mode .form-section input[type="search"], body.night-mode .form-section select, body.night-mode .form-section textarea { background-color: #333; color: var(--text-color-night); border-color: var(--input-border-night); }
+        .form-section input[type="text"]:focus, .form-section input[type="search"]:focus, .form-section select:focus, .form-section textarea:focus { border-color: var(--input-focus-border-day); outline: none; box-shadow: 0 0 5px var(--input-focus-shadow-day); }
+        body.night-mode .form-section input[type="text"]:focus, body.night-mode .form-section input[type="search"]:focus, body.night-mode .form-section select:focus, body.night-mode .form-section textarea:focus { border-color: var(--input-focus-border-night); box-shadow: 0 0 5px var(--input-focus-shadow-night); }
+
+        .top-row-layout { display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; margin-bottom: 20px; }
+        .top-row-layout .form-section { margin-bottom: 0; flex-grow: 1; }
+        .top-row-layout #aircraft-type-section { min-width: 150px; flex-basis: 150px; }
+        .top-row-layout #station-icao-section, .top-row-layout #station-iata-section { min-width: 150px; flex-basis: 150px; flex-grow:2;}
+
+        #flight-numbers-section- अकेला {
+            margin-bottom: 20px;
+        }
+
+        .flight-number-input-group { display: flex; align-items: center; margin-bottom: 5px; }
+        .flight-number-input-group span.sq-prefix { padding: 10px 5px 10px 0; background-color: transparent; border: none; font-weight: bold; color: var(--text-color-day); margin-right: -1px; }
+        body.night-mode .flight-number-input-group span.sq-prefix { color: var(--text-color-night); }
+        .flight-number-input-group input[name="flightNumber[]"] {
+            width: 70px;
+            flex-grow: 0;
+            flex-shrink: 0;
+            padding: 10px 8px;
+            margin-bottom: 0;
+            box-sizing: border-box;
+        }
+        .flight-number-input-group .button-delete { margin-left: 5px; padding: 6px 10px; font-size: 14px; line-height: 1.2;}
+
+        #add-station-manual-fields { display: none; margin-top: 10px; margin-bottom:20px; padding: 15px; border: 1px dashed var(--input-border-day); border-radius: 4px; }
+        body.night-mode #add-station-manual-fields { border-color: var(--input-border-night); }
+        #add-station-manual-fields .form-section { display: inline-block; width: calc(33.333% - 10px); margin-right: 10px; margin-bottom:0;}
+        #add-station-manual-fields .form-section:last-of-type { margin-right: 0; }
+         @media (max-width: 768px) {
+            #add-station-manual-fields .form-section { width: 100%; margin-right: 0; margin-bottom:10px; }
+        }
+
+
+        .briefing-section-adder { margin-bottom: 20px; padding: 15px; background-color: var(--placeholder-bg-day); border: 1px solid var(--placeholder-border-day); border-radius: 5px;}
+        body.night-mode .briefing-section-adder { background-color: var(--placeholder-bg-night); border-color: var(--placeholder-border-night); }
+        .briefing-section-adder label { margin-right: 10px; }
+        .briefing-section-adder select { width: auto; min-width: 250px; display:inline-block; padding: 8px; margin-bottom: 0;}
+
+        .dynamic-briefing-section { background-color: var(--section-bg-day); border: 1px solid var(--section-border-day); padding: 15px; margin-bottom: 15px; border-radius: 4px; position: relative; }
+        body.night-mode .dynamic-briefing-section { background-color: var(--section-bg-night); border-color: var(--section-border-night); }
+        .dynamic-briefing-section h4 { margin-top: 0; margin-bottom: 10px; color: var(--heading-color-day); border-bottom: none;}
+        body.night-mode .dynamic-briefing-section h4 { color: var(--heading-color-night); }
+        .dynamic-briefing-section .button-delete { position: absolute; top: 10px; right: 10px; }
+
+        .editor-toolbar { margin-bottom: 5px; }
+        .editor-toolbar button { background-color: #e0e0e0; color: #333; border: 1px solid #ccc; padding: 5px 8px; font-size: 12px; margin-right: 3px; cursor:pointer; }
+        body.night-mode .editor-toolbar button { background-color: #555; color: #f0f0f0; border-color: #666; }
+        .editor-toolbar button:hover { background-color: #d0d0d0;}
+        body.night-mode .editor-toolbar button:hover { background-color: #666;}
+        .editable-content { min-height: 100px; padding: 10px; border: 1px solid var(--input-border-day); border-radius: 4px; background-color: var(--container-bg-day); color: var(--text-color-day); overflow-y: auto; }
+        body.night-mode .editable-content { background-color: #333; color: var(--text-color-night); border-color: var(--input-border-night); }
+        .editable-content:focus { border-color: var(--input-focus-border-day); outline: none; box-shadow: 0 0 5px var(--input-focus-shadow-day); }
+        body.night-mode .editable-content:focus { border-color: var(--input-focus-border-night); box-shadow: 0 0 5px var(--input-focus-shadow-night); }
+
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; vertical-align: middle; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent-color); }
+        input:focus + .slider { box-shadow: 0 0 1px var(--accent-color); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        .data-list, .search-results-display-area, #station-briefs-full-list-container, #view-brief-details-container {
+            padding: 15px;
+            background-color: var(--placeholder-bg-day);
+            border: 1px solid var(--placeholder-border-day);
+            border-radius: 5px;
+            color: var(--placeholder-text-day);
+            margin-top: 15px;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+        body.night-mode .data-list, body.night-mode .search-results-display-area, body.night-mode #station-briefs-full-list-container, body.night-mode #view-brief-details-container {
+            background-color: var(--placeholder-bg-night);
+            border-color: var(--placeholder-border-night);
+            color: var(--text-color-night);
+        }
+        #station-briefs-full-list-container ul { list-style: none; padding:0; }
+        #station-briefs-full-list-container li {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border-color-day);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #station-briefs-full-list-container li:hover { background-color: var(--border-color-day); }
+        body.night-mode #station-briefs-full-list-container li { border-bottom-color: var(--border-color-night); }
+        body.night-mode #station-briefs-full-list-container li:hover { background-color: #333; }
+        #station-briefs-full-list-container li:last-child { border-bottom: none; }
+
+        #view-brief-details-container .brief-detail-section {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--border-color-day);
+        }
+        body.night-mode #view-brief-details-container .brief-detail-section {
+            border-bottom-color: var(--border-color-night);
+        }
+        #view-brief-details-container .brief-detail-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        #view-brief-details-container .brief-detail-section h5 { /* Changed from h4 */
+            margin-top:0;
+            margin-bottom: 5px;
+            color: var(--heading-color-day);
+            font-size: 1.1em;
+            border-bottom:none; padding-bottom:0;
+        }
+        body.night-mode #view-brief-details-container .brief-detail-section h5 {
+            color: var(--heading-color-night);
+        }
+        #view-brief-details-container .brief-content {
+            padding: 8px;
+            background-color: rgba(0,0,0,0.02);
+            border-radius: 3px;
+            word-wrap: break-word; /* Ensure long content wraps */
+        }
+        body.night-mode #view-brief-details-container .brief-content {
+             background-color: rgba(255,255,255,0.05);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header-controls">
+        <label class="switch" title="Toggle Day/Night Mode">
+            <input type="checkbox" id="darkModeToggle">
+            <span class="slider round"></span>
+        </label>
+    </div>
+
+    <div class="container">
+        <div id="menu-view" class="view active">
+            <h2>Station Database</h2>
+            <div class="menu-buttons">
+                <button class="button" onclick="showView('create-entry-view')">Create New Station Brief</button>
+                <button class="button" onclick="showView('browse-station-briefs-view')">Browse Station Briefs</button>
+            </div>
+        </div>
+
+        <div id="create-entry-view" class="view">
+            <h2>Create New Station Brief</h2>
+            <form id="station-entry-form">
+                <div class="top-row-layout">
+                    <div class="form-section" id="aircraft-type-section">
+                        <label for="aircraft-type">Aircraft Type</label>
+                        <select id="aircraft-type" name="aircraftType" required>
+                            <option value="" selected disabled>-- Select --</option>
+                            <option value="B737">B737</option>
+                            <option value="B787">B787</option>
+                            <option value="B777">B777</option>
+                            <option value="A350">A350</option>
+                            <option value="A380">A380</option>
+                            <option value="B747">B747</option>
+                        </select>
+                    </div>
+
+                    <div class="form-section" id="station-icao-section">
+                        <label for="station-icao">Station ICAO</label>
+                        <select id="station-icao" name="stationICAO">
+                            <option value="" selected disabled>-- Select ICAO --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-section" id="station-iata-section">
+                        <label for="station-iata">Station IATA</label>
+                        <select id="station-iata" name="stationIATA">
+                            <option value="" selected disabled>-- Select IATA --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="add-station-manual-fields">
+                    <p style="margin-top:0; margin-bottom:10px; font-size:0.9em; color:var(--placeholder-text-day); width:100%;">Manually adding new station. Please provide details:</p>
+                    <div class="form-section">
+                        <label for="station-icao-new">New Station ICAO:</label>
+                        <input type="text" id="station-icao-new" name="stationICAONew" value="">
+                    </div>
+                    <div class="form-section">
+                        <label for="station-iata-new">New Station IATA:</label>
+                        <input type="text" id="station-iata-new" name="stationIATANew" value="">
+                    </div>
+                     <div class="form-section">
+                        <label for="station-name-new">New Station Name:</label>
+                        <input type="text" id="station-name-new" name="stationNameNew" value="">
+                    </div>
+                </div>
+
+                <div class="form-section" id="flight-numbers-section- अकेला">
+                    <label>Flight Number(s) Applicable</label>
+                    <div id="flight-numbers-container">
+                        <div class="flight-number-input-group">
+                            <span class="sq-prefix">SQ</span>
+                            <input type="text" name="flightNumber[]" value="">
+                        </div>
+                    </div>
+                    <button type="button" class="button button-secondary add-flight-no-btn" onclick="addFlightNumberField()" style="font-size: 0.8em; padding: 3px 8px; margin-top: 5px;">+ Flight No.</button>
+                </div>
+
+
+                <h3>Briefing Sections</h3>
+                <div class="briefing-section-adder">
+                    <label for="add-section-select">Choose a briefing section to add:</label>
+                    <select id="add-section-select">
+                        <option value="" disabled selected>-- Select to Add Section --</option>
+                        <option value="station_overview">Station Overview</option>
+                        <option value="operational_policy">Operational Policy</option>
+                        <option value="preflight">Preflight</option>
+                        <option value="pushback_taxi">Pushback & Taxi</option>
+                        <option value="climb_enroute">Climb & Enroute</option>
+                        <option value="arrival">Arrival</option>
+                        <option value="taxi_in_parking">Taxi-In and Parking</option>
+                        <option value="tem">Threat and Error Management (TEM)</option>
+                        <option value="night_stop_info">Night Stop Information</option>
+                        <option value="things_to_do">Things To Do</option>
+                        <option value="custom">Custom Section</option>
+                    </select>
+                </div>
+
+                <div id="active-briefing-sections-container"></div>
+
+                <div class="form-section" style="margin-top:30px;">
+                    <button type="submit" class="button">Save Station Brief</button>
+                    <button type="button" class="button button-secondary" onclick="showView('menu-view')">Back to Menu</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="browse-station-briefs-view" class="view">
+            <h2>Browse Station Briefs</h2>
+            <div class="form-section">
+                <label for="search-station-input">Search Station Briefs:</label>
+                <input type="search" id="search-station-input" value="">
+            </div>
+
+            <div id="view-brief-details-container" style="display:none;">
+                {/* Populated by displayBriefDetails JS function */}
+            </div>
+
+            <h3>All Station Briefs</h3>
+            <div id="station-briefs-full-list-container">
+                <p>Loading all available station briefs...</p>
+            </div>
+            <button type="button" class="button button-secondary" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Configuration ---
+        // !!! REPLACE WITH YOUR ACTUAL DEPLOYED WEB APP URL !!!
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyV76pZNEbhDsVTiLl4y-oNkfYFFpL6oE88GhlkQv99vtYvg9kar_vvsnbhgWLEideu/execE';
+
+        // --- Global State ---
+        let previousView = 'menu-view';
+        let activeBriefingSectionCounter = 0;
+        let allFetchedBriefs = []; // Cache for fetched briefs
+
+        // --- Station Data (For Dropdowns) ---
+        const stationMasterList = [
+            { icao: "WSSS", iata: "SIN", name: "Singapore Changi Airport" }, { icao: "WADD", iata: "DPS", name: "Denpasar Ngurah Rai Int'l" }, { icao: "WIDD", iata: "BTH", name: "Batam Hang Nadim Int'l" }, { icao: "WMKJ", iata: "JHB", name: "Johor Bahru Senai Int'l" }, { icao: "WSAP", iata: "XSP", name: "Singapore Seletar Airport" }, { icao: "VVTS", iata: "SGN", name: "Ho Chi Minh City Tan Son Nhat Int'l" }, { icao: "YPPH", iata: "PER", name: "Perth Airport" }, { icao: "YPAD", iata: "ADL", name: "Adelaide Airport" }, { icao: "VIDP", iata: "DEL", name: "Delhi Indira Gandhi Int'l" }, { icao: "VGHS", iata: "DAC", name: "Dhaka Hazrat Shahjalal Int'l" }, { icao: "VCBI", iata: "CMB", name: "Colombo Bandaranaike Int'l" }, { icao: "VOMM", iata: "MAA", name: "Chennai Int'l Airport" }, { icao: "RKSI", iata: "ICN", name: "Seoul Incheon Int'l" }, { icao: "RJBB", iata: "KIX", name: "Osaka Kansai Int'l" }, { icao: "RJAA", iata: "NRT", name: "Tokyo Narita Int'l" }, { icao: "RJFF", iata: "FUK", name: "Fukuoka Airport" }, { icao: "RJGG", iata: "NGO", name: "Nagoya Chubu Centrair Int'l" }, { icao: "VTBS", iata: "BKK", name: "Bangkok Suvarnabhumi Airport" }, { icao: "ZBAA", iata: "PEK", name: "Beijing Capital Int'l" }, { icao: "ZBAD", iata: "PKX", name: "Beijing Daxing Int'l" }, { icao: "ZSPD", iata: "PVG", name: "Shanghai Pudong Int'l" }, { icao: "ZGGG", iata: "CAN", name: "Guangzhou Baiyun Int'l" }, { icao: "ZGSZ", iata: "SZX", name: "Shenzhen Bao'an Int'l" }, { icao: "ROAH", iata: "OKA", name: "Okinawa Naha Airport" }, { icao: "RCKH", iata: "KHH", name: "Kaohsiung Int'l Airport" }, { icao: "VNKT", iata: "KTM", name: "Kathmandu Tribhuvan Int'l" }, { icao: "VRMM", iata: "MLE", name: "Malé Velana Int'l Airport" }, { icao: "VDPP", iata: "PNH", name: "Phnom Penh Int'l Airport" }, { icao: "RPLL", iata: "MNL", name: "Manila Ninoy Aquino Int'l" }, { icao: "RCTP", iata: "TPE", name: "Taipei Taoyuan Int'l" }, { icao: "VHHH", iata: "HKG", name: "Hong Kong Int'l Airport" }, { icao: "VABB", iata: "BOM", name: "Mumbai Chhatrapati Shivaji Maharaj Int'l" }, { icao: "YSSY", iata: "SYD", name: "Sydney Kingsford Smith" }, { icao: "YMML", iata: "MEL", name: "Melbourne Tullamarine" }, { icao: "YBBN", iata: "BNE", name: "Brisbane Airport" }, { icao: "NZAA", iata: "AKL", name: "Auckland Airport" }, { icao: "NZCH", iata: "CHC", name: "Christchurch Int'l" }, { icao: "EGLL", iata: "LHR", name: "London Heathrow Airport" }, { icao: "EGCC", iata: "MAN", name: "Manchester Airport" }, { icao: "EDDF", iata: "FRA", name: "Frankfurt Airport" }, { icao: "EDDM", iata: "MUC", name: "Munich Airport" }, { icao: "LFPG", iata: "CDG", name: "Paris Charles de Gaulle Airport" }, { icao: "EHAM", iata: "AMS", name: "Amsterdam Airport Schiphol" }, { icao: "LSZH", iata: "ZRH", name: "Zurich Airport" }, { icao: "LIRF", iata: "FCO", name: "Rome Fiumicino Airport" }, { icao: "LIMC", iata: "MXP", name: "Milan Malpensa Airport" }, { icao: "LEMD", iata: "MAD", name: "Madrid Barajas Airport" }, { icao: "LEBL", iata: "BCN", name: "Barcelona El Prat Airport" }, { icao: "EKCH", iata: "CPH", name: "Copenhagen Airport" }, { icao: "LTFM", iata: "IST", name: "Istanbul Airport" }, { icao: "OMDB", iata: "DXB", name: "Dubai Int'l Airport" }, { icao: "VOBL", iata: "BLR", name: "Bengaluru Kempegowda Int'l" }, { icao: "VOHS", iata: "HYD", name: "Hyderabad Rajiv Gandhi Int'l" }, { icao: "WMKK", iata: "KUL", name: "Kuala Lumpur Int'l Airport" }, { icao: "WIII", iata: "CGK", name: "Jakarta Soekarno-Hatta Int'l" }, { icao: "RJTT", iata: "HND", name: "Tokyo Haneda Airport" }, { icao: "FAOR", iata: "JNB", name: "Johannesburg O.R. Tambo Int'l" }, { icao: "FACT", iata: "CPT", name: "Cape Town Int'l Airport" }, { icao: "KLAX", iata: "LAX", name: "Los Angeles Int'l" }, { icao: "KSFO", iata: "SFO", name: "San Francisco Int'l" }, { icao: "KJFK", iata: "JFK", name: "New York JFK Int'l" }, { icao: "KEWR", iata: "EWR", name: "Newark Liberty Int'l" }, { icao: "KSEA", iata: "SEA", name: "Seattle-Tacoma Int'l" }, { icao: "KIAH", iata: "IAH", name: "Houston George Bush Int'l" }
+        ];
+
+        // --- Night Mode ---
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        function setDarkMode(isNight) {
+            if (isNight) { document.body.classList.add('night-mode'); localStorage.setItem('darkModePrefStationDB', 'true'); if(darkModeToggle) darkModeToggle.checked = true; }
+            else { document.body.classList.remove('night-mode'); localStorage.setItem('darkModePrefStationDB', 'false'); if(darkModeToggle) darkModeToggle.checked = false; }
+        }
+        if (darkModeToggle) { darkModeToggle.addEventListener('change', () => setDarkMode(darkModeToggle.checked)); }
+
+        // --- View Switching & Control ---
+        const viewBriefDetailsContainer = document.getElementById('view-brief-details-container');
+        const stationBriefsFullListContainer = document.getElementById('station-briefs-full-list-container');
+        const searchStationInputField = document.getElementById('search-station-input');
+        const browseViewH3 = document.querySelector('#browse-station-briefs-view h3'); // Get the H3 title
+
+        function showView(viewId) {
+            document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+            const activeView = document.getElementById(viewId);
+            if (activeView) {
+                activeView.classList.add('active');
+            } else {
+                console.error(`View with ID ${viewId} not found!`);
+                document.getElementById('menu-view').classList.add('active');
+            }
+            if (previousView === 'create-entry-view' && viewId !== 'create-entry-view') {
+                resetCreateEntryForm();
+            }
+            if (viewId === 'browse-station-briefs-view') {
+                viewBriefDetailsContainer.style.display = 'none'; // Hide detail view when going to browse
+                stationBriefsFullListContainer.style.display = 'block'; // Show list container
+                searchStationInputField.style.display = 'block'; // Show search bar
+                if(browseViewH3) browseViewH3.style.display = 'block'; // Show "All Station Briefs" title
+                loadAndDisplayAllBriefs(); // Load briefs when switching to this view
+            }
+            previousView = viewId;
+        }
+
+        function resetCreateEntryForm() {
+            const form = document.getElementById('station-entry-form');
+            if(form) form.reset();
+            const flightNumbersContainer = document.getElementById('flight-numbers-container');
+            while (flightNumbersContainer.children.length > 1) {
+                flightNumbersContainer.removeChild(flightNumbersContainer.lastChild);
+            }
+            const firstFlightInput = flightNumbersContainer.querySelector('input[name="flightNumber[]"]');
+            if(firstFlightInput) firstFlightInput.value = "";
+
+            document.getElementById('active-briefing-sections-container').innerHTML = '';
+            activeBriefingSectionCounter = 0;
+
+            const manualFields = document.getElementById('add-station-manual-fields');
+            manualFields.style.display = 'none';
+            document.getElementById('station-icao-new').required = false;
+            document.getElementById('station-iata-new').required = false;
+            document.getElementById('station-name-new').required = false;
+            document.getElementById('station-icao-new').value = "";
+            document.getElementById('station-iata-new').value = "";
+            document.getElementById('station-name-new').value = "";
+
+            document.getElementById('aircraft-type').selectedIndex = 0;
+            document.getElementById('station-icao').selectedIndex = 0;
+            document.getElementById('station-iata').selectedIndex = 0;
+            document.getElementById('add-section-select').selectedIndex = 0;
+        }
+
+        // --- Dynamic Fields for "Create New Entry" ---
+        function addFlightNumberField() {
+            const container = document.getElementById('flight-numbers-container');
+            const newFieldGroup = document.createElement('div');
+            newFieldGroup.classList.add('flight-number-input-group');
+            newFieldGroup.innerHTML = `
+                <span class="sq-prefix">SQ</span>
+                <input type="text" name="flightNumber[]" value="">
+                <button type="button" class="button-delete" onclick="this.parentElement.remove()">X</button>
+            `;
+            container.appendChild(newFieldGroup);
+        }
+
+        // --- Populate Station Dropdowns & Handle Linking ---
+        const stationICAOSelect = document.getElementById('station-icao');
+        const stationIATASelect = document.getElementById('station-iata');
+        const manualStationFieldsDiv = document.getElementById('add-station-manual-fields');
+        const stationICAONewInput = document.getElementById('station-icao-new');
+        const stationIATANewInput = document.getElementById('station-iata-new');
+        const stationNameNewInput = document.getElementById('station-name-new');
+
+        function populateStationDropdowns() {
+            if (!stationICAOSelect || !stationIATASelect) return;
+
+            const placeholderICAO = stationICAOSelect.options[0];
+            const placeholderIATA = stationIATASelect.options[0];
+            stationICAOSelect.innerHTML = ''; stationIATASelect.innerHTML = '';
+            stationICAOSelect.appendChild(placeholderICAO); stationIATASelect.appendChild(placeholderIATA);
+
+            const icaoOptions = stationMasterList
+                .filter(station => station.icao)
+                .sort((a, b) => a.icao.localeCompare(b.icao));
+
+            icaoOptions.forEach(station => {
+                const optionICAO = document.createElement('option');
+                optionICAO.value = station.icao;
+                optionICAO.textContent = `${station.icao} - ${station.name}`;
+                stationICAOSelect.appendChild(optionICAO);
+            });
+
+            const iataOptions = stationMasterList
+                .filter(station => station.iata)
+                .sort((a, b) => a.iata.localeCompare(b.iata));
+
+            iataOptions.forEach(station => {
+                const optionIATA = document.createElement('option');
+                optionIATA.value = station.iata;
+                optionIATA.textContent = `${station.iata} - ${station.name}`;
+                stationIATASelect.appendChild(optionIATA);
+            });
+
+            const addNewOptText = "-- Add New Station Manually --";
+            [stationICAOSelect, stationIATASelect].forEach(sel => {
+                const addNewOption = document.createElement('option');
+                addNewOption.value = "__add_new__";
+                addNewOption.textContent = addNewOptText;
+                sel.appendChild(addNewOption);
+            });
+        }
+
+        function handleStationSelectChange(changedSelect, otherSelect) {
+            const selectedValue = changedSelect.value;
+            manualStationFieldsDiv.style.display = 'none';
+            stationICAONewInput.required = false;
+            stationNameNewInput.required = false;
+
+            if (selectedValue === "__add_new__") {
+                manualStationFieldsDiv.style.display = 'block';
+                stationICAONewInput.required = true;
+                stationNameNewInput.required = true;
+                if(otherSelect.value !== "__add_new__") otherSelect.value = "";
+            } else if (selectedValue) {
+                const station = stationMasterList.find(s =>
+                    (changedSelect === stationICAOSelect && s.icao === selectedValue) ||
+                    (changedSelect === stationIATASelect && s.iata === selectedValue)
+                );
+                if (station) {
+                    if (changedSelect === stationICAOSelect && station.iata) {
+                        otherSelect.value = station.iata;
+                    } else if (changedSelect === stationIATASelect && station.icao) {
+                        otherSelect.value = station.icao;
+                    }
+                }
+                stationICAONewInput.value = "";
+                stationIATANewInput.value = "";
+                stationNameNewInput.value = "";
+            } else {
+                 otherSelect.value = "";
+            }
+        }
+
+        stationICAOSelect.addEventListener('change', function() {
+            handleStationSelectChange(this, stationIATASelect);
+        });
+
+        stationIATASelect.addEventListener('change', function() {
+            handleStationSelectChange(this, stationICAOSelect);
+        });
+
+        // --- Briefing Section Management ---
+        const addSectionSelect = document.getElementById('add-section-select');
+        const activeSectionsContainer = document.getElementById('active-briefing-sections-container');
+
+        const predefinedSectionTitles = {
+            station_overview: "Station Overview",
+            operational_policy: "Operational Policy",
+            preflight: "Preflight",
+            pushback_taxi: "Pushback & Taxi",
+            climb_enroute: "Climb & Enroute",
+            arrival: "Arrival",
+            taxi_in_parking: "Taxi-In and Parking",
+            tem: "Threat and Error Management (TEM)",
+            night_stop_info: "Night Stop Information",
+            things_to_do: "Things To Do"
+        };
+        // Map the keys used in select options/JS to the keys expected by Apps Script (and used in display)
+        const sectionKeyMap = {
+            station_overview: "StationOverview",
+            operational_policy: "OperationalPolicy",
+            preflight: "Preflight",
+            pushback_taxi: "PushbackTaxi",
+            climb_enroute: "ClimbEnroute",
+            arrival: "Arrival",
+            taxi_in_parking: "TaxiInParking",
+            tem: "TEM",
+            night_stop_info: "NightStopInfo",
+            things_to_do: "ThingsToDo"
+        }
+
+
+        addSectionSelect.addEventListener('change', function() {
+            const sectionValue = this.value; // e.g., "station_overview"
+            if (!sectionValue) return;
+
+            if (sectionValue !== 'custom' && document.getElementById(`briefing-section-${sectionValue}`)) {
+                alert(`"${predefinedSectionTitles[sectionValue]}" section already added.`);
+                this.value = "";
+                return;
+            }
+
+            activeBriefingSectionCounter++;
+            const sectionIdBase = (sectionValue === 'custom') ? `custom-section-${activeBriefingSectionCounter}` : `briefing-section-${sectionValue}`;
+            const sectionContainer = document.createElement('div');
+            sectionContainer.classList.add('dynamic-briefing-section');
+            sectionContainer.id = sectionIdBase;
+
+            let sectionTitleText = "";
+            let isCustom = (sectionValue === 'custom');
+
+            if (isCustom) {
+                sectionTitleText = `Custom Section ${activeBriefingSectionCounter}`;
+            } else {
+                sectionTitleText = predefinedSectionTitles[sectionValue];
+            }
+
+            const editorId = `${sectionIdBase}-content`;
+            // Use the mapped key for backend consistency if it's a predefined section
+            const backendKey = isCustom ? 'customSectionContentValue[]' : `${sectionKeyMap[sectionValue]}ContentValue`;
+            const hiddenInputName = backendKey;
+            const hiddenInputId = `${sectionIdBase}-value`;
+            const titleInputName = isCustom ? 'customSectionTitle[]' : '';
+
+
+            sectionContainer.innerHTML = `
+                <button type="button" class="button button-delete" onclick="removeBriefingSection('${sectionIdBase}')">Remove</button>
+                ${isCustom ?
+                    `<label for="title-${sectionIdBase}">Section Title:</label><input type="text" id="title-${sectionIdBase}" name="${titleInputName}" value="${sectionTitleText}" style="margin-bottom:10px; font-weight:bold;">` :
+                    `<h4>${sectionTitleText}</h4>`}
+                <div class="editor-toolbar">
+                    <button type="button" title="Bold" onclick="formatDoc('bold','${editorId}');"><b>B</b></button>
+                    <button type="button" title="Italic" onclick="formatDoc('italic','${editorId}');"><i>I</i></button>
+                    <button type="button" title="Underline" onclick="formatDoc('underline','${editorId}');"><u>U</u></button>
+                    <button type="button" title="Unordered List" onclick="formatDoc('insertUnorderedList','${editorId}');">&bull;&equiv;</button>
+                </div>
+                <div id="${editorId}" class="editable-content" contenteditable="true"></div>
+                <input type="hidden" name="${hiddenInputName}" id="${hiddenInputId}">
+            `;
+            activeSectionsContainer.appendChild(sectionContainer);
+            this.value = "";
+        });
+
+        function removeBriefingSection(sectionId) {
+            const sectionElement = document.getElementById(sectionId);
+            if (sectionElement) {
+                sectionElement.remove();
+            }
+        }
+
+        function formatDoc(command, editorId, valueArgument = null) {
+            const editor = document.getElementById(editorId);
+            if (editor) {
+                 editor.focus();
+                 document.execCommand(command, false, valueArgument);
+            } else {
+                console.error("Editor not found:", editorId);
+            }
+        }
+
+        // --- Form Submission ---
+        const stationEntryForm = document.getElementById('station-entry-form');
+        if (stationEntryForm) {
+            stationEntryForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                document.querySelectorAll('.editable-content').forEach(editor => {
+                    const hiddenInputId = editor.id.replace('-content', '-value');
+                    const hiddenInput = document.getElementById(hiddenInputId);
+                    if (hiddenInput) {
+                        hiddenInput.value = editor.innerHTML;
+                    }
+                });
+
+                const formData = new FormData(stationEntryForm);
+                const data = { // This object collects data before sending
+                    flightNumbers: [],
+                    customSections: []
+                };
+
+                let isManualStationEntry = stationICAOSelect.value === '__add_new__' || stationIATASelect.value === '__add_new__';
+
+                if (!formData.get('aircraftType')) {
+                    alert("Please select an Aircraft Type."); document.getElementById('aircraft-type').focus(); return;
+                }
+                if (!isManualStationEntry && !formData.get('stationICAO') && !formData.get('stationIATA')) {
+                    alert("Please select a station or choose to add one manually."); stationICAOSelect.focus(); return;
+                }
+                if (isManualStationEntry) {
+                    if (!formData.get('stationICAONew') || !formData.get('stationNameNew')) {
+                        alert("Manual station entry requires at least an ICAO code and Name."); document.getElementById(formData.get('stationICAONew') ? 'station-name-new' : 'station-icao-new').focus(); return;
+                    }
+                } else {
+                     if(!formData.get('stationICAO') && !formData.get('stationIATA')){ alert("Please select a station."); stationICAOSelect.focus(); return; }
+                }
+
+                let customTitles = formData.getAll('customSectionTitle[]');
+                let customContents = formData.getAll('customSectionContentValue[]');
+                customTitles.forEach((title, index) => {
+                    data.customSections.push({ title: title, content: customContents[index] || '' });
+                });
+
+                // Prepare payload for backend, ensuring correct keys
+                const payload = {};
+                 formData.forEach((value, key) => {
+                    // Add non-section data directly
+                    if (key !== "flightNumber[]" && !key.endsWith("ContentValue") && key !== 'customSectionTitle[]') {
+                         payload[key] = value;
+                    }
+                    // Add predefined sections content using the mapped keys expected by Apps Script
+                    else if (key.endsWith("ContentValue") && !key.startsWith("custom")) {
+                        payload[key] = value; // Apps script expects e.g., StationOverviewContentValue
+                    }
+                 });
+
+                 // Handle station info separately
+                 if (formData.get('stationICAONew') && formData.get('stationNameNew') && isManualStationEntry) {
+                     payload.stationInfo = JSON.stringify({
+                        icao: formData.get('stationICAONew').toUpperCase(),
+                        iata: formData.get('stationIATANew').toUpperCase() || '',
+                        name: formData.get('stationNameNew')
+                    });
+                 } else if (formData.get('stationICAO')) {
+                     const found = stationMasterList.find(s => s.icao === formData.get('stationICAO'));
+                     payload.stationInfo = JSON.stringify(found ? { ...found } : { icao: formData.get('stationICAO'), iata: formData.get('stationIATA') || '', name: 'N/A' });
+                 } else if (formData.get('stationIATA')) {
+                     const found = stationMasterList.find(s => s.iata === formData.get('stationIATA'));
+                     payload.stationInfo = JSON.stringify(found ? { ...found } : { icao: '', iata: formData.get('stationIATA'), name: 'N/A'});
+                 }
+                 delete payload.stationICAO; delete payload.stationIATA; // Remove original selects if they exist
+                 delete payload.stationICAONew; delete payload.stationIATANew; delete payload.stationNameNew; // Remove new inputs
+
+                // Add structured data as JSON strings
+                payload.flightNumbers = JSON.stringify(formData.getAll("flightNumber[]").filter(fn => fn.trim() !== ""));
+                payload.customSections = JSON.stringify(data.customSections); // Use the already structured array
+                payload.aircraftType = formData.get('aircraftType'); // Ensure aircraft type is included
+
+
+                console.log("Payload to be submitted:", payload);
+
+                const submitButton = stationEntryForm.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.textContent;
+                submitButton.disabled = true;
+                submitButton.textContent = 'Saving...';
+
+                fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: new URLSearchParams(payload),
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', },
+                })
+                .then(response => response.json())
+                .then(result => {
+                    console.log('Save Success:', result);
+                    if (result.status === 'success') {
+                        alert('Station Brief saved successfully! Brief ID: ' + result.briefId);
+                        // Manually construct the brief object for the cache based on payload and result.briefId
+                         const savedBrief = {
+                            rowId: result.briefId, // Use ID from backend
+                            stationInfo: JSON.parse(payload.stationInfo),
+                            aircraftType: payload.aircraftType,
+                            flightNumbers: JSON.parse(payload.flightNumbers),
+                            lastUpdated: new Date().toISOString().split('T')[0], // Use current date as last updated
+                            StationOverview: payload.StationOverviewContentValue || '',
+                            OperationalPolicy: payload.OperationalPolicyContentValue || '',
+                            Preflight: payload.PreflightContentValue || '',
+                            PushbackTaxi: payload.PushbackTaxiContentValue || '',
+                            ClimbEnroute: payload.ClimbEnrouteContentValue || '',
+                            Arrival: payload.ArrivalContentValue || '',
+                            TaxiInParking: payload.TaxiInParkingContentValue || '',
+                            TEM: payload.TEMContentValue || '',
+                            NightStopInfo: payload.NightStopInfoContentValue || '',
+                            ThingsToDo: payload.ThingsToDoContentValue || '',
+                            CustomSections: JSON.parse(payload.customSections)
+                         };
+
+                        const existingIdx = allFetchedBriefs.findIndex(b => b.rowId === result.briefId);
+                        if(existingIdx > -1) allFetchedBriefs[existingIdx] = savedBrief; else allFetchedBriefs.push(savedBrief);
+
+                        resetCreateEntryForm();
+                        showView('browse-station-briefs-view');
+                    } else {
+                        throw new Error(result.message || 'Unknown error saving brief.');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Save Error:', error);
+                    alert('Error saving brief: ' + error.message);
+                })
+                .finally(() => {
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalButtonText;
+                });
+            });
+        }
+
+        // --- Browse Station Briefs Logic ---
+        const searchStationInput = document.getElementById('search-station-input');
+        const searchResultsDisplayArea = document.getElementById('search-results-display-area');
+        // const fullListContainer = document.getElementById('station-briefs-full-list-container'); // Defined earlier
+
+        function displayBriefDetails(briefId) {
+            // Find brief in cache based on rowId (which should map to BriefID from backend)
+            const brief = allFetchedBriefs.find(b => String(b.rowId) === String(briefId)); // Ensure type match for comparison
+            if (!brief) {
+                viewBriefDetailsContainer.innerHTML = "<p>Brief details could not be loaded.</p><button type='button' class='button button-secondary' onclick='hideBriefDetails()'>Back to List</button>";
+                // Show detail container, hide list etc.
+                viewBriefDetailsContainer.style.display = 'block';
+                stationBriefsFullListContainer.style.display = 'none';
+                searchStationInputField.style.display = 'none';
+                if(browseViewH3) browseViewH3.style.display = 'none';
+                return;
+            }
+
+            let detailsHtml = `<button type="button" class="button button-secondary" onclick="hideBriefDetails()" style="margin-bottom:15px;">Back to List</button>`;
+            detailsHtml += `<h4>Brief for: ${brief.stationInfo?.icao || 'N/A'} (${brief.stationInfo?.name || 'N/A'}) - ${brief.AircraftType || 'N/A'}</h4>`;
+            detailsHtml += `<p><strong>Last Updated:</strong> ${brief.LastUpdated || 'N/A'}</p>`;
+            if (brief.FlightNumbers && brief.FlightNumbers.length > 0) {
+                 detailsHtml += `<p><strong>Flight Number(s):</strong> SQ ${brief.FlightNumbers.join(', SQ ')}</p>`;
+            }
+
+             const sectionKeysAndTitles = { // Use keys exactly as returned from Apps Script
+                StationOverview: "Station Overview", OperationalPolicy: "Operational Policy",
+                Preflight: "Preflight", PushbackTaxi: "Pushback & Taxi",
+                ClimbEnroute: "Climb & Enroute", Arrival: "Arrival",
+                TaxiInParking: "Taxi-In and Parking", TEM: "TEM",
+                NightStopInfo: "Night Stop Information", ThingsToDo: "Things To Do"
+            };
+
+            for (const key in sectionKeysAndTitles) {
+                if (brief[key] && String(brief[key]).trim() !== "" && String(brief[key]).trim() !== "<div></div>") { // Check if key exists and has content
+                    detailsHtml += `<div class="brief-detail-section"><h5>${sectionKeysAndTitles[key]}</h5><div class="brief-content">${brief[key]}</div></div>`;
+                }
+            }
+
+            if (brief.CustomSections && brief.CustomSections.length > 0) {
+                brief.CustomSections.forEach(custom => {
+                    if(custom.content && custom.content.trim() !== "" && custom.content.trim() !== "<div></div>") {
+                         detailsHtml += `<div class="brief-detail-section"><h5>${custom.title || 'Custom Section'}</h5><div class="brief-content">${custom.content}</div></div>`;
+                    }
+                });
+            }
+
+            viewBriefDetailsContainer.innerHTML = detailsHtml;
+            viewBriefDetailsContainer.style.display = 'block';
+            stationBriefsFullListContainer.style.display = 'none';
+            searchStationInputField.style.display = 'none';
+            if(browseViewH3) browseViewH3.style.display = 'none';
+        }
+
+        function hideBriefDetails() {
+            viewBriefDetailsContainer.style.display = 'none';
+            stationBriefsFullListContainer.style.display = 'block';
+            searchStationInputField.style.display = 'block';
+            if(browseViewH3) browseViewH3.style.display = 'block';
+            loadAndDisplayAllBriefs(searchStationInputField.value.trim());
+        }
+
+        async function loadAndDisplayAllBriefs(searchTerm = '') {
+            stationBriefsFullListContainer.innerHTML = '<p>Loading available station briefs...</p>';
+            searchResultsDisplayArea.style.display = 'none';
+
+            if (!WEB_APP_URL || WEB_APP_URL === 'YOUR_DEPLOYED_WEB_APP_URL_HERE') {
+                 stationBriefsFullListContainer.innerHTML = '<p style="color:red;">Error: Web App URL not configured in the script.</p>';
+                 return;
+            }
+
+            try {
+                const response = await fetch(`${WEB_APP_URL}?action=getAllBriefs`);
+                if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    // Ensure stationInfo is parsed if it comes as a string (shouldn't if Apps Script is correct)
+                    allFetchedBriefs = result.data.map(brief => ({
+                        ...brief,
+                        stationInfo: typeof brief.stationInfo === 'string' ? JSON.parse(brief.stationInfo || '{}') : brief.stationInfo || {icao:'', iata:'', name:''},
+                        // Ensure flightNumbers and customSections are arrays
+                        FlightNumbers: Array.isArray(brief.FlightNumbers) ? brief.FlightNumbers : [],
+                        CustomSections: Array.isArray(brief.CustomSections) ? brief.CustomSections : []
+                    }));
+                } else { throw new Error(result.message || "Failed to load briefs."); }
+
+            } catch (error) {
+                console.error("Error fetching briefs:", error);
+                stationBriefsFullListContainer.innerHTML = `<p>Error loading briefs: ${error.message}. Check console and backend setup.</p>`;
+                // Keep existing cached data if fetch fails? Optional.
+                // For now, just show error.
+            }
+
+            let briefsToDisplay = [...allFetchedBriefs];
+
+            if (searchTerm) {
+                const lowerSearchTerm = searchTerm.toLowerCase();
+                briefsToDisplay = briefsToDisplay.filter(brief =>
+                    (brief.stationInfo.icao && brief.stationInfo.icao.toLowerCase().includes(lowerSearchTerm)) ||
+                    (brief.stationInfo.iata && brief.stationInfo.iata.toLowerCase().includes(lowerSearchTerm)) ||
+                    (brief.stationInfo.name && brief.stationInfo.name.toLowerCase().includes(lowerSearchTerm)) ||
+                    (brief.AircraftType && brief.AircraftType.toLowerCase().includes(lowerSearchTerm)) ||
+                    (brief.FlightNumbers && brief.FlightNumbers.some(fn => fn.toLowerCase().includes(lowerSearchTerm)))
+                );
+            }
+
+            if (briefsToDisplay.length === 0) {
+                stationBriefsFullListContainer.innerHTML = `<p>No station briefs found${searchTerm ? ' matching your search criteria' : ''}.</p>`;
+                return;
+            }
+
+            let listHtml = '<ul>';
+            briefsToDisplay.sort((a,b) => (a.stationInfo.icao || "").localeCompare(b.stationInfo.icao || "") );
+            briefsToDisplay.forEach(brief => {
+                const icao = brief.stationInfo?.icao || 'N/A';
+                const name = brief.stationInfo?.name || 'N/A';
+                const aircraft = brief.AircraftType || 'N/A';
+                const updated = brief.LastUpdated || 'N/A';
+                const fns = brief.FlightNumbers && brief.FlightNumbers.length > 0 ? ` (SQ ${brief.FlightNumbers.join('/')})` : '';
+                // Ensure rowId (BriefID from backend) is used for linking
+                const briefId = brief.rowId || brief.BriefID; // Use BriefID if present
+
+                if (briefId) { // Only make it clickable if we have an ID
+                     listHtml += `<li onclick="displayBriefDetails('${briefId}')"><strong>${icao} (${name})</strong> - ${aircraft}${fns} - <em>Updated: ${updated}</em></li>`;
+                } else {
+                     listHtml += `<li><strong>${icao} (${name})</strong> - ${aircraft}${fns} - <em>Updated: ${updated}</em> (Cannot view details - missing ID)</li>`;
+                }
+            });
+            listHtml += '</ul>';
+            stationBriefsFullListContainer.innerHTML = listHtml;
+        }
+
+        if (searchStationInputField) {
+            searchStationInputField.addEventListener('input', function() {
+                const searchTerm = this.value.trim();
+                 viewBriefDetailsContainer.style.display = 'none';
+                 stationBriefsFullListContainer.style.display = 'block';
+                 if(browseViewH3) browseViewH3.style.display = 'block';
+
+                if (searchTerm.length === 0) {
+                    searchResultsDisplayArea.style.display = 'none';
+                    loadAndDisplayAllBriefs();
+                } else if (searchTerm.length >= 1) {
+                    loadAndDisplayAllBriefs(searchTerm);
+                }
+            });
+        }
+
+        // --- Initial Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedDarkMode = localStorage.getItem('darkModePrefStationDB');
+            setDarkMode(savedDarkMode === 'true');
+            populateStationDropdowns();
+            showView('menu-view'); // Start at menu, browse view will fetch data when shown
+        });
+    </script>
+</body>
+</html>
