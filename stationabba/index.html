@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Station Database</title> 
+    <title>Station Database</title>
     <style>
         /* General Styles - Verified */
         :root {
@@ -224,20 +224,47 @@
 
         // --- Station Data ---
         const stationMasterList = [
-            // Populate with your station data as before, e.g.:
-            // { icao: "WSSS", iata: "SIN", name: "Singapore Changi" },
-            // { icao: "WMKK", iata: "KUL", name: "Kuala Lumpur Intl" }
-            // Example:
-             {icao: "KATL", iata: "ATL", name: "Hartsfield-Jackson Atlanta International Airport"},
-             {icao: "KLAX", iata: "LAX", name: "Los Angeles International Airport"},
-             {icao: "KORD", iata: "ORD", name: "O'Hare International Airport"},
-             {icao: "EGLL", iata: "LHR", name: "London Heathrow Airport"},
-             {icao: "LFPG", iata: "CDG", name: "Charles de Gaulle Airport"},
-             {icao: "EDDF", iata: "FRA", name: "Frankfurt Airport"},
-             {icao: "OMDB", iata: "DXB", name: "Dubai International Airport"},
-             {icao: "ZBAA", iata: "PEK", name: "Beijing Capital International Airport"},
-             {icao: "RJTT", iata: "HND", name: "Haneda Airport"},
-             {icao: "WSSS", iata: "SIN", name: "Singapore Changi Airport"}
+            {icao: "WSSS", iata: "SIN", name: "Singapore Changi Airport"},
+            {icao: "WADD", iata: "DPS", name: "Ngurah Rai International Airport (Denpasar)"},
+            {icao: "WIDD", iata: "BTH", name: "Hang Nadim International Airport (Batam)"},
+            {icao: "WMKJ", iata: "JHB", name: "Senai International Airport (Johor Bahru)"},
+            {icao: "WSAP", iata: "QPG", name: "Paya Lebar Air Base"},
+            {icao: "VVTS", iata: "SGN", name: "Tan Son Nhat International Airport (Ho Chi Minh City)"},
+            {icao: "YPPH", iata: "PER", name: "Perth Airport"},
+            {icao: "YPAD", iata: "ADL", name: "Adelaide Airport"},
+            {icao: "VIDP", iata: "DEL", name: "Indira Gandhi International Airport (Delhi)"},
+            {icao: "VGHS", iata: "DAC", name: "Hazrat Shahjalal International Airport (Dhaka)"},
+            {icao: "VCBI", iata: "CMB", name: "Bandaranaike International Airport (Colombo)"},
+            {icao: "VOMM", iata: "MAA", name: "Chennai International Airport"},
+            {icao: "RKSI", iata: "ICN", name: "Incheon International Airport (Seoul)"},
+            {icao: "RJBB", iata: "KIX", name: "Kansai International Airport (Osaka)"},
+            {icao: "RJAA", iata: "NRT", name: "Narita International Airport (Tokyo)"},
+            {icao: "RJFF", iata: "FUK", name: "Fukuoka Airport"},
+            {icao: "RJGG", iata: "NGO", name: "Chubu Centrair International Airport (Nagoya)"},
+            {icao: "VTBS", iata: "BKK", name: "Suvarnabhumi Airport (Bangkok)"},
+            {icao: "ZBAA", iata: "PEK", name: "Beijing Capital International Airport"},
+            {icao: "ZBAD", iata: "PKX", name: "Beijing Daxing International Airport"},
+            {icao: "ZSPD", iata: "PVG", name: "Shanghai Pudong International Airport"},
+            {icao: "ZGGG", iata: "CAN", name: "Guangzhou Baiyun International Airport"},
+            {icao: "ZGSZ", iata: "SZX", name: "Shenzhen Bao'an International Airport"},
+            {icao: "ROAH", iata: "OKA", name: "Naha Airport"},
+            {icao: "RCKH", iata: "KHH", name: "Kaohsiung International Airport"},
+            {icao: "VNKT", iata: "KTM", name: "Tribhuvan International Airport (Kathmandu)"},
+            {icao: "VRMM", iata: "MLE", name: "Velana International Airport (Malé)"},
+            {icao: "VDPP", iata: "PNH", name: "Phnom Penh International Airport"},
+            {icao: "RPLL", iata: "MNL", name: "Ninoy Aquino International Airport (Manila)"},
+            {icao: "RCTP", iata: "TPE", name: "Taoyuan International Airport (Taipei)"},
+            {icao: "VHHH", iata: "HKG", name: "Hong Kong International Airport"},
+            {icao: "VABB", iata: "BOM", name: "Chhatrapati Shivaji Maharaj International Airport (Mumbai)"},
+            // Entries from your original example list not already covered:
+            {icao: "KATL", iata: "ATL", name: "Hartsfield-Jackson Atlanta International Airport"},
+            {icao: "KLAX", iata: "LAX", name: "Los Angeles International Airport"},
+            {icao: "KORD", iata: "ORD", name: "O'Hare International Airport"},
+            {icao: "EGLL", iata: "LHR", name: "London Heathrow Airport"},
+            {icao: "LFPG", iata: "CDG", name: "Charles de Gaulle Airport"},
+            {icao: "EDDF", iata: "FRA", name: "Frankfurt Airport"},
+            {icao: "OMDB", iata: "DXB", name: "Dubai International Airport"},
+            {icao: "RJTT", iata: "HND", name: "Haneda Airport (Tokyo)"}
         ];
 
         // --- Night Mode ---
@@ -337,7 +364,7 @@
             const v = changedSelect.value;
             manualStationFieldsDiv.style.display='none';
             stationICAONewInput.required=false;
-            stationIATANewInput.required=false; // IATA is often optional if ICAO is primary
+            stationIATANewInput.required=false; 
             stationNameNewInput.required=false;
 
             if (v === "__add_new__") {
@@ -557,7 +584,7 @@
                     if (!firstFlightNumber) {
                         alert(`Sector ${sectorIndex} must have at least one flight number to serve as its identifier. Skipping this sector.`);
                         failedSubmits++;
-                        continue; // Skip this sector
+                        continue; 
                     }
                     
                     let sectorIdentifier;
