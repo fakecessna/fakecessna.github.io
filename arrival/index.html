@@ -616,33 +616,33 @@
         "Shallow Fog": "has shallow fog",
         "Patches of Fog": "has patches of fog",
         "Haze": "is hazy",
-        "Smoke": "has smoke in the air",
-        "Light Drizzle": "is experiencing light drizzle",
-        "Drizzle": "is experiencing drizzle",
-        "Heavy Drizzle": "is experiencing heavy drizzle",
-        "Light Rain": "is experiencing light rain",
-        "Rain": "is experiencing rain",
-        "Heavy Rain": "is experiencing heavy rain",
-        "Light Showers": "is experiencing light showers",
-        "Showers": "is experiencing showers",
-        "Heavy Showers": "is experiencing heavy showers",
-        "Thunderstorm without Precipitation": "has thunderstorm activity in the vicinity",
-        "Thunderstorm with Light Rain": "is experiencing thunderstorms with light rain",
-        "Thunderstorm with Rain": "is experiencing thunderstorms with rain",
-        "Thunderstorm with Heavy Rain": "is experiencing thunderstorms with heavy rain",
-        "Light Snow": "is experiencing light snow",
-        "Snow": "is experiencing snow",
-        "Heavy Snow": "is experiencing heavy snow",
-        "Light Snow Showers": "is experiencing light snow showers",
-        "Snow Showers": "is experiencing snow showers",
-        "Heavy Snow Showers": "is experiencing heavy snow showers",
-        "Freezing Drizzle": "is experiencing freezing drizzle",
-        "Freezing Rain": "is experiencing freezing rain",
+        "Smoke": "is smoky", // Changed
+        "Light Drizzle": "has light drizzle", // Changed
+        "Drizzle": "has drizzle", // Changed
+        "Heavy Drizzle": "has heavy drizzle", // Changed
+        "Light Rain": "has light rain", // Changed
+        "Rain": "has rain", // Changed
+        "Heavy Rain": "has heavy rain", // Changed
+        "Light Showers": "has light showers", // Changed
+        "Showers": "has showers", // Changed
+        "Heavy Showers": "has heavy showers", // Changed
+        "Thunderstorm without Precipitation": "has thunderstorm activity nearby", // Changed
+        "Thunderstorm with Light Rain": "has thunderstorms with light rain", // Changed
+        "Thunderstorm with Rain": "has thunderstorms and rain", // Changed
+        "Thunderstorm with Heavy Rain": "has thunderstorms with heavy rain", // Changed
+        "Light Snow": "has light snow", // Changed
+        "Snow": "has snow", // Changed
+        "Heavy Snow": "has heavy snow", // Changed
+        "Light Snow Showers": "has light snow showers", // Changed
+        "Snow Showers": "has snow showers", // Changed
+        "Heavy Snow Showers": "has heavy snow showers", // Changed
+        "Freezing Drizzle": "has freezing drizzle", // Changed
+        "Freezing Rain": "has freezing rain", // Changed
         "Blowing Snow": "has blowing snow",
         "Sandstorm": "is experiencing a sandstorm",
         "Duststorm": "is experiencing a duststorm",
         "Squalls": "is experiencing squalls",
-        "Volcanic Ash": "has volcanic ash reported"
+        "Volcanic Ash": "has reports of volcanic ash" // Changed
     };
 
 
@@ -877,7 +877,6 @@
         timeAndLandingStatement = `${displayArrivalShortName} is ${diffStr} ${relation} ${displayOriginShortName}, and we expect to land at approximately ${conversationalLocalTime} local time`;
       }
       
-      // Get phrased weather
       const weatherPhrase = weatherPresentation[selectedWeatherPhenomenon] || `is ${selectedWeatherPhenomenon}`; // Fallback
       const weatherFull = `${weatherPhrase} with a temperature of ${temperature} degrees Celsius`;
       
@@ -932,7 +931,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
     function toggleDarkMode(isNight) {
         document.body.classList.toggle('night-mode', isNight);
-        localStorage.setItem('darkModePrefArrivalToolV14', isNight ? 'true' : 'false'); // Updated key
+        localStorage.setItem('darkModePrefArrivalToolV15', isNight ? 'true' : 'false'); // Updated key
         document.getElementById('darkModeToggle').checked = isNight; 
     }
     
@@ -1034,7 +1033,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
       const darkModeToggle = document.getElementById('darkModeToggle');
       darkModeToggle.addEventListener('change', () => toggleDarkMode(darkModeToggle.checked));
-      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV14') === 'true'); 
+      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV15') === 'true'); 
       handleArrivalAirportChange(); 
     });
   </script>
