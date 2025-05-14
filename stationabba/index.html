@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Station Database</title>
     <style>
-        /* General Styles - Verified */
+        /* General Styles */
         :root {
             --bg-color-day: #f4f4f4; --container-bg-day: #ffffff; --text-color-day: #333; --heading-color-day: #0056b3;
             --border-color-day: #eee; --input-border-day: #ccc; --input-focus-border-day: #007bff; --input-focus-shadow-day: rgba(0, 123, 255, 0.5);
@@ -17,7 +17,6 @@
             --placeholder-bg-night: #2a2a2a; --placeholder-border-night: #555; --placeholder-text-night: #888; --section-bg-night: #252525;
             --section-border-night: #444; --link-color-night: #ffcc66;
 
-            /* Theme Colors */
             --primary-bg: #1D4886; --accent-color: #FCB130; --button-text-day: #fff; --button-text-night: #333;
         }
         html, body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 14px; box-sizing: border-box; width: 100%; min-height: 100vh; background-color: var(--primary-bg); color: var(--text-color-day); transition: background-color 0.3s, color 0.3s; }
@@ -95,7 +94,6 @@
         body.night-mode .editable-content { background-color: #333; color: var(--text-color-night); border-color: var(--input-border-night); }
         .editable-content:focus { border-color: var(--input-focus-border-day); outline: none; box-shadow: 0 0 5px var(--input-focus-shadow-day); }
         body.night-mode .editable-content:focus { border-color: var(--input-focus-border-night); box-shadow: 0 0 5px var(--input-focus-shadow-night); }
-        /* Style for when content is being edited */
         .brief-content[contenteditable="true"] { outline: 2px dashed var(--input-focus-border-day); box-shadow: 0 0 5px var(--input-focus-shadow-day); background-color: #fff; min-height: 50px; }
         body.night-mode .brief-content[contenteditable="true"] { outline-color: var(--input-focus-border-night); box-shadow: 0 0 5px var(--input-focus-shadow-night); background-color: #2b2b2b; }
 
@@ -161,35 +159,45 @@
         @media print {
             body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
             body * { visibility: hidden !important; }
-            #view-brief-details-container, #view-brief-details-container * { visibility: visible !important; }
+            #view-brief-details-container, #view-brief-details-container * {
+                visibility: visible !important;
+                color: #000000 !important; /* Force ALL text to black for print */
+                background-color: transparent !important; /* Force transparent backgrounds */
+                box-shadow: none !important;
+                border-color: #ccc !important; /* Light border color if any */
+            }
             #view-brief-details-container {
-                position: static !important; /* Changed from absolute */
-                width: auto !important; /* Let it take natural width */
-                margin: 10mm !important; /* Use print units */
-                padding: 0 !important; border: none !important; box-shadow: none !important;
-                background: #fff !important;
-                color: #000 !important;
-                page-break-before: avoid !important; /* Try to avoid page break before */
+                position: relative !important; /* Change from static for better control if needed */
+                display: block !important;
+                width: 100% !important; /* Use available width */
+                margin: 0 !important; /* Remove margins for print body */
+                padding: 10mm !important; /* Add padding for printer margins */
+                box-sizing: border-box; /* Ensure padding is included in width */
+                page-break-before: auto !important;
             }
             #view-brief-details-container .section-controls,
             #view-brief-details-container .button { display: none !important; }
 
             #view-brief-details-container h2, #view-brief-details-container h3, #view-brief-details-container h4, #view-brief-details-container h5, #view-brief-details-container h6 {
-                 color: #000 !important; background: none !important; border: none !important; padding-bottom: 5px; margin-bottom: 10px; font-family: sans-serif; page-break-after: avoid; page-break-inside: avoid;
+                 border: none !important; padding-bottom: 5px; margin-bottom: 10px; font-family: sans-serif; page-break-after: avoid; page-break-inside: avoid;
+                 background: none !important; color: #000 !important;
              }
-            #view-brief-details-container h3 { font-size: 14pt; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #000 !important; page-break-before: avoid !important; }
-            #view-brief-details-container h4 { font-size: 12pt; border-bottom: 1px dashed #ccc !important; margin-top: 15px; font-weight: bold; }
-            #view-brief-details-container h5, #view-brief-details-container h6 { font-size: 11pt; font-weight: bold; margin-top: 10px; margin-bottom: 2px; }
+            #view-brief-details-container > h3 { font-size: 14pt; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #000 !important; page-break-before: avoid !important; }
+            #view-brief-details-container .detail-sector-block h4 { font-size: 12pt; border-bottom: 1px dashed #ccc !important; margin-top: 15px; font-weight: bold; }
+            #view-brief-details-container .brief-detail-section h5, #view-brief-details-container .brief-detail-section h6 { font-size: 11pt; font-weight: bold; margin-top: 10px; margin-bottom: 2px; }
             #view-brief-details-container a { text-decoration: none; color: #000 !important; }
             #view-brief-details-container .detail-sector-block { border: none !important; margin-bottom: 15px; padding: 0; page-break-inside: avoid; }
             #view-brief-details-container .brief-detail-section { border: none !important; margin-bottom: 10px; padding-bottom: 5px; page-break-inside: avoid; }
-            #view-brief-details-container .brief-content { padding: 5px; border: 1px solid #eee !important; word-wrap: break-word; margin-top: 2px; page-break-inside: avoid; background-color: #f9f9f9 !important; color: #000 !important; }
-            #view-brief-details-container ul { padding-left: 20px; margin-top: 5px;}
-            #view-brief-details-container li { margin-bottom: 2px; }
-            #view-brief-details-container b, #view-brief-details-container strong { font-weight: bold; }
-            #view-brief-details-container i, #view-brief-details-container em { font-style: italic; }
-            #view-brief-details-container u { text-decoration: underline; }
-            #view-brief-details-container hr { border-top: 1px solid #ccc; margin: 15px 0; }
+            #view-brief-details-container .brief-content {
+                padding: 5px; border: 1px solid #eee !important; word-wrap: break-word; margin-top: 2px; page-break-inside: avoid;
+                background-color: #f9f9f9 !important; color: #000 !important;
+            }
+             #view-brief-details-container ul { padding-left: 20px; margin-top: 5px;}
+             #view-brief-details-container li { margin-bottom: 2px; }
+             #view-brief-details-container b, #view-brief-details-container strong { font-weight: bold; }
+             #view-brief-details-container i, #view-brief-details-container em { font-style: italic; }
+             #view-brief-details-container u { text-decoration: underline; }
+             #view-brief-details-container hr { border-top: 1px solid #ccc; margin: 15px 0; }
         }
         #print-view { display: none !important; }
 
@@ -238,11 +246,11 @@
             <button type="button" class="button button-secondary" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
         </div>
 
-        </div>
+    </div>
 
     <script>
         // --- Configuration ---
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyV76pZNEbhDsVTiLl4y-oNkfYFFpL6oE88GhlkQv99vtYvg9kar_vvsnbhgWLEideu/exec'; // !!! PASTE YOUR URL HERE !!!
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyV76pZNEbhDsVTiLl4y-oNkfYFFpL6oE88GhlkQv99vtYvg9kar_vvsnbhgWLEideu/exec';
 
         // --- Global State ---
         let previousView = 'menu-view'; let sectorBlockCounter = 0; let allFetchedBriefs = []; let currentlyViewedStationICAO = null; let briefingSectionCounter = 0; let originalContentStore = {};
@@ -276,9 +284,9 @@
 
         /** Fetches data and populates the consolidated station list */
         async function loadAndDisplayBriefList(searchTerm = '') { /* ... as before ... */
-            stationBriefsFullListContainer.innerHTML = '<p>Loading stations...</p>'; viewBriefDetailsContainer.style.display = 'none';
-            try { const response = await fetch(`${WEB_APP_URL}?action=getBriefs`); if (!response.ok) throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`); let fetchedData; try { fetchedData = await response.json(); } catch (jsonError) { throw jsonError; } if (!Array.isArray(fetchedData)) throw new Error("Received invalid data format from server. Expected an array."); allFetchedBriefs = fetchedData; const briefsByStation = allFetchedBriefs.reduce((acc, brief) => { const stationKey = brief.stationInfo?.icao || 'UnknownStation'; if (!acc[stationKey]) acc[stationKey] = { stationInfo: brief.stationInfo || { icao: stationKey, name: 'Unknown Station' } }; return acc; }, {}); let filteredStations = Object.values(briefsByStation); if (searchTerm) { const lowerSearchTerm = searchTerm.toLowerCase(); filteredStations = filteredStations.filter(sg => (sg.stationInfo.name && sg.stationInfo.name.toLowerCase().includes(lowerSearchTerm)) || (sg.stationInfo.icao && sg.stationInfo.icao.toLowerCase().includes(lowerSearchTerm)) || (sg.stationInfo.iata && sg.stationInfo.iata.toLowerCase().includes(lowerSearchTerm)) || allFetchedBriefs.some(b => b.stationInfo?.icao === sg.stationInfo.icao && b.sectorIdentifier?.toLowerCase().includes(lowerSearchTerm))); } filteredStations.sort((a, b) => (a.stationInfo.name || a.stationInfo.icao).localeCompare(b.stationInfo.name || b.stationInfo.icao)); if (filteredStations.length === 0) { stationBriefsFullListContainer.innerHTML = searchTerm ? `<p>No stations found matching "${searchTerm}".</p>` : '<p>No station briefs found. Create one!</p>'; return; } const ul = document.createElement('ul'); filteredStations.forEach(stationGroup => { const li = document.createElement('li'); const stationDisplay = stationGroup.stationInfo.name ? `${stationGroup.stationInfo.name} (${stationGroup.stationInfo.icao})` : stationGroup.stationInfo.icao; li.innerHTML = stationDisplay; li.style.cursor = 'pointer'; li.onclick = () => displayStationDetails(stationGroup.stationInfo.icao); ul.appendChild(li); }); stationBriefsFullListContainer.innerHTML = ''; stationBriefsFullListContainer.appendChild(ul); } catch (error) { console.error('Failed to load station list:', error); stationBriefsFullListContainer.innerHTML = `<p style="color: red;">Error loading station list: ${error.message}. Check console.</p>`; allFetchedBriefs = []; }
-        }
+             stationBriefsFullListContainer.innerHTML = '<p>Loading stations...</p>'; viewBriefDetailsContainer.style.display = 'none';
+             try { const response = await fetch(`${WEB_APP_URL}?action=getBriefs`); if (!response.ok) throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`); let fetchedData; try { fetchedData = await response.json(); } catch (jsonError) { throw jsonError; } if (!Array.isArray(fetchedData)) throw new Error("Received invalid data format from server. Expected an array."); allFetchedBriefs = fetchedData; const briefsByStation = allFetchedBriefs.reduce((acc, brief) => { const stationKey = brief.stationInfo?.icao || 'UnknownStation'; if (!acc[stationKey]) acc[stationKey] = { stationInfo: brief.stationInfo || { icao: stationKey, name: 'Unknown Station' } }; return acc; }, {}); let filteredStations = Object.values(briefsByStation); if (searchTerm) { const lowerSearchTerm = searchTerm.toLowerCase(); filteredStations = filteredStations.filter(sg => (sg.stationInfo.name && sg.stationInfo.name.toLowerCase().includes(lowerSearchTerm)) || (sg.stationInfo.icao && sg.stationInfo.icao.toLowerCase().includes(lowerSearchTerm)) || (sg.stationInfo.iata && sg.stationInfo.iata.toLowerCase().includes(lowerSearchTerm)) || allFetchedBriefs.some(b => b.stationInfo?.icao === sg.stationInfo.icao && b.sectorIdentifier?.toLowerCase().includes(lowerSearchTerm))); } filteredStations.sort((a, b) => (a.stationInfo.name || a.stationInfo.icao).localeCompare(b.stationInfo.name || b.stationInfo.icao)); if (filteredStations.length === 0) { stationBriefsFullListContainer.innerHTML = searchTerm ? `<p>No stations found matching "${searchTerm}".</p>` : '<p>No station briefs found. Create one!</p>'; return; } const ul = document.createElement('ul'); filteredStations.forEach(stationGroup => { const li = document.createElement('li'); const stationDisplay = stationGroup.stationInfo.name ? `${stationGroup.stationInfo.name} (${stationGroup.stationInfo.icao})` : stationGroup.stationInfo.icao; li.innerHTML = stationDisplay; li.style.cursor = 'pointer'; li.onclick = () => displayStationDetails(stationGroup.stationInfo.icao); ul.appendChild(li); }); stationBriefsFullListContainer.innerHTML = ''; stationBriefsFullListContainer.appendChild(ul); } catch (error) { console.error('Failed to load station list:', error); stationBriefsFullListContainer.innerHTML = `<p style="color: red;">Error loading station list: ${error.message}. Check console.</p>`; allFetchedBriefs = []; }
+         }
 
         /** Displays details for a specific station, showing all its sectors */
         function displayStationDetails(stationICAO) { /* ... as before ... */
@@ -319,9 +327,10 @@
         function saveBriefAsPDF() {
              console.log("Attempting print/Save as PDF...");
              if(viewBriefDetailsContainer.style.display !== 'block') { alert("Please view the station details first before saving as PDF."); return; }
-             // Use setTimeout to potentially allow DOM updates before printing
-             setTimeout(() => { window.print(); }, 50);
+             // Ensure print CSS handles visibility of elements.
+             setTimeout(() => { window.print(); }, 100); // Increased delay slightly
         }
+
 
         // --- Initial Setup ---
         document.addEventListener('DOMContentLoaded', () => {
