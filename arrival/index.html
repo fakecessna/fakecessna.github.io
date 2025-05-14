@@ -65,7 +65,7 @@
         display: flex;
         flex-wrap: wrap;
         gap: 15px;
-        align-items: flex-end;
+        align-items: flex-start; /* Changed to flex-start for better alignment with swap button */
     }
     .form-row .form-group, .airport-group .form-group {
         flex: 1;
@@ -75,13 +75,37 @@
         flex: 0 1 120px;
         min-width: 100px;
     }
-    .airport-group { /* Container for search, dropdown, checkbox */
+    .airport-group { 
        display: flex;
        flex-direction: column;
        gap: 5px; 
        flex: 1;
-       min-width: 250px; 
+       min-width: calc(50% - 30px); /* Adjust for swap button space */
     }
+    .swap-button-container {
+        display: flex;
+        align-items: center; /* Vertically center button if airport groups have different heights */
+        justify-content: center;
+        padding: 20px 0px 0px 0px; /* Add some padding around the button */
+        flex-basis: 60px; /* Give it some base width */
+        flex-grow: 0;
+        flex-shrink: 0;
+    }
+     #swapAirportsButton {
+        padding: 6px 10px;
+        font-size: 1.2em; /* Make arrow bigger */
+        line-height: 1;
+        background-color: #e9ecef;
+        border: 1px solid #ced4da;
+        color: #495057;
+        cursor: pointer;
+        border-radius: 5px;
+     }
+     #swapAirportsButton:hover {
+        background-color: #dee2e6;
+     }
+
+
      .airport-group .search-and-select {
         display: flex;
         flex-direction: column;
@@ -130,9 +154,8 @@
       color: #333;
       transition: border-color 0.3s, background-color 0.3s, color 0.3s;
     }
-    /* Style for editable textarea */
      #announcementOutput {
-        background-color: #fff; /* Ensure editable background is white */
+        background-color: #fff; 
         border: 1px solid #ccc;
      }
      #announcementOutput:focus {
@@ -143,7 +166,7 @@
 
     .form-group input:focus,
     .form-group select:focus,
-    .form-group textarea:focus { /* General focus style */
+    .form-group textarea:focus { 
       border-color: #00529b;
       outline: none;
       box-shadow: 0 0 0 2px rgba(0, 82, 155, 0.2);
@@ -155,7 +178,7 @@
     }
     .form-group textarea {
         resize: vertical;
-        min-height: 150px; /* Keep min-height for output */
+        min-height: 150px; 
     }
     .time-input-group {
         display: flex;
@@ -186,7 +209,6 @@
         font-size: 0.95em;
         margin-left: 5px;
     }
-
 
     /* Buttons */
     .button-toolbar {
@@ -314,6 +336,15 @@
         border-color: #5dade2;
         box-shadow: 0 0 0 2px rgba(93, 173, 226, 0.2);
      }
+     .night-mode #swapAirportsButton {
+        background-color: #4a6278;
+        border-color: #566573;
+        color: #bdc3c7;
+     }
+      .night-mode #swapAirportsButton:hover {
+        background-color: #526f8c;
+     }
+
 
     .night-mode .form-group input:focus,
     .night-mode .form-group select:focus,
@@ -394,6 +425,11 @@
                  <label for="originHomeBaseCheck">Set Origin to Home Base (WSSS)</label>
             </div>
           </div>
+          
+          <div class="swap-button-container">
+             <button id="swapAirportsButton" title="Swap Origin and Arrival Airports">⇆</button>
+          </div>
+
           <div class="airport-group">
              <div class="search-and-select form-group">
                 <label for="arrivalAirportSearch">Search Arrival (ICAO/IATA)</label>
@@ -733,7 +769,7 @@
              const descriptivePeriod = getDescriptivePeriod(hours24);
              return `half past ${h12} ${descriptivePeriod}`; 
         }
-        if (minutes >= 55 && minutes <= 59) { // Only "X minutes to Y" for 5 mins or less to the hour
+        if (minutes >= 55 && minutes <= 59) {
              const minutesToNextHour = 60 - minutes;
              let nextHour12 = (hours24 + 1) % 12;
              if (nextHour12 === 0) nextHour12 = 12;
@@ -781,8 +817,7 @@
         timeAndLandingStatement = `We expect to land at approximately ${conversationalLocalTime} local time`;
       } else {
         const diff = effectiveArrivalGmt - originGmt;
-        // Corrected diffHours and diffMinutes calculation
-        const totalAbsDiffInMinutes = Math.round(Math.abs(diff * 60)); // Use Math.round for fractional GMTs
+        const totalAbsDiffInMinutes = Math.round(Math.abs(diff * 60));
         const diffHours = Math.floor(totalAbsDiffInMinutes / 60);
         const diffMinutes = totalAbsDiffInMinutes % 60;
 
@@ -802,6 +837,37 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
       document.getElementById('announcementOutput').value = announcement;
     }
+    
+    function swapAirports() {
+        const originSelect = document.getElementById('originAirport');
+        const arrivalSelect = document.getElementById('arrivalAirport');
+        const originSearch = document.getElementById('originAirportSearch');
+        const arrivalSearch = document.getElementById('arrivalAirportSearch');
+        const originHomeCheck = document.getElementById('originHomeBaseCheck');
+        const arrivalHomeCheck = document.getElementById('arrivalHomeBaseCheck');
+
+        const tempOriginVal = originSelect.value;
+        const tempArrivalVal = arrivalSelect.value;
+        const tempOriginHome = originHomeCheck.checked;
+        const tempArrivalHome = arrivalHomeCheck.checked;
+
+        // Swap dropdowns
+        originSelect.value = tempArrivalVal;
+        arrivalSelect.value = tempOriginVal;
+
+        // Swap home base checkboxes
+        originHomeCheck.checked = tempArrivalHome;
+        arrivalHomeCheck.checked = tempOriginHome;
+        
+        // Clear search fields
+        originSearch.value = '';
+        arrivalSearch.value = '';
+
+        // Trigger change events to update dependent logic (like DST visibility)
+        originSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        arrivalSelect.dispatchEvent(new Event('change', { bubbles: true })); // This will also call handleArrivalAirportChange
+    }
+
 
     function copyToClipboard() {
       const outputArea = document.getElementById('announcementOutput');
@@ -817,7 +883,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
     function toggleDarkMode(isNight) {
         document.body.classList.toggle('night-mode', isNight);
-        localStorage.setItem('darkModePrefArrivalToolV11', isNight ? 'true' : 'false'); // Updated key
+        localStorage.setItem('darkModePrefArrivalToolV12', isNight ? 'true' : 'false'); // Updated key
         document.getElementById('darkModeToggle').checked = isNight; 
     }
     
@@ -898,6 +964,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
       populateWeatherDropdown();
       setupAirportSearch('originAirportSearch', 'originAirport', 'originHomeBaseCheck');
       setupAirportSearch('arrivalAirportSearch', 'arrivalAirport', 'arrivalHomeBaseCheck');
+      document.getElementById('swapAirportsButton').addEventListener('click', swapAirports);
       
       document.getElementById('generateButton').addEventListener('click', generateAnnouncement);
       document.getElementById('copyButton').addEventListener('click', copyToClipboard);
@@ -914,7 +981,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
       const darkModeToggle = document.getElementById('darkModeToggle');
       darkModeToggle.addEventListener('change', () => toggleDarkMode(darkModeToggle.checked));
-      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV11') === 'true'); // Updated localStorage key
+      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV12') === 'true'); 
       handleArrivalAirportChange(); 
     });
   </script>
