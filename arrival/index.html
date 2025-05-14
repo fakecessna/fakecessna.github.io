@@ -65,9 +65,28 @@
         display: flex;
         flex-wrap: wrap;
         gap: 15px;
-        align-items: flex-start; /* Changed to flex-start for better alignment with swap button */
+        align-items: flex-end; 
     }
-    .form-row .form-group, .airport-group .form-group {
+     /* Specific styling for the airport selection row */
+    #airportSelectionRow {
+        flex-wrap: nowrap; /* Prevent wrapping */
+        align-items: flex-start; /* Align items to the top of the row */
+    }
+    #airportSelectionRow > .airport-group {
+        flex-basis: 40%; /* Adjust basis to make more room */
+        flex-grow: 1;
+        min-width: 200px; /* Ensure they don't get too small */
+    }
+    #airportSelectionRow > .swap-button-container {
+        flex-grow: 0;
+        flex-shrink: 0;
+        align-self: center; /* Vertically center the swap button */
+        padding: 0 10px; /* Add some horizontal padding for spacing */
+        margin-top: 20px; /* Approximate alignment with search boxes */
+    }
+
+
+    .form-row .form-group, .airport-group .form-group { /* General form group styling */
         flex: 1;
         min-width: 200px;
     }
@@ -79,33 +98,9 @@
        display: flex;
        flex-direction: column;
        gap: 5px; 
-       flex: 1;
-       min-width: calc(50% - 30px); /* Adjust for swap button space */
+       /* flex: 1; /* This will be handled by #airportSelectionRow > .airport-group */
+       /* min-width: 250px; /* This will be handled by #airportSelectionRow > .airport-group */
     }
-    .swap-button-container {
-        display: flex;
-        align-items: center; /* Vertically center button if airport groups have different heights */
-        justify-content: center;
-        padding: 20px 0px 0px 0px; /* Add some padding around the button */
-        flex-basis: 60px; /* Give it some base width */
-        flex-grow: 0;
-        flex-shrink: 0;
-    }
-     #swapAirportsButton {
-        padding: 6px 10px;
-        font-size: 1.2em; /* Make arrow bigger */
-        line-height: 1;
-        background-color: #e9ecef;
-        border: 1px solid #ced4da;
-        color: #495057;
-        cursor: pointer;
-        border-radius: 5px;
-     }
-     #swapAirportsButton:hover {
-        background-color: #dee2e6;
-     }
-
-
      .airport-group .search-and-select {
         display: flex;
         flex-direction: column;
@@ -210,6 +205,7 @@
         margin-left: 5px;
     }
 
+
     /* Buttons */
     .button-toolbar {
         margin-top: 25px;
@@ -260,6 +256,20 @@
     .button.utility:hover {
         opacity: 0.85;
     }
+     #swapAirportsButton {
+        padding: 6px 10px;
+        font-size: 1.2em; 
+        line-height: 1;
+        background-color: #e9ecef;
+        border: 1px solid #ced4da;
+        color: #495057;
+        cursor: pointer;
+        border-radius: 5px;
+     }
+     #swapAirportsButton:hover {
+        background-color: #dee2e6;
+     }
+
 
     #announcementOutput {
       margin-top: 20px;
@@ -412,7 +422,7 @@
             </select>
         </div>
 
-      <div class="form-row">
+      <div class="form-row" id="airportSelectionRow">
           <div class="airport-group">
             <div class="search-and-select form-group">
                 <label for="originAirportSearch">Search Origin (ICAO/IATA)</label>
@@ -676,8 +686,10 @@
              if (this.value !== 'WSSS' && homeBaseCheckbox.checked) {
                   homeBaseCheckbox.checked = false;
              }
-             if (this.value === 'WSSS' && otherCheckbox.checked) {
-                 otherCheckbox.checked = false;
+             if (this.value === 'WSSS' && otherCheckbox.checked) { // This needs to check if this dropdown became WSSS
+                 if (selectDropdown.value === 'WSSS' && otherCheckbox.checked) {
+                    otherCheckbox.checked = false;
+                 }
              }
              if (selectDropdownId === 'arrivalAirport') {
                 handleArrivalAirportChange();
@@ -769,7 +781,7 @@
              const descriptivePeriod = getDescriptivePeriod(hours24);
              return `half past ${h12} ${descriptivePeriod}`; 
         }
-        if (minutes >= 55 && minutes <= 59) {
+        if (minutes >= 55 && minutes <= 59) { 
              const minutesToNextHour = 60 - minutes;
              let nextHour12 = (hours24 + 1) % 12;
              if (nextHour12 === 0) nextHour12 = 12;
@@ -778,7 +790,6 @@
         }
         return `${h12}:${minutesPadded} ${period}`; 
     }
-
 
     function generateAnnouncement() {
       const speakerRole = document.getElementById('speakerRole').value;
@@ -851,21 +862,20 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
         const tempOriginHome = originHomeCheck.checked;
         const tempArrivalHome = arrivalHomeCheck.checked;
 
-        // Swap dropdowns
         originSelect.value = tempArrivalVal;
         arrivalSelect.value = tempOriginVal;
 
-        // Swap home base checkboxes
         originHomeCheck.checked = tempArrivalHome;
         arrivalHomeCheck.checked = tempOriginHome;
         
-        // Clear search fields
         originSearch.value = '';
         arrivalSearch.value = '';
 
-        // Trigger change events to update dependent logic (like DST visibility)
+        // Crucially, trigger change events for both dropdowns to update dependent logic
+        // Origin change first (less likely to have complex dependencies)
         originSelect.dispatchEvent(new Event('change', { bubbles: true }));
-        arrivalSelect.dispatchEvent(new Event('change', { bubbles: true })); // This will also call handleArrivalAirportChange
+        // Then arrival change (this one calls handleArrivalAirportChange for DST)
+        arrivalSelect.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
 
@@ -883,7 +893,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
     function toggleDarkMode(isNight) {
         document.body.classList.toggle('night-mode', isNight);
-        localStorage.setItem('darkModePrefArrivalToolV12', isNight ? 'true' : 'false'); // Updated key
+        localStorage.setItem('darkModePrefArrivalToolV13', isNight ? 'true' : 'false'); // Updated key
         document.getElementById('darkModeToggle').checked = isNight; 
     }
     
@@ -950,6 +960,11 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
                 handleArrivalAirportChange(); 
                 const arrChangeEvent = new Event('change', { bubbles: true });
                 document.getElementById('arrivalAirport').dispatchEvent(arrChangeEvent);
+                // Also trigger for origin if it was set by checkbox
+                if (loadedData['originHomeBaseCheck']){
+                     document.getElementById('originAirport').dispatchEvent(new Event('change', {bubbles: true}));   
+                }
+
 
                 alert(`Announcement data loaded from ${file.name}`);
             } catch (error) { console.error(error); alert("Error parsing announcement file."); } 
@@ -981,7 +996,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
       const darkModeToggle = document.getElementById('darkModeToggle');
       darkModeToggle.addEventListener('change', () => toggleDarkMode(darkModeToggle.checked));
-      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV12') === 'true'); 
+      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV13') === 'true'); 
       handleArrivalAirportChange(); 
     });
   </script>
