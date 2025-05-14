@@ -98,8 +98,6 @@
        display: flex;
        flex-direction: column;
        gap: 5px; 
-       /* flex: 1; /* This will be handled by #airportSelectionRow > .airport-group */
-       /* min-width: 250px; /* This will be handled by #airportSelectionRow > .airport-group */
     }
      .airport-group .search-and-select {
         display: flex;
@@ -605,6 +603,48 @@
         "Light Snow", "Snow", "Heavy Snow", "Light Snow Showers", "Snow Showers", "Heavy Snow Showers",
         "Freezing Drizzle", "Freezing Rain", "Blowing Snow", "Sandstorm", "Duststorm", "Squalls", "Volcanic Ash"
     ];
+    
+    const weatherPresentation = {
+        "Partly Cloudy": "is partly cloudy",
+        "Clear Sky": "has clear skies",
+        "Few Clouds": "has a few clouds",
+        "Scattered Clouds": "has scattered clouds",
+        "Broken Clouds": "has broken clouds",
+        "Overcast": "is overcast",
+        "Mist": "is misty",
+        "Fog": "is foggy",
+        "Shallow Fog": "has shallow fog",
+        "Patches of Fog": "has patches of fog",
+        "Haze": "is hazy",
+        "Smoke": "has smoke in the air",
+        "Light Drizzle": "is experiencing light drizzle",
+        "Drizzle": "is experiencing drizzle",
+        "Heavy Drizzle": "is experiencing heavy drizzle",
+        "Light Rain": "is experiencing light rain",
+        "Rain": "is experiencing rain",
+        "Heavy Rain": "is experiencing heavy rain",
+        "Light Showers": "is experiencing light showers",
+        "Showers": "is experiencing showers",
+        "Heavy Showers": "is experiencing heavy showers",
+        "Thunderstorm without Precipitation": "has thunderstorm activity in the vicinity",
+        "Thunderstorm with Light Rain": "is experiencing thunderstorms with light rain",
+        "Thunderstorm with Rain": "is experiencing thunderstorms with rain",
+        "Thunderstorm with Heavy Rain": "is experiencing thunderstorms with heavy rain",
+        "Light Snow": "is experiencing light snow",
+        "Snow": "is experiencing snow",
+        "Heavy Snow": "is experiencing heavy snow",
+        "Light Snow Showers": "is experiencing light snow showers",
+        "Snow Showers": "is experiencing snow showers",
+        "Heavy Snow Showers": "is experiencing heavy snow showers",
+        "Freezing Drizzle": "is experiencing freezing drizzle",
+        "Freezing Rain": "is experiencing freezing rain",
+        "Blowing Snow": "has blowing snow",
+        "Sandstorm": "is experiencing a sandstorm",
+        "Duststorm": "is experiencing a duststorm",
+        "Squalls": "is experiencing squalls",
+        "Volcanic Ash": "has volcanic ash reported"
+    };
+
 
     const airlineName = "Singapore Airlines";
     const announcementDataFileName = "SQ_ArrivalAnnouncementData.sqaa";
@@ -686,10 +726,8 @@
              if (this.value !== 'WSSS' && homeBaseCheckbox.checked) {
                   homeBaseCheckbox.checked = false;
              }
-             if (this.value === 'WSSS' && otherCheckbox.checked) { // This needs to check if this dropdown became WSSS
-                 if (selectDropdown.value === 'WSSS' && otherCheckbox.checked) {
-                    otherCheckbox.checked = false;
-                 }
+             if (this.value === 'WSSS' && otherCheckbox.checked) {
+                 otherCheckbox.checked = false;
              }
              if (selectDropdownId === 'arrivalAirport') {
                 handleArrivalAirportChange();
@@ -791,6 +829,7 @@
         return `${h12}:${minutesPadded} ${period}`; 
     }
 
+
     function generateAnnouncement() {
       const speakerRole = document.getElementById('speakerRole').value;
       const originCode = document.getElementById('originAirport').value;
@@ -798,7 +837,7 @@
       const todMinutes = document.getElementById('todMinutes').value;
       const arrivalZuluHH = parseInt(document.getElementById('arrivalTimeZuluHH').value);
       const arrivalZuluMM = parseInt(document.getElementById('arrivalTimeZuluMM').value);
-      const weatherPhenomenon = document.getElementById('weatherPhenomena').value;
+      const selectedWeatherPhenomenon = document.getElementById('weatherPhenomena').value;
       const temperature = document.getElementById('temperature').value;
       const taxiTimeValue = document.getElementById('taxiTime').value;
 
@@ -838,11 +877,14 @@
         timeAndLandingStatement = `${displayArrivalShortName} is ${diffStr} ${relation} ${displayOriginShortName}, and we expect to land at approximately ${conversationalLocalTime} local time`;
       }
       
-      const weatherFull = `${weatherPhenomenon} with a temperature of ${temperature} degrees Celsius`;
+      // Get phrased weather
+      const weatherPhrase = weatherPresentation[selectedWeatherPhenomenon] || `is ${selectedWeatherPhenomenon}`; // Fallback
+      const weatherFull = `${weatherPhrase} with a temperature of ${temperature} degrees Celsius`;
+      
       const speakerIdentifier = speakerRole === "Pilot" ? "your pilot speaking" : `your ${speakerRole}`; 
 
       const announcement = `Ladies and Gentlemen, this is ${speakerIdentifier}. We will be commencing our descent into ${displayArrivalFullName} in about ${todMinutes} minutes time.
-Current Weather at ${displayArrivalShortName} is ${weatherFull}.
+Current Weather at ${displayArrivalShortName} ${weatherFull}.
 ${timeAndLandingStatement}, and another ${taxiTimeValue} minutes thereafter to the gate.
 On behalf of the crew, we would like to thank you once again for flying with ${airlineName}. Cabin crew, please prepare for arrival.`; 
 
@@ -871,11 +913,8 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
         originSearch.value = '';
         arrivalSearch.value = '';
 
-        // Crucially, trigger change events for both dropdowns to update dependent logic
-        // Origin change first (less likely to have complex dependencies)
         originSelect.dispatchEvent(new Event('change', { bubbles: true }));
-        // Then arrival change (this one calls handleArrivalAirportChange for DST)
-        arrivalSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        arrivalSelect.dispatchEvent(new Event('change', { bubbles: true })); 
     }
 
 
@@ -893,7 +932,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
     function toggleDarkMode(isNight) {
         document.body.classList.toggle('night-mode', isNight);
-        localStorage.setItem('darkModePrefArrivalToolV13', isNight ? 'true' : 'false'); // Updated key
+        localStorage.setItem('darkModePrefArrivalToolV14', isNight ? 'true' : 'false'); // Updated key
         document.getElementById('darkModeToggle').checked = isNight; 
     }
     
@@ -960,7 +999,6 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
                 handleArrivalAirportChange(); 
                 const arrChangeEvent = new Event('change', { bubbles: true });
                 document.getElementById('arrivalAirport').dispatchEvent(arrChangeEvent);
-                // Also trigger for origin if it was set by checkbox
                 if (loadedData['originHomeBaseCheck']){
                      document.getElementById('originAirport').dispatchEvent(new Event('change', {bubbles: true}));   
                 }
@@ -996,7 +1034,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
       const darkModeToggle = document.getElementById('darkModeToggle');
       darkModeToggle.addEventListener('change', () => toggleDarkMode(darkModeToggle.checked));
-      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV13') === 'true'); 
+      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV14') === 'true'); 
       handleArrivalAirportChange(); 
     });
   </script>
