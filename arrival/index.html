@@ -104,18 +104,18 @@
         flex-direction: column;
         gap: 5px;
     }
-    .airport-group .home-base-check {
+    .airport-group .home-base-check, .conversational-time-check { /* Added conversational-time-check */
         display: flex;
         align-items: center;
         gap: 5px;
         font-size: 0.85em;
         margin-top: 2px;
     }
-     .airport-group .home-base-check label {
+     .airport-group .home-base-check label, .conversational-time-check label {
         font-weight: normal; 
         margin-bottom: 0; 
      }
-     .airport-group .home-base-check input[type="checkbox"] {
+     .airport-group .home-base-check input[type="checkbox"], .conversational-time-check input[type="checkbox"] {
          width: auto; 
      }
 
@@ -323,7 +323,7 @@
     .night-mode .heading-container h3 {
         color: #5dade2;
     }
-    .night-mode .form-group label, .night-mode .home-base-check label {
+    .night-mode .form-group label, .night-mode .home-base-check label, .night-mode .conversational-time-check label { /* Added .conversational-time-check */
         color: #bdc3c7;
     }
     .night-mode .form-group input[type="text"],
@@ -495,6 +495,9 @@
             <option value="approximately 30">approx. 30 mins</option>
         </select>
       </div>
+      <div class="conversational-time-check form-group" style="margin-top: 5px;"> <input type="checkbox" id="conversationalTimeCheck" checked>
+          <label for="conversationalTimeCheck">Use Conversational Time Phrases</label>
+      </div>
     </div>
 
     <div class="button-toolbar">
@@ -616,33 +619,33 @@
         "Shallow Fog": "has shallow fog",
         "Patches of Fog": "has patches of fog",
         "Haze": "is hazy",
-        "Smoke": "is smoky", // Changed
-        "Light Drizzle": "has light drizzle", // Changed
-        "Drizzle": "has drizzle", // Changed
-        "Heavy Drizzle": "has heavy drizzle", // Changed
-        "Light Rain": "has light rain", // Changed
-        "Rain": "has rain", // Changed
-        "Heavy Rain": "has heavy rain", // Changed
-        "Light Showers": "has light showers", // Changed
-        "Showers": "has showers", // Changed
-        "Heavy Showers": "has heavy showers", // Changed
-        "Thunderstorm without Precipitation": "has thunderstorm activity nearby", // Changed
-        "Thunderstorm with Light Rain": "has thunderstorms with light rain", // Changed
-        "Thunderstorm with Rain": "has thunderstorms and rain", // Changed
-        "Thunderstorm with Heavy Rain": "has thunderstorms with heavy rain", // Changed
-        "Light Snow": "has light snow", // Changed
-        "Snow": "has snow", // Changed
-        "Heavy Snow": "has heavy snow", // Changed
-        "Light Snow Showers": "has light snow showers", // Changed
-        "Snow Showers": "has snow showers", // Changed
-        "Heavy Snow Showers": "has heavy snow showers", // Changed
-        "Freezing Drizzle": "has freezing drizzle", // Changed
-        "Freezing Rain": "has freezing rain", // Changed
+        "Smoke": "is smoky",
+        "Light Drizzle": "has light drizzle",
+        "Drizzle": "has drizzle",
+        "Heavy Drizzle": "has heavy drizzle",
+        "Light Rain": "has light rain",
+        "Rain": "has rain",
+        "Heavy Rain": "has heavy rain",
+        "Light Showers": "has light showers",
+        "Showers": "has showers",
+        "Heavy Showers": "has heavy showers",
+        "Thunderstorm without Precipitation": "has thunderstorm activity nearby",
+        "Thunderstorm with Light Rain": "has thunderstorms with light rain",
+        "Thunderstorm with Rain": "has thunderstorms and rain",
+        "Thunderstorm with Heavy Rain": "has thunderstorms with heavy rain",
+        "Light Snow": "has light snow",
+        "Snow": "has snow",
+        "Heavy Snow": "has heavy snow",
+        "Light Snow Showers": "has light snow showers",
+        "Snow Showers": "has snow showers",
+        "Heavy Snow Showers": "has heavy snow showers",
+        "Freezing Drizzle": "has freezing drizzle",
+        "Freezing Rain": "has freezing rain",
         "Blowing Snow": "has blowing snow",
         "Sandstorm": "is experiencing a sandstorm",
         "Duststorm": "is experiencing a duststorm",
         "Squalls": "is experiencing squalls",
-        "Volcanic Ash": "has reports of volcanic ash" // Changed
+        "Volcanic Ash": "has reports of volcanic ash"
     };
 
 
@@ -803,29 +806,37 @@
     }
 
     function formatLocalTimeConversational(hours24, minutes) {
-        if (hours24 === -1) return "--:--"; 
-
+        if (hours24 === -1) return "--:--"; // Error case, "local time" will be appended by caller
+        
+        const useConversational = document.getElementById('conversationalTimeCheck').checked;
         let h12 = hours24 % 12;
         if (h12 === 0) h12 = 12;
         const period = hours24 < 12 ? "AM" : "PM";
         const minutesPadded = String(minutes).padStart(2, '0');
 
-        if (minutes === 0) {
-            if (hours24 === 12) return "12 noon";
-            if (hours24 === 0) return "12 midnight";
-            return `${h12} ${period}`; 
+        if (useConversational) {
+            if (minutes === 0) {
+                if (hours24 === 12) return "12 noon";
+                if (hours24 === 0) return "12 midnight";
+                return `${h12} ${period}`; 
+            }
+            if (minutes === 30) {
+                 const descriptivePeriod = getDescriptivePeriod(hours24);
+                 return `half past ${h12} ${descriptivePeriod}`; 
+            }
+            if (minutes >= 1 && minutes <= 5) { // "X minutes past Y"
+                 const descriptivePeriod = getDescriptivePeriod(hours24);
+                 return `${minutes} minute${minutes > 1 ? 's' : ''} past ${h12} ${descriptivePeriod}`;
+            }
+            if (minutes >= 55 && minutes <= 59) { // "X minutes to Y"
+                 const minutesToNextHour = 60 - minutes;
+                 let nextHour12 = (hours24 + 1) % 12;
+                 if (nextHour12 === 0) nextHour12 = 12;
+                 const descriptivePeriod = getDescriptivePeriod((hours24 + 1) % 24);
+                 return `${minutesToNextHour} minute${minutesToNextHour > 1 ? 's' : ''} to ${nextHour12} ${descriptivePeriod}`;
+            }
         }
-        if (minutes === 30) {
-             const descriptivePeriod = getDescriptivePeriod(hours24);
-             return `half past ${h12} ${descriptivePeriod}`; 
-        }
-        if (minutes >= 55 && minutes <= 59) { 
-             const minutesToNextHour = 60 - minutes;
-             let nextHour12 = (hours24 + 1) % 12;
-             if (nextHour12 === 0) nextHour12 = 12;
-             const descriptivePeriod = getDescriptivePeriod((hours24 + 1) % 24);
-             return `${minutesToNextHour} minute${minutesToNextHour > 1 ? 's' : ''} to ${nextHour12} ${descriptivePeriod}`;
-        }
+        // Default or if conversational is unchecked for these specific ranges (06-29, 31-54)
         return `${h12}:${minutesPadded} ${period}`; 
     }
 
@@ -854,7 +865,13 @@
       if (effectiveArrivalGmt === null) { alert("Could not determine effective GMT offset for arrival airport."); return; }
 
       const localArrivalTime = calculateLocalTime(arrivalZuluHH, arrivalZuluMM, effectiveArrivalGmt);
-      const conversationalLocalTime = formatLocalTimeConversational(localArrivalTime.hours, localArrivalTime.minutes);
+      let conversationalLocalTime = formatLocalTimeConversational(localArrivalTime.hours, localArrivalTime.minutes);
+      
+      // Decide if "local time" needs to be appended
+      // If the formatted time already includes a descriptive period (morning, evening etc.), or is noon/midnight, "local time" might be redundant
+      // However, for consistency and clarity, we'll append "local time" to all, as per the refined examples.
+      // The conversational function now produces the core phrase.
+      conversationalLocalTime += " local time";
       
       const displayArrivalFullName = arrivalAirportDetails.announcementName || arrivalAirportDetails.name;
       const displayArrivalShortName = arrivalAirportDetails.shortName || displayArrivalFullName.split(",")[0].split(" ")[0]; 
@@ -864,7 +881,7 @@
       const originGmt = originAirportDetails.standardGmtOffset;
 
       if (originGmt === effectiveArrivalGmt) {
-        timeAndLandingStatement = `We expect to land at approximately ${conversationalLocalTime} local time`;
+        timeAndLandingStatement = `We expect to land at approximately ${conversationalLocalTime}`;
       } else {
         const diff = effectiveArrivalGmt - originGmt;
         const totalAbsDiffInMinutes = Math.round(Math.abs(diff * 60));
@@ -874,10 +891,10 @@
         let diffStr = `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
         if (diffMinutes > 0) diffStr += ` and ${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
         const relation = diff > 0 ? 'ahead of' : 'behind';
-        timeAndLandingStatement = `${displayArrivalShortName} is ${diffStr} ${relation} ${displayOriginShortName}, and we expect to land at approximately ${conversationalLocalTime} local time`;
+        timeAndLandingStatement = `${displayArrivalShortName} is ${diffStr} ${relation} ${displayOriginShortName}, and we expect to land at approximately ${conversationalLocalTime}`;
       }
       
-      const weatherPhrase = weatherPresentation[selectedWeatherPhenomenon] || `is ${selectedWeatherPhenomenon}`; // Fallback
+      const weatherPhrase = weatherPresentation[selectedWeatherPhenomenon] || `is ${selectedWeatherPhenomenon}`;
       const weatherFull = `${weatherPhrase} with a temperature of ${temperature} degrees Celsius`;
       
       const speakerIdentifier = speakerRole === "Pilot" ? "your pilot speaking" : `your ${speakerRole}`; 
@@ -931,7 +948,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
     function toggleDarkMode(isNight) {
         document.body.classList.toggle('night-mode', isNight);
-        localStorage.setItem('darkModePrefArrivalToolV15', isNight ? 'true' : 'false'); // Updated key
+        localStorage.setItem('darkModePrefArrivalToolV17', isNight ? 'true' : 'false'); // Updated key
         document.getElementById('darkModeToggle').checked = isNight; 
     }
     
@@ -943,7 +960,8 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
         'arrivalTimeZuluHH', 'arrivalTimeZuluMM', 
         'weatherPhenomena', 'temperature', 'taxiTime',
         'arrivalGmtOffsetManualInput',
-        'originHomeBaseCheck', 'arrivalHomeBaseCheck' 
+        'originHomeBaseCheck', 'arrivalHomeBaseCheck',
+        'conversationalTimeCheck' // Added conversationalTimeCheck
     ];
 
     function saveAnnouncementToFile() {
@@ -1033,7 +1051,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
       const darkModeToggle = document.getElementById('darkModeToggle');
       darkModeToggle.addEventListener('change', () => toggleDarkMode(darkModeToggle.checked));
-      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV15') === 'true'); 
+      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV17') === 'true'); 
       handleArrivalAirportChange(); 
     });
   </script>
