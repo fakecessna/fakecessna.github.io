@@ -130,8 +130,17 @@
          body.night-mode .brief-detail-section h5, body.night-mode .brief-detail-section h6 { color: var(--heading-color-night); }
         .brief-content { padding: 8px; background-color: rgba(0,0,0,0.02); border-radius: 3px; word-wrap: break-word; margin-top: 5px; color: var(--text-color-day); }
         body.night-mode .brief-content { background-color: rgba(255,255,255,0.05); color: var(--text-color-night); }
+        /* --- UPDATED: Night mode text color inside content (more specific) --- */
         body.night-mode .brief-content *,
-        body.night-mode .brief-content p, body.night-mode .brief-content li, body.night-mode .brief-content span, body.night-mode .brief-content div, body.night-mode .brief-content td, body.night-mode .brief-content th, body.night-mode .brief-content strong, body.night-mode .brief-content b, body.night-mode .brief-content em, body.night-mode .brief-content i, body.night-mode .brief-content u { color: var(--text-color-night) !important; }
+        body.night-mode .brief-content p, body.night-mode .brief-content li, body.night-mode .brief-content span, body.night-mode .brief-content div,
+        body.night-mode .brief-content td, body.night-mode .brief-content th,
+        body.night-mode .brief-content strong, body.night-mode .brief-content b,
+        body.night-mode .brief-content em, body.night-mode .brief-content i,
+        body.night-mode .brief-content u,
+        body.night-mode .brief-content table { /* Ensure table itself doesn't override */
+            color: var(--text-color-night) !important;
+        }
+        /* --- END FIX --- */
         .section-controls { white-space: nowrap; }
         .section-controls button { cursor: pointer; font-size: 1.1em; margin-left: 8px; background: none; border: none; color: var(--link-color-day); padding: 0; vertical-align: middle; line-height: 1; }
          body.night-mode .section-controls button { color: var(--link-color-night); }
@@ -143,39 +152,95 @@
 
         /* Print Styles */
         @media print {
-            body { margin: 0 !important; padding: 0 !important; background-color: #fff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            body > * { display: none !important; visibility: hidden !important; }
-            #view-brief-details-container {
-                display: block !important; visibility: visible !important;
-                position: relative !important; /* Changed from static to allow top/left to work if needed, but static flow preferred */
-                left: 0 !important; top: 0 !important; width: 100% !important;
-                margin: 0 !important; /* Remove outer margins */
-                padding: 20pt !important; /* Add print padding */
-                box-sizing: border-box !important;
+            @page {
+                margin: 15mm; /* Define page margins */
+            }
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
                 background-color: #fff !important;
-                border: none !important; box-shadow: none !important;
+                -webkit-print-color-adjust: exact !important; /* Chrome/Safari */
+                print-color-adjust: exact !important; /* Standard */
+            }
+            /* Hide all elements by default, then selectively show */
+            body > *:not(#view-brief-details-container-print-wrapper), /* If using a wrapper */
+            body > .container > *:not(#browse-station-briefs-view),
+            #browse-station-briefs-view > *:not(#view-brief-details-container),
+            .header-controls, .button-secondary, .add-flight-no-btn,
+            .section-controls, .button, #darkModeToggle, .switch,
+            #search-station-input,
+            #station-briefs-full-list-container,
+            #browse-station-briefs-view h2, /* Hide "Browse Station Briefs" title */
+            #browse-station-briefs-view h3:not(#view-brief-details-container h3) /* Hide "Stations with Briefs" but not station title if it's H3 */
+            {
+                display: none !important;
+                visibility: hidden !important;
+            }
+
+            #view-brief-details-container {
+                display: block !important;
+                visibility: visible !important;
+                position: static !important; /* Let it flow in print document */
+                width: 100% !important; /* Use full printable width */
+                margin: 0 !important; /* Rely on @page margins */
+                padding: 0 !important; /* Rely on @page margins */
+                border: none !important;
+                box-shadow: none !important;
+                background-color: #fff !important;
+                color: #000 !important;
                 page-break-before: auto !important;
             }
             #view-brief-details-container * {
                 visibility: visible !important;
                 color: #000000 !important;
-                background-color: transparent !important; /* Ensure all child backgrounds are transparent */
+                background-color: transparent !important;
                 box-shadow: none !important;
-                border-color: #ccc !important; /* Light borders for tables etc. if they exist */
+                border-color: #ccc !important;
             }
+            /* Hide specific UI elements within the printable area */
             #view-brief-details-container .section-controls,
-            #view-brief-details-container .button { display: none !important; }
-            #view-brief-details-container h2, #view-brief-details-container h3, #view-brief-details-container h4, #view-brief-details-container h5, #view-brief-details-container h6 {
-                 border: none !important; padding-bottom: 5px; margin-bottom: 10px; font-family: sans-serif; page-break-after: avoid; page-break-inside: avoid; color: #000 !important;
+            #view-brief-details-container > div > .button, /* Action buttons like "Save as PDF", "Close" */
+            #view-brief-details-container > hr + div > .button { /* Buttons after the last hr */
+                display: none !important;
+            }
+
+            /* Specific styling for printed content elements */
+            #view-brief-details-container h2,
+            #view-brief-details-container h3,
+            #view-brief-details-container h4,
+            #view-brief-details-container h5,
+            #view-brief-details-container h6 {
+                 border: none !important; padding-bottom: 5px; margin-bottom: 10px; font-family: sans-serif;
+                 page-break-after: avoid; page-break-inside: avoid;
+                 background: none !important; color: #000 !important;
              }
-            #view-brief-details-container > h3 { font-size: 14pt; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #000 !important; page-break-before: avoid !important; }
-            #view-brief-details-container .detail-sector-block h4 { font-size: 12pt; border-bottom: 1px dashed #ccc !important; margin-top: 15px; font-weight: bold; }
-            #view-brief-details-container .brief-detail-section h5, #view-brief-details-container .brief-detail-section h6 { font-size: 11pt; font-weight: bold; margin-top: 10px; margin-bottom: 2px; }
+            #view-brief-details-container > h3 { /* Main station title */
+                font-size: 16pt !important; /* Increase main title size */
+                margin-top: 0 !important;
+                margin-bottom: 15px !important;
+                border-bottom: 1px solid #000 !important;
+                page-break-before: avoid !important;
+            }
+            #view-brief-details-container .detail-sector-block h4 { /* Sector ID */
+                font-size: 12pt !important;
+                border-bottom: 1px dashed #ccc !important;
+                margin-top: 15px !important;
+                font-weight: bold !important;
+            }
+            #view-brief-details-container .brief-detail-section h5,
+            #view-brief-details-container .brief-detail-section h6 { /* Section titles */
+                font-size: 11pt !important; font-weight: bold !important; margin-top: 10px; margin-bottom: 2px;
+            }
             #view-brief-details-container a { text-decoration: none; color: #000 !important; }
             #view-brief-details-container .detail-sector-block { border: none !important; margin-bottom: 15px; padding: 0; page-break-inside: avoid; }
             #view-brief-details-container .brief-detail-section { border: none !important; margin-bottom: 10px; padding-bottom: 5px; page-break-inside: avoid; }
-            #view-brief-details-container .brief-content { padding: 5px; border: 1px solid #eee !important; word-wrap: break-word; margin-top: 2px; page-break-inside: avoid; background-color: #f9f9f9 !important; color: #000 !important; }
-            #view-brief-details-container table, #view-brief-details-container tr, #view-brief-details-container td, #view-brief-details-container th { border: 1px solid #ccc !important; border-collapse: collapse !important; padding: 4px !important; }
+            #view-brief-details-container .brief-content {
+                padding: 5px; border: 1px solid #eee !important; word-wrap: break-word; margin-top: 2px; page-break-inside: avoid;
+                background-color: #f9f9f9 !important; color: #000 !important;
+            }
+            #view-brief-details-container table, #view-brief-details-container tr, #view-brief-details-container td, #view-brief-details-container th {
+                border: 1px solid #ccc !important; border-collapse: collapse !important; padding: 4px !important;
+            }
             #view-brief-details-container ul { padding-left: 20px; margin-top: 5px;}
             #view-brief-details-container li { margin-bottom: 2px; }
             #view-brief-details-container b, #view-brief-details-container strong { font-weight: bold; }
@@ -251,7 +316,33 @@
 
         // --- Sector Block Management (in Create View) ---
         const sectorsContainer = document.getElementById('sectors-container'); const predefinedSectionTitles = { station_overview: "Station Overview", operational_policy: "Operational Policy", preflight: "Preflight", pushback_taxi: "Pushback & Taxi", climb_enroute: "Climb & Enroute", arrival: "Arrival", taxi_in_parking: "Taxi-In and Parking", tem: "Threat and Error Management (TEM)", night_stop_info: "Night Stop Information", things_to_do: "Things To Do" }; const sectionKeyMap = { station_overview: "StationOverview", operational_policy: "OperationalPolicy", preflight: "Preflight", pushback_taxi: "PushbackTaxi", climb_enroute: "ClimbEnroute", arrival: "Arrival", taxi_in_parking: "TaxiInParking", tem: "TEM", night_stop_info: "NightStopInfo", things_to_do: "ThingsToDo" };
-        function addSectorBlock(existingSectorData = null) { /* ... as before ... */ sectorBlockCounter++; const sectorIndex = sectorBlockCounter; const sectorDiv = document.createElement('div'); sectorDiv.classList.add('sector-block'); sectorDiv.id = `sector-block-${sectorIndex}`; sectorDiv.dataset.sectorIndex = sectorIndex; const flightContainerId = `flight-numbers-container-S${sectorIndex}`; const sectionsContainerId = `active-briefing-sections-container-${sectorIndex}`; const sectionAdderId = `section-adder-${sectorIndex}`; const sectionSelectId = `add-section-select-${sectorIndex}`; const existingUniqueIDInput = existingSectorData && existingSectorData.uniqueID ? `<input type="hidden" name="existingUniqueID_S${sectorIndex}" value="${existingSectorData.uniqueID}">` : ''; let removeButtonHTML = ''; if (sectorBlockCounter > 1 || (sectorBlockCounter === 1 && !existingSectorData)) { removeButtonHTML = `<button type="button" class="button button-delete button-delete-sector" onclick="removeSectorBlock(${sectorIndex})">Remove Sector</button>`; } sectorDiv.innerHTML = `${existingUniqueIDInput}${removeButtonHTML}<h3>Sector Details (Flight No. as ID)</h3><div class="form-section"><label>Flight Number(s) Applicable</label><div id="${flightContainerId}">${existingSectorData && existingSectorData.flightNumbers ? JSON.parse(existingSectorData.flightNumbers).map(fn => `<div class="flight-number-input-group"><span class="sq-prefix">SQ</span><input type="text" name="flightNumber_S${sectorIndex}[]" value="${fn}"><button type="button" class="button-delete" onclick="this.parentElement.remove()">X</button></div>`).join('') : `<div class="flight-number-input-group"><span class="sq-prefix">SQ</span><input type="text" name="flightNumber_S${sectorIndex}[]" value="" placeholder="e.g., 123"></div>`}</div><button type="button" class="button button-secondary add-flight-no-btn" onclick="addFlightNumberField('${flightContainerId}', ${sectorIndex})" style="font-size: 0.8em; padding: 3px 8px; margin-top: 5px;">+ Flight No.</button></div><hr><h4>Briefing Sections</h4><div id="${sectionsContainerId}" class="active-briefing-sections-container-per-sector"></div><div class="briefing-section-adder" id="${sectionAdderId}"><label for="${sectionSelectId}">Add briefing section:</label><select id="${sectionSelectId}" onchange="addSelectedBriefingSectionFromDropdown(this, ${sectorIndex})"><option value="" disabled selected>-- Select to Add --</option>${Object.keys(predefinedSectionTitles).map(key => `<option value="${key}">${predefinedSectionTitles[key]}</option>`).join('')}<option value="custom">Custom Section</option></select></div>`; sectorsContainer.appendChild(sectorDiv); if (existingSectorData) { for (const key in predefinedSectionTitles) { const contentKey = sectionKeyMap[key] + 'ContentValue'; if (existingSectorData[contentKey]) { addPopulatedBriefingSection(key, existingSectorData[contentKey], sectorIndex); } } try {const customSections = JSON.parse(existingSectorData.customSections || "[]"); customSections.forEach(custom => { addPopulatedBriefingSection('custom', custom.content, sectorIndex, custom.title); });} catch(e){console.error("Error parsing custom sections for edit form:", e)} } }
+        function addSectorBlock(existingSectorData = null) { /* ... Updated flight number population ... */
+            sectorBlockCounter++; const sectorIndex = sectorBlockCounter; const sectorDiv = document.createElement('div'); sectorDiv.classList.add('sector-block'); sectorDiv.id = `sector-block-${sectorIndex}`; sectorDiv.dataset.sectorIndex = sectorIndex;
+            const flightContainerId = `flight-numbers-container-S${sectorIndex}`; const sectionsContainerId = `active-briefing-sections-container-${sectorIndex}`; const sectionAdderId = `section-adder-${sectorIndex}`; const sectionSelectId = `add-section-select-${sectorIndex}`;
+            const existingUniqueIDInput = existingSectorData && existingSectorData.uniqueID ? `<input type="hidden" name="existingUniqueID_S${sectorIndex}" value="${existingSectorData.uniqueID}">` : '';
+            let removeButtonHTML = ''; if (sectorBlockCounter > 1 || (sectorBlockCounter === 1 && !existingSectorData)) { removeButtonHTML = `<button type="button" class="button button-delete button-delete-sector" onclick="removeSectorBlock(${sectorIndex})">Remove Sector</button>`; }
+
+            let flightNumbersHtml = `<div class="flight-number-input-group"><span class="sq-prefix">SQ</span><input type="text" name="flightNumber_S${sectorIndex}[]" value="" placeholder="e.g., 123"></div>`; // Default
+            if (existingSectorData && existingSectorData.flightNumbers) {
+                try {
+                    let fNumbers = existingSectorData.flightNumbers;
+                    if (typeof fNumbers === 'string') { // Ensure it's parsed if it's a string
+                        fNumbers = JSON.parse(fNumbers);
+                    }
+                    if (Array.isArray(fNumbers) && fNumbers.length > 0) {
+                        flightNumbersHtml = fNumbers.map(fn =>
+                            `<div class="flight-number-input-group"><span class="sq-prefix">SQ</span><input type="text" name="flightNumber_S${sectorIndex}[]" value="${fn.trim()}"><button type="button" class="button-delete" onclick="this.parentElement.remove()">X</button></div>`
+                        ).join('');
+                    } else if (Array.isArray(fNumbers) && fNumbers.length === 0) {
+                        // Keep default if empty array
+                    }
+                } catch (e) { console.error("Error parsing flightNumbers for edit:", existingSectorData.flightNumbers, e); }
+            }
+
+            sectorDiv.innerHTML = `${existingUniqueIDInput}${removeButtonHTML}<h3>Sector Details (Flight No. as ID)</h3><div class="form-section"><label>Flight Number(s) Applicable</label><div id="${flightContainerId}">${flightNumbersHtml}</div><button type="button" class="button button-secondary add-flight-no-btn" onclick="addFlightNumberField('${flightContainerId}', ${sectorIndex})" style="font-size: 0.8em; padding: 3px 8px; margin-top: 5px;">+ Flight No.</button></div><hr><h4>Briefing Sections</h4><div id="${sectionsContainerId}" class="active-briefing-sections-container-per-sector"></div><div class="briefing-section-adder" id="${sectionAdderId}"><label for="${sectionSelectId}">Add briefing section:</label><select id="${sectionSelectId}" onchange="addSelectedBriefingSectionFromDropdown(this, ${sectorIndex})"><option value="" disabled selected>-- Select to Add --</option>${Object.keys(predefinedSectionTitles).map(key => `<option value="${key}">${predefinedSectionTitles[key]}</option>`).join('')}<option value="custom">Custom Section</option></select></div>`;
+            sectorsContainer.appendChild(sectorDiv);
+            if (existingSectorData) { for (const key in predefinedSectionTitles) { const contentKey = sectionKeyMap[key] + 'ContentValue'; if (existingSectorData[contentKey]) { addPopulatedBriefingSection(key, existingSectorData[contentKey], sectorIndex); } } try {const customSections = JSON.parse(existingSectorData.customSections || "[]"); customSections.forEach(custom => { addPopulatedBriefingSection('custom', custom.content, sectorIndex, custom.title); });} catch(e){console.error("Error parsing custom sections for edit form:", e)} }
+        }
         function addSelectedBriefingSectionFromDropdown(selectElement, sectorIndex) { addPopulatedBriefingSection(selectElement.value, '', sectorIndex); selectElement.value = ""; }
         function addPopulatedBriefingSection(sectionValue, content, sectorIndex, customTitle = '') { /* ... as before ... */ if (!sectionValue) return; const targetContainer = document.getElementById(`active-briefing-sections-container-${sectorIndex}`); if (!targetContainer) return; const sectionKey = sectionValue !== 'custom' ? sectionKeyMap[sectionValue] : null; briefingSectionCounter++; const sectionIdBase = (sectionValue === 'custom') ? `custom-section-${briefingSectionCounter}` : `briefing-section-${sectionValue}-${briefingSectionCounter}`; const sectionContainer = document.createElement('div'); sectionContainer.classList.add('dynamic-briefing-section'); sectionContainer.id = sectionIdBase; if (sectionValue !== 'custom') sectionContainer.dataset.sectionKey = sectionValue; const isCustom = (sectionValue === 'custom'); let sectionTitleText = isCustom ? (customTitle || 'Custom Section') : predefinedSectionTitles[sectionValue]; const editorId = `${sectionIdBase}-content`; const hiddenInputName = isCustom ? `customSectionContentValue_S${sectorIndex}[]` : `${sectionKey}ContentValue_S${sectorIndex}`; const hiddenInputId = `${sectionIdBase}-value`; const titleInputName = isCustom ? `customSectionTitle_S${sectorIndex}[]` : ''; const toolbarId = `toolbar_${editorId}`; sectionContainer.innerHTML = `<button type="button" class="button button-delete" onclick="removeBriefingSection('${sectionIdBase}')">Remove</button>${isCustom ? `<label>Section Title:</label><input type="text" name="${titleInputName}" value="${customTitle}" placeholder="Enter Custom Title" style="margin-bottom:10px; font-weight:bold;">` : `<h4>${sectionTitleText}</h4>`}<div class="editor-toolbar" id="${toolbarId}"><button type="button" title="Bold" onclick="formatDoc('bold','${editorId}');"><b>B</b></button><button type="button" title="Italic" onclick="formatDoc('italic','${editorId}');"><i>I</i></button><button type="button" title="Underline" onclick="formatDoc('underline','${editorId}');"><u>U</u></button><button type="button" title="Unordered List" onclick="formatDoc('insertUnorderedList','${editorId}');">&bull;&equiv;</button></div><div id="${editorId}" class="editable-content" contenteditable="true">${content || ''}</div><input type="hidden" name="${hiddenInputName}" id="${hiddenInputId}">`; targetContainer.appendChild(sectionContainer); const newEditor = document.getElementById(editorId); if (newEditor) { newEditor.addEventListener('focus', () => { const tb = document.getElementById(toolbarId); if (tb) tb.classList.add('visible'); }); newEditor.addEventListener('blur', () => { setTimeout(() => { const tb = document.getElementById(toolbarId); if (tb && document.activeElement !== newEditor && !tb.contains(document.activeElement)) { tb.classList.remove('visible'); } }, 150); }); } }
         function removeBriefingSection(sectionId) { /* ... as before ... */ const el = document.getElementById(sectionId); if (el) el.remove(); }
@@ -265,10 +356,7 @@
         // --- Browse & View Logic ---
 
         /** Fetches data and populates the consolidated station list */
-        async function loadAndDisplayBriefList(searchTerm = '') { /* ... as before ... */
-            stationBriefsFullListContainer.innerHTML = '<p>Loading stations...</p>'; viewBriefDetailsContainer.style.display = 'none';
-            try { const response = await fetch(`${WEB_APP_URL}?action=getBriefs`); if (!response.ok) throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`); let fetchedData; try { fetchedData = await response.json(); } catch (jsonError) { throw jsonError; } if (!Array.isArray(fetchedData)) throw new Error("Received invalid data format from server. Expected an array."); allFetchedBriefs = fetchedData; const briefsByStation = allFetchedBriefs.reduce((acc, brief) => { const stationKey = brief.stationInfo?.icao || 'UnknownStation'; if (!acc[stationKey]) acc[stationKey] = { stationInfo: brief.stationInfo || { icao: stationKey, name: 'Unknown Station' } }; return acc; }, {}); let filteredStations = Object.values(briefsByStation); if (searchTerm) { const lowerSearchTerm = searchTerm.toLowerCase(); filteredStations = filteredStations.filter(sg => (sg.stationInfo.name && sg.stationInfo.name.toLowerCase().includes(lowerSearchTerm)) || (sg.stationInfo.icao && sg.stationInfo.icao.toLowerCase().includes(lowerSearchTerm)) || (sg.stationInfo.iata && sg.stationInfo.iata.toLowerCase().includes(lowerSearchTerm)) || allFetchedBriefs.some(b => b.stationInfo?.icao === sg.stationInfo.icao && b.sectorIdentifier?.toLowerCase().includes(lowerSearchTerm))); } filteredStations.sort((a, b) => (a.stationInfo.name || a.stationInfo.icao).localeCompare(b.stationInfo.name || b.stationInfo.icao)); if (filteredStations.length === 0) { stationBriefsFullListContainer.innerHTML = searchTerm ? `<p>No stations found matching "${searchTerm}".</p>` : '<p>No station briefs found. Create one!</p>'; return; } const ul = document.createElement('ul'); filteredStations.forEach(stationGroup => { const li = document.createElement('li'); const stationDisplay = stationGroup.stationInfo.name ? `${stationGroup.stationInfo.name} (${stationGroup.stationInfo.icao})` : stationGroup.stationInfo.icao; li.innerHTML = stationDisplay; li.style.cursor = 'pointer'; li.onclick = () => displayStationDetails(stationGroup.stationInfo.icao); ul.appendChild(li); }); stationBriefsFullListContainer.innerHTML = ''; stationBriefsFullListContainer.appendChild(ul); } catch (error) { console.error('Failed to load station list:', error); stationBriefsFullListContainer.innerHTML = `<p style="color: red;">Error loading station list: ${error.message}. Check console.</p>`; allFetchedBriefs = []; }
-        }
+        async function loadAndDisplayBriefList(searchTerm = '') { /* ... as before ... */ stationBriefsFullListContainer.innerHTML = '<p>Loading stations...</p>'; viewBriefDetailsContainer.style.display = 'none'; try { const response = await fetch(`${WEB_APP_URL}?action=getBriefs`); if (!response.ok) throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`); let fetchedData; try { fetchedData = await response.json(); } catch (jsonError) { throw jsonError; } if (!Array.isArray(fetchedData)) throw new Error("Received invalid data format from server. Expected an array."); allFetchedBriefs = fetchedData; const briefsByStation = allFetchedBriefs.reduce((acc, brief) => { const stationKey = brief.stationInfo?.icao || 'UnknownStation'; if (!acc[stationKey]) acc[stationKey] = { stationInfo: brief.stationInfo || { icao: stationKey, name: 'Unknown Station' } }; return acc; }, {}); let filteredStations = Object.values(briefsByStation); if (searchTerm) { const lowerSearchTerm = searchTerm.toLowerCase(); filteredStations = filteredStations.filter(sg => (sg.stationInfo.name && sg.stationInfo.name.toLowerCase().includes(lowerSearchTerm)) || (sg.stationInfo.icao && sg.stationInfo.icao.toLowerCase().includes(lowerSearchTerm)) || (sg.stationInfo.iata && sg.stationInfo.iata.toLowerCase().includes(lowerSearchTerm)) || allFetchedBriefs.some(b => b.stationInfo?.icao === sg.stationInfo.icao && b.sectorIdentifier?.toLowerCase().includes(lowerSearchTerm))); } filteredStations.sort((a, b) => (a.stationInfo.name || a.stationInfo.icao).localeCompare(b.stationInfo.name || b.stationInfo.icao)); if (filteredStations.length === 0) { stationBriefsFullListContainer.innerHTML = searchTerm ? `<p>No stations found matching "${searchTerm}".</p>` : '<p>No station briefs found. Create one!</p>'; return; } const ul = document.createElement('ul'); filteredStations.forEach(stationGroup => { const li = document.createElement('li'); const stationDisplay = stationGroup.stationInfo.name ? `${stationGroup.stationInfo.name} (${stationGroup.stationInfo.icao})` : stationGroup.stationInfo.icao; li.innerHTML = stationDisplay; li.style.cursor = 'pointer'; li.onclick = () => displayStationDetails(stationGroup.stationInfo.icao); ul.appendChild(li); }); stationBriefsFullListContainer.innerHTML = ''; stationBriefsFullListContainer.appendChild(ul); } catch (error) { console.error('Failed to load station list:', error); stationBriefsFullListContainer.innerHTML = `<p style="color: red;">Error loading station list: ${error.message}. Check console.</p>`; allFetchedBriefs = []; } }
 
         /**
          * Checks if HTML content is non-empty and not just placeholder tags.
@@ -276,24 +364,35 @@
          */
         const hasContent = (htmlString) => {
             if (!htmlString) return false;
-            const trimmedHtml = htmlString.trim();
-            // Check for obviously empty or placeholder content first
-            if (trimmedHtml === '' || trimmedHtml === '<p></p>' || trimmedHtml === '<p><br></p>' || trimmedHtml === '<p>&nbsp;</p>' || trimmedHtml === '<div></div>' || trimmedHtml === '<br>') {
+            const trimmedHtml = htmlString.trim().toLowerCase(); // Case-insensitive for tags
+
+            // Check for known effectively empty patterns (that result in no visible content or just a line break)
+            const emptyPatterns = [
+                "<p></p>", "<p><br></p>", "<p>&nbsp;</p>",
+                "<div></div>", "<div><br></div>", "<div>&nbsp;</div>",
+                "<br>"
+            ];
+            if (emptyPatterns.includes(trimmedHtml)) {
                 return false;
             }
-            // Create a temporary div to inspect innerText and specific elements
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = trimmedHtml;
+            if (trimmedHtml === "") return false;
 
-            // Check if there's any visible text using innerText (more layout aware)
-            if (tempDiv.innerText && tempDiv.innerText.trim() !== '') {
+            // Check for structural elements first which imply content
+            if (trimmedHtml.includes("<table") ||
+                trimmedHtml.includes("<img") ||
+                trimmedHtml.includes("<ul") || // Will catch lists even if items are empty
+                trimmedHtml.includes("<ol")) {
                 return true;
             }
-            // Check for the presence of specific structural tags
-            if (tempDiv.querySelector('table') || tempDiv.querySelector('img') || tempDiv.querySelector('ul') || tempDiv.querySelector('ol')) {
+
+            // If no obvious structural elements, check for actual text content
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlString; // Use original htmlString for textContent accuracy
+            if ((tempDiv.textContent || tempDiv.innerText || "").trim() !== "") {
                 return true;
             }
-            return false; // Default to no content if only empty tags or no specific structures
+
+            return false; // Default to no content
         };
 
 
@@ -302,15 +401,11 @@
             console.log("Displaying details for station:", stationICAO); currentlyViewedStationICAO = stationICAO; originalContentStore = {};
             const stationSectors = allFetchedBriefs.filter(brief => brief.stationInfo?.icao === stationICAO);
             if (!stationSectors || stationSectors.length === 0) { alert(`Error: No brief data found for station ${stationICAO}.`); hideBriefDetails(); return; }
-            const stationInfo = stationSectors[0].stationInfo; const aircraftTypeForStation = stationSectors[0].aircraftType; // Used for "Edit Brief" button
-            const stationDisplayName = stationInfo.name ? `${stationInfo.name} (${stationInfo.icao})` : stationICAO;
+            const stationInfo = stationSectors[0].stationInfo; const aircraftTypeForStation = stationSectors[0].aircraftType; const stationDisplayName = stationInfo.name ? `${stationInfo.name} (${stationInfo.icao})` : stationICAO;
             let detailsHtml = `<h3>${stationDisplayName}</h3>`;
             stationSectors.forEach(sectorBrief => {
                 const uniqueBriefID = sectorBrief.uniqueID || `${stationICAO}_${sectorBrief.sectorIdentifier}`;
-                detailsHtml += `<div class="detail-sector-block" data-brief-id="${uniqueBriefID}">`;
-                // --- MODIFIED: Sector Header Format (Removed Aircraft Type) ---
-                detailsHtml += `<h4>${sectorBrief.sectorIdentifier || 'N/A'}</h4>`;
-                // --- END MODIFICATION ---
+                detailsHtml += `<div class="detail-sector-block" data-brief-id="${uniqueBriefID}"><h4>${sectorBrief.sectorIdentifier || 'N/A'}</h4>`; // Simplified sector header
                 for (const key in predefinedSectionTitles) { const contentKey = sectionKeyMap[key] + 'ContentValue'; const content = sectorBrief[contentKey]; if (hasContent(content)) { const elementId = `content_${uniqueBriefID}_${contentKey}`; detailsHtml += `<div class="brief-detail-section"><div class="section-header"><h5>${predefinedSectionTitles[key]}</h5><span class="section-controls" id="controls_${elementId}"><button class="edit-btn" title="Edit ${predefinedSectionTitles[key]}" onclick="editSection('${elementId}', '${uniqueBriefID}', '${contentKey}')">&#9998;</button></span></div><div class="brief-content" id="${elementId}">${content}</div></div>`; } }
                 try { const customSections = JSON.parse(sectorBrief.customSections || "[]"); if (Array.isArray(customSections) && customSections.length > 0) { let customSectionsHtml = ''; customSections.forEach((section, index) => { const sectionContent = section.content; const sectionTitle = section.title || 'Custom Section'; if (hasContent(sectionContent) || sectionTitle !== 'Custom Section') { const customSectionKey = `custom_${index}`; const elementId = `content_${uniqueBriefID}_${customSectionKey}`; customSectionsHtml += `<div class="brief-detail-section"><div class="section-header"><h6>${sectionTitle}</h6><span class="section-controls" id="controls_${elementId}"><button class="edit-btn" title="Edit Custom Section" onclick="editSection('${elementId}', '${uniqueBriefID}', '${customSectionKey}')">&#9998;</button></span></div><div class="brief-content" id="${elementId}">${sectionContent || ''}</div></div>`; } }); if (customSectionsHtml) { detailsHtml += `<hr style="border-style: dotted; margin-top: 15px;"><h5>Custom Sections</h5>` + customSectionsHtml; } } } catch(e) { console.error("Error parsing customSections for display:", e); }
                 detailsHtml += `</div>`;
@@ -327,7 +422,7 @@
         function populateFormForEditing(stationICAO, aircraftType) { /* ... as before ... */
             console.log(`Populating form for editing station: ${stationICAO}, A/C Type: ${aircraftType}`);
             const formTitle = document.getElementById('create-edit-form-title'); const submitButton = document.getElementById('form-submit-button');
-            resetCreateEntryForm(); // Clear existing form elements and counters
+            resetCreateEntryForm(); sectorsContainer.innerHTML = ''; sectorBlockCounter = 0; // Reset counter specifically for adding blocks
             formTitle.textContent = `Edit Station Brief: ${stationICAO}`; submitButton.textContent = "Update All Briefs";
             document.getElementById('aircraft-type').value = aircraftType; document.getElementById('station-icao').value = stationICAO;
             handleStationSelectChange(document.getElementById('station-icao'), document.getElementById('station-iata'));
@@ -350,7 +445,11 @@
         if (searchStationInputField) { searchStationInputField.addEventListener('input', (e) => { loadAndDisplayBriefList(e.target.value); }); }
 
         /** Uses window.print() to trigger Save as PDF */
-        function saveBriefAsPDF() { /* ... as before ... */ console.log("Attempting print/Save as PDF..."); if(viewBriefDetailsContainer.style.display !== 'block') { alert("Please view the station details first before saving as PDF."); return; } setTimeout(() => { window.print(); }, 100); }
+        function saveBriefAsPDF() {
+             console.log("Attempting print/Save as PDF...");
+             if(viewBriefDetailsContainer.style.display !== 'block') { alert("Please view the station details first before saving as PDF."); return; }
+             setTimeout(() => { window.print(); }, 100);
+        }
 
         // --- Initial Setup ---
         document.addEventListener('DOMContentLoaded', () => {
