@@ -104,18 +104,18 @@
         flex-direction: column;
         gap: 5px;
     }
-    .airport-group .home-base-check, .conversational-options-group .check-item { /* Updated selector */
+    .airport-group .home-base-check, .check-item {
         display: flex;
         align-items: center;
         gap: 5px;
         font-size: 0.85em;
         margin-top: 2px;
     }
-     .airport-group .home-base-check label, .conversational-options-group .check-item label {
+     .airport-group .home-base-check label, .check-item label {
         font-weight: normal; 
         margin-bottom: 0; 
      }
-     .airport-group .home-base-check input[type="checkbox"], .conversational-options-group .check-item input[type="checkbox"] {
+     .airport-group .home-base-check input[type="checkbox"], .check-item input[type="checkbox"] {
          width: auto; 
      }
 
@@ -323,7 +323,7 @@
     .night-mode .heading-container h3 {
         color: #5dade2;
     }
-    .night-mode .form-group label, .night-mode .home-base-check label, .night-mode .conversational-options-group .check-item label { /* Added .conversational-time-check */
+    .night-mode .form-group label, .night-mode .home-base-check label, .night-mode .check-item label { /* Added .check-item */
         color: #bdc3c7;
     }
     .night-mode .form-group input[type="text"],
@@ -496,15 +496,8 @@
         </select>
       </div>
 
-      <div class="conversational-options-group form-group">
-          <div class="check-item">
-              <input type="checkbox" id="conversationalTimeCheck" checked>
-              <label for="conversationalTimeCheck">Use Conversational Time Phrases</label>
-          </div>
-           <div class="check-item">
-              <input type="checkbox" id="includeChildrenCheck">
-              <label for="includeChildrenCheck">Include "boys and girls" in greeting</label>
-          </div>
+      <div class="check-item form-group"> <input type="checkbox" id="conversationalToneCheck" checked>
+          <label for="conversationalToneCheck">Use Conversational Tone (includes "boys and girls" and friendly time phrases)</label>
       </div>
 
     </div>
@@ -817,7 +810,7 @@
     function formatLocalTimeConversational(hours24, minutes) {
         if (hours24 === -1) return "--:-- local time"; 
         
-        const useConversational = document.getElementById('conversationalTimeCheck').checked;
+        const useConversational = document.getElementById('conversationalToneCheck').checked;
         let h12 = hours24 % 12;
         if (h12 === 0) h12 = 12;
         const period = hours24 < 12 ? "AM" : "PM";
@@ -909,9 +902,9 @@
       const weatherPhrase = weatherPresentation[selectedWeatherPhenomenon] || `is ${selectedWeatherPhenomenon}`;
       const weatherFull = `${weatherPhrase} with a temperature of ${temperature} degrees Celsius`;
       
-      const speakerIdentifier = speakerRole === "Pilot" ? "your pilot speaking" : `your ${speakerRole}`;
-      const includeChildren = document.getElementById('includeChildrenCheck').checked;
-      const greeting = includeChildren ? "Ladies and Gentlemen, boys and girls," : "Ladies and Gentlemen,";
+      const useConversationalTone = document.getElementById('conversationalToneCheck').checked;
+      const speakerIdentifier = speakerRole === "Pilot" ? "your pilot speaking" : `your ${speakerRole}`; 
+      const greeting = useConversationalTone ? "Ladies and Gentlemen, boys and girls," : "Ladies and Gentlemen,";
 
       const announcement = `${greeting} this is ${speakerIdentifier}. We will be commencing our descent into ${displayArrivalFullName} in about ${todMinutes} minutes time.
 Current Weather at ${displayArrivalShortName} ${weatherFull}.
@@ -962,7 +955,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
     function toggleDarkMode(isNight) {
         document.body.classList.toggle('night-mode', isNight);
-        localStorage.setItem('darkModePrefArrivalToolV18', isNight ? 'true' : 'false'); // Updated key
+        localStorage.setItem('darkModePrefArrivalToolV19', isNight ? 'true' : 'false'); // Updated key
         document.getElementById('darkModeToggle').checked = isNight; 
     }
     
@@ -975,7 +968,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
         'weatherPhenomena', 'temperature', 'taxiTime',
         'arrivalGmtOffsetManualInput',
         'originHomeBaseCheck', 'arrivalHomeBaseCheck',
-        'conversationalTimeCheck', 'includeChildrenCheck' // Added both checkboxes
+        'conversationalToneCheck' // Consolidated checkbox
     ];
 
     function saveAnnouncementToFile() {
@@ -1065,7 +1058,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
       const darkModeToggle = document.getElementById('darkModeToggle');
       darkModeToggle.addEventListener('change', () => toggleDarkMode(darkModeToggle.checked));
-      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV18') === 'true'); 
+      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV19') === 'true'); 
       handleArrivalAirportChange(); 
     });
   </script>
