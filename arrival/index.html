@@ -497,7 +497,7 @@
       </div>
 
       <div class="check-item form-group"> <input type="checkbox" id="conversationalToneCheck" checked>
-          <label for="conversationalToneCheck">Use Conversational Tone (includes "boys and girls" and friendly time phrases)</label>
+          <label for="conversationalToneCheck">Conversational Tone</label>
       </div>
 
     </div>
@@ -955,7 +955,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
     function toggleDarkMode(isNight) {
         document.body.classList.toggle('night-mode', isNight);
-        localStorage.setItem('darkModePrefArrivalToolV19', isNight ? 'true' : 'false'); // Updated key
+        localStorage.setItem('darkModePrefArrivalToolV20', isNight ? 'true' : 'false'); // Updated key
         document.getElementById('darkModeToggle').checked = isNight; 
     }
     
@@ -1058,7 +1058,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
       const darkModeToggle = document.getElementById('darkModeToggle');
       darkModeToggle.addEventListener('change', () => toggleDarkMode(darkModeToggle.checked));
-      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV19') === 'true'); 
+      toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV20') === 'true'); 
       handleArrivalAirportChange(); 
     });
   </script>
