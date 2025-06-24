@@ -314,7 +314,8 @@
     /* --- Input Widths --- */
     input#plan { width: 25px !important; } /* Max 2 */
     input#reg, input#fl, input#dest, input#flightNo, input#pdc { width: 35px !important; } /* Max 3 */
-    input#gate, input#bi, input#v2, input#v2_plus_15, input#qnh, input#aus_sqwk { width: 45px !important; } /* Max 4 */
+    input#gate, input#bi, input#v2, input#v2_plus_15, input#qnh, input#aus_sqwk, input#new_val1, input#new_val3, input#new_val4 { width: 45px !important; } /* Max 4 */
+    input#new_val2 { width: 30px !important; } /* Mach number field */
     input#pob, input#india_pob { width: 40px !important; } /* Fixed for readonly */
     select#info { width: 35px !important; } /* Select */
     input#pzfw, input#ezfw, input#pfit, input#exs, input#bo, input#res, input#fzfw, input#ezfw_du, input#fzfw_du, input#percent_mac, input#aus_climb_alt { width: 55px !important; } /* Max 5 */
@@ -368,14 +369,19 @@
       gap: 5px; /* Gap between select and input */
       width: 100%;
       align-items: center;
-      margin-bottom: 2px; /* Space between dynamic crew rows */
     }
+     .dynamic-crew-wrapper {
+        display: flex;
+        align-items: flex-start; /* Align list and buttons at their top */
+        width: 100%;
+        gap: 5px;
+     }
      #additional-crew-container {
         display: flex;
         flex-direction: column;
         gap: 4px; /* Space between crew rows */
         margin-top: 4px;
-        width: 100%; /* Ensure it takes full width of capt-cell */
+        flex-grow: 1; /* Take up available space */
      }
 
     /* Fixed width for Capt label and FZ select for alignment */
@@ -391,8 +397,7 @@
      /* Crew controls (+/- buttons) */
     .crew-controls {
         display: flex;
-        justify-content: flex-end; /* Align to the right of the cell */
-        width: 100%;
+        margin-top: 4px; /* Align with top of crew container */
     }
      .crew-control-btn {
         width: 18px;
@@ -753,11 +758,13 @@
               <input type="text" id="staffNo" maxlength="8">
             </div>
           </div>
-          <div id="additional-crew-container">
-             </div>
-          <div class="crew-controls">
-              <button type="button" id="add-crew-btn" class="crew-control-btn">+</button>
-          </div>
+           <div class="dynamic-crew-wrapper">
+              <div id="additional-crew-container">
+                </div>
+              <div class="crew-controls">
+                  <button type="button" id="add-crew-btn" class="crew-control-btn">+</button>
+              </div>
+           </div>
         </div>
         <div class="cell crew-cell">
           <label for="crew">CREW/PAX</label>
@@ -767,27 +774,30 @@
             <input type="text" id="pax" maxlength="4">
           </div>
         </div>
-        <div class="cell prefix-cell">
-          <label for="m2000">(M/2000ft)</label>
-          <div class="prefix-input">
-            <span>+</span>
-            <input type="text" id="m2000">
+      </div>
+      <div class="row no-bottom-border">
+          <div class="cell prefix-cell">
+            <label for="m2000">(M/2000ft)</label>
+            <div class="prefix-input">
+              <span>+</span>
+              <input type="text" id="m2000">
+            </div>
           </div>
-        </div>
-        <div class="cell prefix-cell">
-          <label for="p1000">(P/1000kg)</label>
-          <div class="prefix-input">
-            <span>+</span>
-            <input type="text" id="p1000">
+          <div class="cell prefix-cell">
+            <label for="p1000">(P/1000kg)</label>
+            <div class="prefix-input">
+              <span>+</span>
+              <input type="text" id="p1000">
+            </div>
           </div>
-        </div>
-        <div class="cell prefix-cell">
-          <label for="m1000">(M/1000kg)</label>
-          <div class="prefix-input">
-            <span>-</span>
-            <input type="text" id="m1000">
+          <div class="cell prefix-cell">
+            <label for="m1000">(M/1000kg)</label>
+            <div class="prefix-input">
+              <span>-</span>
+              <input type="text" id="m1000">
+            </div>
           </div>
-        </div>
+          <div class="cell filler-cell" style="border-right: none !important;"></div>
       </div>
       
       <div class="row no-bottom-border">
@@ -987,6 +997,20 @@
          <div class="cell filler-cell"></div>
       </div>
 
+       <div class="row add-top-border">
+           <div class="cell" style="gap: 2px; border-right: none;">
+                <input type="text" id="new_val1" maxlength="3" pattern="[0-9]*" inputmode="numeric">
+                <span>/ .</span>
+                <input type="text" id="new_val2" maxlength="2" pattern="[0-9]*" inputmode="numeric">
+           </div>
+            <div class="cell" style="gap: 2px;">
+                <input type="text" id="new_val3" maxlength="3" pattern="[0-9]*" inputmode="numeric">
+                <span>/</span>
+                <input type="text" id="new_val4" maxlength="3" pattern="[0-9]*" inputmode="numeric">
+           </div>
+           <div class="cell filler-cell" style="border-right: none;"></div>
+       </div>
+
       <div class="row add-top-border"> <div class="cell remarks-cell">
               <textarea id="remarks" placeholder="RMK" rows="3"></textarea>
           </div>
@@ -1043,27 +1067,30 @@
              <span class="data-display" id="card-pax"></span>
           </div>
         </div>
-        <div class="cell prefix-cell">
-          <label>(M/2000ft)</label>
-          <div class="prefix-input data-display">
-            <span>+</span>
-            <span class="data-display" id="card-m2000"></span>
+      </div>
+      <div class="row no-bottom-border">
+          <div class="cell prefix-cell">
+            <label>(M/2000ft)</label>
+            <div class="prefix-input data-display">
+              <span>+</span>
+              <span class="data-display" id="card-m2000"></span>
+            </div>
           </div>
-        </div>
-        <div class="cell prefix-cell">
-          <label>(P/1000kg)</label>
-          <div class="prefix-input data-display">
-            <span>+</span>
-             <span class="data-display" id="card-p1000"></span>
+          <div class="cell prefix-cell">
+            <label>(P/1000kg)</label>
+            <div class="prefix-input data-display">
+              <span>+</span>
+               <span class="data-display" id="card-p1000"></span>
+            </div>
           </div>
-        </div>
-        <div class="cell prefix-cell">
-          <label>(M/1000kg)</label>
-          <div class="prefix-input data-display">
-            <span>-</span>
-             <span class="data-display" id="card-m1000"></span>
+          <div class="cell prefix-cell">
+            <label>(M/1000kg)</label>
+            <div class="prefix-input data-display">
+              <span>-</span>
+               <span class="data-display" id="card-m1000"></span>
+            </div>
           </div>
-        </div>
+          <div class="cell filler-cell" style="border-right: none !important;"></div>
       </div>
       <div class="row no-bottom-border">
         <div class="cell time-cell">
@@ -1235,6 +1262,18 @@
         </div>
          <div class="cell filler-cell"></div>
       </div>
+       <div class="row add-top-border">
+           <div class="cell" style="gap: 2px; border-right: none;">
+                <span class="data-display" id="card-new_val1"></span>
+                <span id="card-new_val2_prefix"></span> <span class="data-display" id="card-new_val2"></span>
+           </div>
+            <div class="cell" style="gap: 2px;">
+                <span class="data-display" id="card-new_val3"></span>
+                <span id="card-new_val4_prefix"></span> <span class="data-display" id="card-new_val4"></span>
+           </div>
+           <div class="cell filler-cell" style="border-right: none;"></div>
+       </div>
+
        <div class="row add-top-border"> <div class="cell remarks-cell"> <span class="data-display" id="card-remarks"></span>
           </div>
           <div class="cell filler-cell"></div> </div>
@@ -1258,7 +1297,8 @@
         'plan', 'reg', 'gate', 'info', 'fl', 'dest', 'bw', 'bi', 'pzfw', 'ezfw',
         'pfit', 'exs', 'bo', 'res', 'fzfw', 'percent_mac', 'sid', 'star', 'v2',
         'remarks', 'formatSelector', // Dynamic format fields start here
-        'pdc', 'qnh', 'aus_cleared_sid', 'aus_cleared_wpt', 'aus_climb_alt', 'aus_sqwk'
+        'pdc', 'qnh', 'aus_cleared_sid', 'aus_cleared_wpt', 'aus_climb_alt', 'aus_sqwk',
+        'new_val1', 'new_val2', 'new_val3', 'new_val4' // New fields
     ];
      // IDs of calculated/readonly fields
      const calculatedIds = [
@@ -1527,6 +1567,15 @@
       document.getElementById('card-star').textContent = data['star'] || '';
       document.getElementById('card-remarks').textContent = data['remarks'] || '';
 
+      // Populate new row
+      document.getElementById('card-new_val1').textContent = data['new_val1'] || '';
+      document.getElementById('card-new_val2').textContent = data['new_val2'] || '';
+      document.getElementById('card-new_val3').textContent = data['new_val3'] || '';
+      document.getElementById('card-new_val4').textContent = data['new_val4'] || '';
+      document.getElementById('card-new_val2_prefix').textContent = (data['new_val1'] && data['new_val2']) ? ' / .' : '';
+      document.getElementById('card-new_val4_prefix').textContent = (data['new_val3'] && data['new_val4']) ? ' / ' : '';
+
+
         // Populate dynamic crew display
         const cardCrewContainer = document.getElementById('card-additional-crew');
         cardCrewContainer.innerHTML = ''; // Clear previous entries
@@ -1783,11 +1832,9 @@
         reader.readAsText(file);
     }
 
-    let crewMemberCounter = 0;
     // --- Dynamic Crew Functions ---
     function addCrewRow(data = { type: 'FZ', name: '' }) {
         const container = document.getElementById('additional-crew-container');
-        crewMemberCounter++;
 
         const newRow = document.createElement('div');
         newRow.className = 'crew-row';
@@ -1827,15 +1874,13 @@
      function updateRemoveButtonVisibility() {
          const container = document.getElementById('additional-crew-container');
          const rows = container.querySelectorAll('.crew-row');
-         if (rows.length <= 1) {
-             const removeBtn = rows[0]?.querySelector('.remove-crew-btn');
-             if (removeBtn) removeBtn.style.display = 'none';
-         } else {
-             rows.forEach(row => {
-                 const removeBtn = row.querySelector('.remove-crew-btn');
-                 if (removeBtn) removeBtn.style.display = 'inline-block';
-             });
-         }
+         rows.forEach((row, index) => {
+             const removeBtn = row.querySelector('.remove-crew-btn');
+             if(removeBtn) {
+                 // Show remove button for all rows except the first one
+                 removeBtn.style.display = (index === 0) ? 'none' : 'inline-block';
+             }
+         });
      }
 
 
@@ -1856,7 +1901,7 @@
                   const nextEl = document.getElementById(nextElId);
                   if(nextEl) {
                       nextEl.focus();
-                      nextEl.select();
+                      // nextEl.select(); // Select can be annoying on touch devices, focus is better
                   }
               }
           });
@@ -1996,13 +2041,18 @@
        document.getElementById('aus_cleared_wpt').addEventListener('input', function() { this.value = this.value.toUpperCase(); saveData(this); });
        document.getElementById('aus_climb_alt').addEventListener('input', function() { validateNumericOnly(this, 5); saveData(this); });
        document.getElementById('aus_sqwk').addEventListener('input', function() { validateNumericOnly(this, 4); saveData(this); });
+       document.getElementById('new_val1').addEventListener('input', function() { validateNumericOnly(this, 3); saveData(this); });
+       document.getElementById('new_val2').addEventListener('input', function() { validateNumericOnly(this, 2); saveData(this); });
+       document.getElementById('new_val3').addEventListener('input', function() { validateNumericOnly(this, 3); saveData(this); });
+       document.getElementById('new_val4').addEventListener('input', function() { validateNumericOnly(this, 3); saveData(this); });
 
       // Auto-tab setup
       autoTab('plan', 'reg'); autoTab('reg', 'gate'); autoTab('gate', 'info');
+      autoTab('fl', 'dest');
       autoTab('pdc', 'qnh');
-      autoTab('aus_cleared_sid', 'aus_cleared_wpt');
-      autoTab('aus_cleared_wpt', 'aus_climb_alt');
       autoTab('aus_climb_alt', 'aus_sqwk');
+      autoTab('new_val1', 'new_val2');
+      autoTab('new_val3', 'new_val4');
       
        // --- Button Listeners ---
        document.getElementById('saveButton').addEventListener('click', saveDataToFile);
@@ -2051,7 +2101,7 @@
       if (savedCrew) {
           try {
               const crewData = JSON.parse(savedCrew);
-              if (crewData.length > 0) {
+              if (crewData && crewData.length > 0) {
                   crewData.forEach(addCrewRow);
               } else {
                   addCrewRow();
