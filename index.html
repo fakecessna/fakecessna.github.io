@@ -210,7 +210,7 @@
        font-family: inherit; /* Ensure textarea matches font */
     }
      .cell input[readonly] {
-         background-color: #eeeeee; /* Slightly different for readonly */
+         background-color: #eeeeee;
      }
       .cell textarea {
          width: 100%; /* Make textarea fill its cell */
@@ -266,7 +266,7 @@
     #card-sid, #card-star { min-width: 100px; }
     #card-crew, #card-pax { min-width: 40px; }
     #card-m2000, #card-p1000, #card-m1000 { min-width: 45px; }
-    #card-capt, #card-fzName { min-width: 140px; }
+    #card-capt, .card-crew-name { min-width: 140px; }
     #card-staffNo { min-width: 90px; }
     #card-std-time, #card-sta-time, #card-std-lt-time, #card-sta-lt-time, #card-flt-t-time, #card-blk-t-time { min-width: 45px; } /* Combined time fields */
     #card-std-gmt, #card-sta-gmt { min-width: 60px; } /* GMT offset */
@@ -323,7 +323,7 @@
     /* Prefix inputs */
     .prefix-input input { width: 45px !important; }
     /* Capt/FZ */
-    .name-input { width: 140px !important; } /* Class for Capt/FZ name */
+    .name-input, .crew-name-input { width: 140px !important; } /* Class for Capt/FZ name */
     input#staffNo { width: 90px !important; }
     /* --- End Input Widths --- */
 
@@ -360,28 +360,77 @@
       align-items: center;
       gap: 5px; /* Gap between label and input */
     }
-    .capt-bottom {
+    .crew-row {
       display: flex;
       gap: 5px; /* Gap between select and input */
       width: 100%;
       align-items: center;
+      margin-bottom: 2px; /* Space between dynamic crew rows */
     }
+     #additional-crew-container {
+        display: flex;
+        flex-direction: column;
+        gap: 4px; /* Space between crew rows */
+        margin-top: 4px;
+     }
+
     /* Fixed width for Capt label and FZ select for alignment */
-    .label-capt, .select-fz {
+    .label-capt, .crew-type-select {
         width: 40px !important;
         flex-shrink: 0;
         display: inline-block;
     }
-    .select-fz {
+    .crew-type-select {
         height: auto; /* Match input height */
         padding: 1px;
     }
-     /* Style for fzType display on card */
-     #card-fzType {
-         width: 40px !important; /* Match select width */
-         display: inline-block;
-         text-align: left;
+     /* Crew controls (+/- buttons) */
+    .crew-controls {
+        display: flex;
+        justify-content: flex-end; /* Align to the right of the cell */
+        width: 100%;
+    }
+     .crew-control-btn {
+        width: 18px;
+        height: 18px;
+        font-size: 12px;
+        line-height: 16px;
+        text-align: center;
+        padding: 0;
+        margin-left: 4px;
+        border-radius: 3px;
+        border: 1px solid #888;
+        cursor: pointer;
+        background-color: #f0f0f0;
      }
+      .crew-control-btn:hover {
+          background-color: #e0e0e0;
+      }
+      .crew-control-btn.remove-crew-btn {
+          background-color: #f8d7da;
+          border-color: #f5c6cb;
+      }
+       .crew-control-btn.remove-crew-btn:hover {
+          background-color: #f1c3c7;
+       }
+
+
+     #card-additional-crew {
+         display: flex;
+         flex-direction: column;
+         gap: 4px;
+         margin-top: 4px;
+     }
+     .card-crew-row {
+         display: flex;
+         gap: 5px;
+         align-items: center;
+     }
+     .card-crew-type {
+         width: 40px;
+         flex-shrink: 0;
+     }
+     
 
 
     /* Flight Card Output (Old style, now unused) */
@@ -535,26 +584,34 @@
     .night-mode .form-section {
         border: 1px solid #555555;
     }
-     /* Remove border from the card view's container in night mode too */
     .night-mode #cardPage .form-section {
         border: none;
     }
+     .night-mode .crew-control-btn {
+         background-color: #444;
+         border-color: #666;
+         color: #eee;
+     }
+     .night-mode .crew-control-btn.remove-crew-btn {
+         background-color: #573333;
+         border-color: #884444;
+     }
 
      .night-mode .row {
          border-bottom: 1px solid #555555;
      }
      .night-mode .row:last-child {
-         border-bottom: none; /* Still no border for the last row */
+         border-bottom: none;
      }
      .night-mode .row.no-bottom-border {
-         border-bottom: none; /* Still no border */
+         border-bottom: none;
      }
      .night-mode .row.add-top-border {
          border-top: 1px solid #555555;
      }
     .night-mode .cell {
         border-right: 1px solid #555555;
-        color: #e0e0e0; /* Ensure cell text is light */
+        color: #e0e0e0;
     }
     .night-mode .cell:last-child {
         border-right: none;
@@ -567,19 +624,15 @@
         border: 1px solid #666666;
     }
      .night-mode .cell input[readonly] {
-         background-color: #444444; /* Darker readonly background */
-         color: #bbbbbb; /* Lighter text for readonly */
+         background-color: #444444;
+         color: #bbbbbb;
      }
-      /* Placeholder styling */
       .night-mode input::placeholder, .night-mode textarea::placeholder {
-          color: #888888; /* Lighter grey for night mode */
+          color: #888888;
       }
 
-     .night-mode .flight-card {
-         /* Conceptual container */
-     }
      .night-mode .data-display {
-         color: #e0e0e0; /* Ensure displayed data is light */
+         color: #e0e0e0;
      }
       .night-mode .text-blue { color: #66aaff; /* Brighter blue */}
       .night-mode .text-red { color: #ff6666; /* Brighter red */}
@@ -589,10 +642,6 @@
         .night-mode .footer-text {
          color: #aaaaaa; /* Lighter grey for night mode */
         }
-         .night-mode .footer-text a {
-             color: inherit;
-         }
-
 
      /*--------------------*/
      /* Print Styles       */
@@ -607,83 +656,65 @@
              font-size: 9px; /* Slightly smaller for print */
          }
          /* Hide non-essential elements */
-         .heading-controls, /* Hides purge/toggle on both pages */
-         .button-container, /* Hides Save/Load/Generate */
-         #cardPage .button-container, /* Hides Print/Edit */
+         .heading-controls,
+         .button-container,
+         #cardPage .button-container,
          #fileInput,
          .footer-text,
          .format-selector-row,
-         #formPage { /* Hide the entire form page when printing */
+         #formPage,
+         .crew-controls {
              display: none !important;
          }
           .page {
-              display: none !important; /* Hide all pages by default */
+              display: none !important;
               border: none !important;
               padding: 0 !important;
               margin: 0 !important;
               width: 100% !important;
               max-width: 100% !important;
           }
-           /* Force the card page content to be visible */
            #cardPage {
                display: block !important;
                background-color: #ffffff !important;
                color: #000000 !important;
            }
-            #cardPage h3 { /* Ensure heading is black */
+            #cardPage h3 {
                  color: #000000 !important;
              }
-           /* Style the card container for print */
            #cardPage .form-section {
-              display: block !important; /* Ensure it's displayed */
-              border: 1px solid black !important; /* Add border for print */
-              background-color: #ffffff !important; /* Ensure white background */
+              display: block !important;
+              border: 1px solid black !important;
+              background-color: #ffffff !important;
            }
             #cardPage .row,
             #cardPage .row.add-top-border {
-               border-color: black !important; /* Ensure borders are black */
+               border-color: black !important;
             }
             #cardPage .cell {
-                border-color: black !important; /* Ensure borders are black */
-                color: #000000 !important; /* Ensure text is black */
-                 padding: 3px 2px; /* Slightly tighter padding for print */
+                border-color: black !important;
+                color: #000000 !important;
+                 padding: 3px 2px;
                  gap: 2px;
             }
              #cardPage .data-display {
-                 color: #000000 !important; /* Ensure displayed data is black */
+                 color: #000000 !important;
                  padding: 1px;
              }
              #cardPage #card-flight-number-display {
-                 font-size: 16px !important; /* Adjust size for print */
-                 color: #000000 !important; /* Black flight number for print */
+                 font-size: 16px !important;
+                 color: #000000 !important;
                }
-             #cardPage .label-fixed { width: 30px !important; } /* Slightly tighten fixed labels */
+             #cardPage .label-fixed { width: 30px !important; }
              #cardPage .label-reg { width: 20px !important; }
-              #cardPage .text-blue { color: #0000FF !important; } /* Use standard blue for print */
-              #cardPage .text-red { color: #FF0000 !important; } /* Use standard red for print */
-               /* Adjust remarks display for print */
-               #cardPage .remarks-cell { flex-basis: auto !important; width: 100%; } /* Let remarks take full width below SID/STAR */
+              #cardPage .text-blue { color: #0000FF !important; }
+              #cardPage .text-red { color: #FF0000 !important; }
+               #cardPage .remarks-cell { flex-basis: auto !important; width: 100%; }
                 #cardPage #card-remarks { font-size: 8px; line-height: 1.1; }
 
-
-           /* Prevent page breaks inside rows if possible */
-           .row {
-               page-break-inside: avoid;
-           }
-            /* Allow page breaks within remarks if needed */
-            #card-remarks {
-                page-break-inside: auto;
-            }
-
+           .row { page-break-inside: avoid; }
+            #card-remarks { page-break-inside: auto; }
      }
-
-
-    @media screen and (max-width: 750px) { /* Adjusted breakpoint */
-        /* Optional scaling */
-      /* html {
-          font-size: calc(100vw / 750 * 10);
-      } */
-    }
   </style>
 </head>
 <body>
@@ -715,14 +746,10 @@
               <input type="text" id="staffNo" maxlength="8">
             </div>
           </div>
-          <div class="capt-bottom">
-            <select id="fzType" class="select-fz">
-              <option value="FZ">FZ</option>
-              <option value="SCO">SCO</option>
-              <option value="OBS">OBS</option>
-              <option value="IFM">IFM</option>
-            </select>
-            <input type="text" id="fzName" placeholder="Name" class="name-input">
+          <div id="additional-crew-container">
+             </div>
+          <div class="crew-controls">
+              <button type="button" id="add-crew-btn" class="crew-control-btn">+</button>
           </div>
         </div>
         <div class="cell crew-cell">
@@ -756,54 +783,17 @@
         </div>
       </div>
       
-      <div class="row no-bottom-border"> <div class="cell time-cell">
+      <div class="row no-bottom-border">
+        <div class="cell time-cell">
           <label for="std-hours">STD</label>
           <div class="time-input-container">
             <input type="text" id="std-hours" class="time-input" maxlength="2" placeholder="HH" pattern="[0-9]*" inputmode="numeric">
             <span class="time-separator">:</span>
             <input type="text" id="std-minutes" class="time-input" maxlength="2" placeholder="MM" pattern="[0-9]*" inputmode="numeric">
             <span class="time-suffix">Z</span>
-             <select id="std-gmt" class="gmt-select">
+            <select id="std-gmt" class="gmt-select">
               <option value="">GMT</option>
-              <option value="+14">+14</option>
-              <option value="+13">+13</option>
-              <option value="+12.75">+12.75</option>
-              <option value="+12">+12</option>
-              <option value="+11">+11</option>
-              <option value="+10.5">+10.5</option>
-              <option value="+10">+10</option>
-              <option value="+9.5">+9.5</option>
-              <option value="+9">+9</option>
-              <option value="+8.75">+8.75</option>
-              <option value="+8">+8</option>
-              <option value="+7">+7</option>
-              <option value="+6.5">+6.5</option>
-              <option value="+6">+6</option>
-              <option value="+5.75">+5.75</option>
-              <option value="+5.5">+5.5</option>
-              <option value="+5">+5</option>
-              <option value="+4.5">+4.5</option>
-              <option value="+4">+4</option>
-              <option value="+3.5">+3.5</option>
-              <option value="+3">+3</option>
-              <option value="+2">+2</option>
-              <option value="+1">+1</option>
-              <option value="0">0</option>
-              <option value="-1">-1</option>
-              <option value="-2">-2</option>
-              <option value="-3">-3</option>
-              <option value="-3.5">-3.5</option>
-              <option value="-4">-4</option>
-              <option value="-4.5">-4.5</option>
-              <option value="-5">-5</option>
-              <option value="-6">-6</option>
-              <option value="-7">-7</option>
-              <option value="-8">-8</option>
-              <option value="-9">-9</option>
-              <option value="-9.5">-9.5</option>
-              <option value="-10">-10</option>
-              <option value="-11">-11</option>
-              <option value="-12">-12</option>
+              <option value="+14">+14</option><option value="+13">+13</option><option value="+12.75">+12.75</option><option value="+12">+12</option><option value="+11">+11</option><option value="+10.5">+10.5</option><option value="+10">+10</option><option value="+9.5">+9.5</option><option value="+9">+9</option><option value="+8.75">+8.75</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6.5">+6.5</option><option value="+6">+6</option><option value="+5.75">+5.75</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4.5">+4.5</option><option value="+4">+4</option><option value="+3.5">+3.5</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option><option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-3.5">-3.5</option><option value="-4">-4</option><option value="-4.5">-4.5</option><option value="-5">-5</option><option value="-6">-6</option><option value="-7">-7</option><option value="-8">-8</option><option value="-9">-9</option><option value="-9.5">-9.5</option><option value="-10">-10</option><option value="-11">-11</option><option value="-12">-12</option>
             </select>
             <input type="text" id="std-lt-hours" class="time-input" maxlength="2" placeholder="HH" pattern="[0-9]*" inputmode="numeric" readonly>
             <span class="time-separator">:</span>
@@ -818,54 +808,17 @@
         <div class="cell filler-cell" style="border-right: none !important;"></div>
       </div>
       
-      <div class="row"> <div class="cell time-cell">
+      <div class="row">
+        <div class="cell time-cell">
           <label for="sta-hours">STA</label>
           <div class="time-input-container">
             <input type="text" id="sta-hours" class="time-input" maxlength="2" placeholder="HH" pattern="[0-9]*" inputmode="numeric">
             <span class="time-separator">:</span>
             <input type="text" id="sta-minutes" class="time-input" maxlength="2" placeholder="MM" pattern="[0-9]*" inputmode="numeric">
             <span class="time-suffix">Z</span>
-             <select id="sta-gmt" class="gmt-select">
+            <select id="sta-gmt" class="gmt-select">
               <option value="">GMT</option>
-              <option value="+14">+14</option>
-              <option value="+13">+13</option>
-              <option value="+12.75">+12.75</option>
-              <option value="+12">+12</option>
-              <option value="+11">+11</option>
-              <option value="+10.5">+10.5</option>
-              <option value="+10">+10</option>
-              <option value="+9.5">+9.5</option>
-              <option value="+9">+9</option>
-              <option value="+8.75">+8.75</option>
-              <option value="+8">+8</option>
-              <option value="+7">+7</option>
-              <option value="+6.5">+6.5</option>
-              <option value="+6">+6</option>
-              <option value="+5.75">+5.75</option>
-              <option value="+5.5">+5.5</option>
-              <option value="+5">+5</option>
-              <option value="+4.5">+4.5</option>
-              <option value="+4">+4</option>
-              <option value="+3.5">+3.5</option>
-              <option value="+3">+3</option>
-              <option value="+2">+2</option>
-              <option value="+1">+1</option>
-              <option value="0">0</option>
-              <option value="-1">-1</option>
-              <option value="-2">-2</option>
-              <option value="-3">-3</option>
-              <option value="-3.5">-3.5</option>
-              <option value="-4">-4</option>
-              <option value="-4.5">-4.5</option>
-              <option value="-5">-5</option>
-              <option value="-6">-6</option>
-              <option value="-7">-7</option>
-              <option value="-8">-8</option>
-              <option value="-9">-9</option>
-              <option value="-9.5">-9.5</option>
-              <option value="-10">-10</option>
-              <option value="-11">-11</option>
-              <option value="-12">-12</option>
+              <option value="+14">+14</option><option value="+13">+13</option><option value="+12.75">+12.75</option><option value="+12">+12</option><option value="+11">+11</option><option value="+10.5">+10.5</option><option value="+10">+10</option><option value="+9.5">+9.5</option><option value="+9">+9</option><option value="+8.75">+8.75</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6.5">+6.5</option><option value="+6">+6</option><option value="+5.75">+5.75</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4.5">+4.5</option><option value="+4">+4</option><option value="+3.5">+3.5</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option><option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-3.5">-3.5</option><option value="-4">-4</option><option value="-4.5">-4.5</option><option value="-5">-5</option><option value="-6">-6</option><option value="-7">-7</option><option value="-8">-8</option><option value="-9">-9</option><option value="-9.5">-9.5</option><option value="-10">-10</option><option value="-11">-11</option><option value="-12">-12</option>
             </select>
             <input type="text" id="sta-lt-hours" class="time-input" maxlength="2" placeholder="HH" pattern="[0-9]*" inputmode="numeric" readonly>
             <span class="time-separator">:</span>
@@ -881,7 +834,7 @@
       </div>
 
        <div class="row format-selector-row">
-            <label for="formatSelector" style="margin-right: 5px;">Format:</label>
+            <label for="formatSelector" style="margin-right: 5px;">FORMAT</label>
             <select id="formatSelector">
                 <option value="default">Default</option>
                 <option value="india">India Station</option>
@@ -1073,10 +1026,7 @@
                <span class="data-display" id="card-staffNo"></span>
             </div>
           </div>
-          <div class="capt-bottom">
-             <span class="data-display" id="card-fzType"></span>
-             <span class="data-display" id="card-fzName"></span>
-          </div>
+           <div id="card-additional-crew"></div>
         </div>
         <div class="cell crew-cell">
           <label>CREW/PAX</label>
@@ -1295,7 +1245,7 @@
   <script>
     // --- IDs of fields to save/load ---
     const savableInputIds = [
-        'flightNo', 'capt', 'staffNo', 'fzType', 'fzName', 'crew', 'pax',
+        'flightNo', 'capt', 'staffNo', 'crew', 'pax',
         'm2000', 'p1000', 'm1000', 'std-hours', 'std-minutes', 'std-gmt',
         'flt-t-hours', 'flt-t-minutes', 'sta-hours', 'sta-minutes', 'sta-gmt',
         'plan', 'reg', 'gate', 'info', 'fl', 'dest', 'bw', 'bi', 'pzfw', 'ezfw',
@@ -1528,13 +1478,20 @@
               data[id] = '';
           }
       });
+        // Special handling for dynamic crew
+        const crewData = [];
+        document.querySelectorAll('#additional-crew-container .crew-row').forEach(row => {
+            const typeEl = row.querySelector('.crew-type-select');
+            const nameEl = row.querySelector('.crew-name-input');
+            if (typeEl && nameEl) {
+                crewData.push({ type: typeEl.value, name: nameEl.value });
+            }
+        });
 
-      // Populate common fields first
+      // Populate common fields
       document.getElementById('card-flightNo').textContent = data['flightNo'] || '';
       document.getElementById('card-capt').textContent = data['capt'] || '';
       document.getElementById('card-staffNo').textContent = data['staffNo'] || '';
-      document.getElementById('card-fzType').textContent = data['fzType'] || '';
-      document.getElementById('card-fzName').textContent = data['fzName'] || '';
       document.getElementById('card-crew').textContent = data['crew'] || '';
       document.getElementById('card-pax').textContent = data['pax'] || '';
       document.getElementById('card-m2000').textContent = data['m2000'] || '';
@@ -1565,6 +1522,17 @@
       document.getElementById('card-sid').textContent = data['sid'] || '';
       document.getElementById('card-star').textContent = data['star'] || '';
       document.getElementById('card-remarks').textContent = data['remarks'] || '';
+
+        // Populate dynamic crew display
+        const cardCrewContainer = document.getElementById('card-additional-crew');
+        cardCrewContainer.innerHTML = ''; // Clear previous entries
+        crewData.forEach(crew => {
+            const crewRowDiv = document.createElement('div');
+            crewRowDiv.className = 'card-crew-row';
+            crewRowDiv.innerHTML = `<span class="data-display card-crew-type">${crew.type}</span><span class="data-display card-crew-name">${crew.name}</span>`;
+            cardCrewContainer.appendChild(crewRowDiv);
+        });
+
 
       // Logic for dynamic format display
       const selectedFormat = document.getElementById('formatSelector').value;
@@ -1654,20 +1622,26 @@
     // --- Purge Function ---
     function purgeData() {
         if (confirm("Are you sure you want to clear all flight card data? This cannot be undone.")) {
+            // Clear static fields
             savableInputIds.forEach(id => {
                 const element = document.getElementById(id);
                 if (element && !element.readOnly) {
                     element.value = '';
                 }
-                 // Reset format selector to default, but don't clear its localStorage so it's remembered
                  if(element && element.id === 'formatSelector') {
                      element.value = 'default';
                  } else {
                      localStorage.removeItem(id);
                  }
             });
+            // Clear dynamic crew members
+            const crewContainer = document.getElementById('additional-crew-container');
+            crewContainer.innerHTML = '';
+            addCrewRow(); // Add back one default row
+            localStorage.removeItem('crewMembers'); // Remove crew data from storage
+
+
             updateAllCalculatedFields();
-             // Manually trigger format change after purge to show correct default row
             document.getElementById('formatSelector').dispatchEvent(new Event('change'));
             console.log("Flight card data purged.");
         } else {
@@ -1699,6 +1673,18 @@
                 flightData[id] = element.value;
             }
         });
+        
+        // Save dynamic crew
+        const crewMembers = [];
+        document.querySelectorAll('#additional-crew-container .crew-row').forEach(row => {
+            const typeEl = row.querySelector('.crew-type-select');
+            const nameEl = row.querySelector('.crew-name-input');
+            if (typeEl && nameEl) {
+                crewMembers.push({ type: typeEl.value, name: nameEl.value });
+            }
+        });
+        flightData.crewMembers = crewMembers;
+
 
         const jsonData = JSON.stringify(flightData, null, 2);
         const blob = new Blob([jsonData], { type: 'application/octet-stream' });
@@ -1752,9 +1738,24 @@
                          localStorage.removeItem(id);
                     }
                 });
+                
+                 // Load dynamic crew
+                const crewContainer = document.getElementById('additional-crew-container');
+                crewContainer.innerHTML = ''; // Clear existing
+                if (loadedData.crewMembers && Array.isArray(loadedData.crewMembers)) {
+                    if (loadedData.crewMembers.length === 0) {
+                        addCrewRow(); // Add one blank if saved file had none
+                    } else {
+                        loadedData.crewMembers.forEach(crewData => {
+                            addCrewRow(crewData);
+                        });
+                    }
+                } else {
+                    addCrewRow(); // Add one default if no crew data in file
+                }
+
 
                 updateAllCalculatedFields();
-                // Manually trigger format change after load to show correct row
                 document.getElementById('formatSelector').dispatchEvent(new Event('change'));
                 alert(`Flight card data loaded from ${file.name}`);
 
@@ -1776,6 +1777,63 @@
         reader.readAsText(file);
     }
 
+    let crewMemberCounter = 0;
+    // --- Dynamic Crew Functions ---
+    function addCrewRow(data = { type: 'FZ', name: '' }) {
+        const container = document.getElementById('additional-crew-container');
+        crewMemberCounter++;
+
+        const newRow = document.createElement('div');
+        newRow.className = 'crew-row';
+        
+        const typeSelect = document.createElement('select');
+        typeSelect.className = 'crew-type-select';
+        typeSelect.innerHTML = `
+          <option value="FZ">FZ</option>
+          <option value="SCO">SCO</option>
+          <option value="OBS">OBS</option>
+          <option value="IFM">IFM</option>
+        `;
+        typeSelect.value = data.type; // Set value from loaded data
+        
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.placeholder = 'Name';
+        nameInput.className = 'crew-name-input';
+        nameInput.value = data.name; // Set value from loaded data
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'crew-control-btn remove-crew-btn';
+        removeBtn.textContent = '-';
+        removeBtn.onclick = () => {
+            container.removeChild(newRow);
+            updateRemoveButtonVisibility();
+        };
+        
+        newRow.appendChild(typeSelect);
+        newRow.appendChild(nameInput);
+        newRow.appendChild(removeBtn);
+        container.appendChild(newRow);
+
+        updateRemoveButtonVisibility();
+    }
+     function updateRemoveButtonVisibility() {
+         const container = document.getElementById('additional-crew-container');
+         const rows = container.querySelectorAll('.crew-row');
+         // If there's only one crew row, hide its remove button
+         if (rows.length === 1) {
+             const removeBtn = rows[0].querySelector('.remove-crew-btn');
+             if (removeBtn) removeBtn.style.display = 'none';
+         } else {
+             // Otherwise, ensure all are visible
+             rows.forEach(row => {
+                 const removeBtn = row.querySelector('.remove-crew-btn');
+                 if (removeBtn) removeBtn.style.display = 'inline-block';
+             });
+         }
+     }
+
 
     // --- Setup Event Listeners ---
     function setupEventListeners() { 
@@ -1787,8 +1845,9 @@
       }
       
       function autoTab(currentEl, nextElId) {
+          if(!currentEl) return;
           currentEl.addEventListener('input', () => {
-              if (currentEl.value.length >= currentEl.maxLength) {
+              if (currentEl.maxLength > 0 && currentEl.value.length >= currentEl.maxLength) {
                   const nextEl = document.getElementById(nextElId);
                   if(nextEl) {
                       nextEl.focus();
@@ -1869,7 +1928,6 @@
           saveData(this);
       });
 
-
        // Textarea
        document.getElementById('remarks').addEventListener('input', function() { saveData(this); });
 
@@ -1894,8 +1952,7 @@
       document.getElementById('gate').addEventListener('input', function(){ validateAlphaNumeric(this, 4); saveData(this); });
       document.getElementById('sid').addEventListener('input', function(){ this.value = this.value.toUpperCase(); saveData(this); });
       document.getElementById('star').addEventListener('input', function(){ this.value = this.value.toUpperCase(); saveData(this); });
-      document.getElementById('capt').addEventListener('input', function(){ saveData(this); }); // No validation needed
-      document.getElementById('fzName').addEventListener('input', function(){ saveData(this); }); // No validation needed
+      document.getElementById('capt').addEventListener('input', function(){ saveData(this); });
 
       // Decimal Inputs
        ['pzfw', 'ezfw', 'pfit', 'exs', 'bo', 'res', 'fzfw'].forEach(id => {
@@ -1935,15 +1992,23 @@
        document.getElementById('aus_sqwk').addEventListener('input', function() { validateNumericOnly(this, 4); saveData(this); });
 
       // Auto-tab setup
+      autoTab(document.getElementById('plan'), 'reg');
+      autoTab(document.getElementById('reg'), 'gate');
+      autoTab(document.getElementById('gate'), 'info');
+      autoTab(document.getElementById('fl'), 'dest');
       autoTab(document.getElementById('pdc'), 'qnh');
+      autoTab(document.getElementById('aus_cleared_sid'), 'aus_cleared_wpt');
+      autoTab(document.getElementById('aus_cleared_wpt'), 'aus_climb_alt');
       autoTab(document.getElementById('aus_climb_alt'), 'aus_sqwk');
-      // No tab from QNH as POB is readonly.
+      
 
        // --- Button Listeners ---
        document.getElementById('saveButton').addEventListener('click', saveDataToFile);
        document.getElementById('loadButton').addEventListener('click', () => { document.getElementById('fileInput').click(); });
        document.getElementById('fileInput').addEventListener('change', loadDataFromFile);
        document.getElementById('purgeButton').addEventListener('click', purgeData);
+       document.getElementById('add-crew-btn').addEventListener('click', () => addCrewRow());
+
        // Dark mode listeners
        const dmToggleForm = document.getElementById('darkModeToggle');
        const dmToggleCard = document.getElementById('darkModeToggleCard');
@@ -1961,7 +2026,6 @@
        if(dmToggleForm && dmToggleCard) {
            dmToggleForm.checked = dmToggleCard.checked;
        }
-
     }
 
     // --- Initialize the form ---
@@ -1977,7 +2041,28 @@
           }
       });
 
-      setupEventListeners(); 
+      setupEventListeners();
+      
+      // Setup initial crew rows
+        const savedCrew = localStorage.getItem('crewMembers');
+        const crewContainer = document.getElementById('additional-crew-container');
+        crewContainer.innerHTML = ''; // Clear just in case
+        if (savedCrew) {
+            try {
+                const crewData = JSON.parse(savedCrew);
+                if (crewData.length > 0) {
+                    crewData.forEach(addCrewRow);
+                } else {
+                    addCrewRow(); // Add one if saved array is empty
+                }
+            } catch(e) {
+                addCrewRow(); // Add one if saved data is corrupt
+            }
+        } else {
+            addCrewRow(); // Add one if no saved data
+        }
+
+
       updateAllCalculatedFields();
       
       // Manually trigger format change on load to show correct row
