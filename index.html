@@ -98,8 +98,11 @@
          border-bottom: none; /* No border for the last row */
      }
     .row-1 {
-      align-items: flex-start; /* Prevents cells from stretching vertically */
+      /* This row's cells will stretch by default, which is what we want for the borders. */
     }
+     .row-1 .crew-cell {
+        align-items: flex-start; /* Align content of this specific cell to the top */
+     }
      .row.no-bottom-border { /* Added class to remove specific borders */
          border-bottom: none;
      }
@@ -260,9 +263,9 @@
     /* Specific widths for data display spans matching input widths */
     #card-plan { min-width: 25px; }
     #card-reg, #card-fl, #card-dest, #card-flightNo { min-width: 35px; }
-    #card-gate, #card-bi, #card-v2, #card-v2_plus_15 { min-width: 45px; text-align: right; }
+    #card-gate, #card-gate-india, #card-gate-aus, #card-bi, #card-v2, #card-v2_plus_15 { min-width: 45px; text-align: right; }
     #card-pob, #card-india_pob { min-width: 40px; }
-    #card-info { min-width: 35px; text-align: center; }
+    #card-info, #card-info-india { min-width: 35px; text-align: center; }
     #card-pzfw, #card-ezfw, #card-pfit, #card-exs, #card-bo, #card-res, #card-fzfw, #card-ezfw_du, #card-fzfw_du, #card-percent_mac { min-width: 55px; text-align: right; }
     #card-bw { min-width: 65px; text-align: right; }
     #card-sid, #card-star { min-width: 100px; }
@@ -395,10 +398,6 @@
         padding: 1px;
     }
      /* Crew controls (+/- buttons) */
-    .crew-controls {
-        display: flex;
-        margin-top: 4px; /* Align with top of crew container */
-    }
      .crew-control-btn {
         width: 18px;
         height: 18px;
@@ -895,6 +894,16 @@
                 <label for="pdc">PDC</label>
                 <input type="text" id="pdc" maxlength="3" pattern="[0-9]*" inputmode="numeric">
             </div>
+            <div class="cell">
+              <label class="label-right-aligned" for="gate">GATE</label>
+              <input type="text" id="gate" maxlength="4">
+            </div>
+            <div class="cell">
+              <label class="label-right-aligned" for="info">ATIS</label>
+              <select id="info">
+                <option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option><option value="G">G</option><option value="H">H</option><option value="I">I</option><option value="J">J</option><option value="K">K</option><option value="L">L</option><option value="M">M</option><option value="N">N</option><option value="O">O</option><option value="P">P</option><option value="Q">Q</option><option value="R">R</option><option value="S">S</option><option value="T">T</option><option value="U">U</option><option value="V">V</option><option value="W">W</option><option value="X">X</option><option value="Y">Y</option><option value="Z">Z</option>
+              </select>
+            </div>
              <div class="cell">
                 <label for="qnh">QNH</label>
                 <input type="text" id="qnh" maxlength="4" pattern="[0-9]*" inputmode="numeric">
@@ -907,6 +916,10 @@
        </div>
 
         <div class="row seamless-row format-row" id="australia-format-row">
+             <div class="cell">
+              <label class="label-right-aligned" for="gate">GATE</label>
+              <input type="text" id="gate" maxlength="4">
+            </div>
              <div class="cell">
                 <label for="aus_cleared_sid">Cleared</label>
                 <input type="text" id="aus_cleared_sid" placeholder="SID">
@@ -1144,23 +1157,33 @@
 
        <div class="row seamless-row format-row" id="card-india-format-row">
             <div class="cell">
-                <span id="card-pdc-clearance"></span>
+                <label>PDC</label>
+                <span class="data-display" id="card-pdc"></span>
+            </div>
+            <div class="cell">
+              <label class="label-right-aligned">GATE</label>
+              <span class="data-display text-blue" id="card-gate-india"></span>
+            </div>
+            <div class="cell">
+              <label class="label-right-aligned">ATIS</label>
+              <span class="data-display text-blue" id="card-info-india"></span>
             </div>
              <div class="cell">
-                <label for="qnh">QNH</label>
+                <label>QNH</label>
                 <span class="data-display" id="card-qnh"></span>
             </div>
              <div class="cell">
-                <label for="india_pob">POB</label>
+                <label>POB</label>
                 <span class="data-display" id="card-india_pob"></span>
-            </div>
-            <div class="cell">
-                <span id="card-all-secure"></span>
             </div>
             <div class="cell filler-cell"></div>
        </div>
 
         <div class="row seamless-row format-row" id="card-australia-format-row">
+             <div class="cell">
+              <label class="label-right-aligned">GATE</label>
+              <span class="data-display text-blue" id="card-gate-aus"></span>
+            </div>
              <div class="cell">
                 <label>Cleared</label>
                 <span class="data-display" id="card-aus_cleared_sid"></span>
@@ -1594,12 +1617,14 @@
           document.getElementById('card-pob').textContent = data['pob'] || '';
       } else if (selectedFormat === 'india') {
           document.getElementById('card-india-format-row').classList.add('active');
-          document.getElementById('card-pdc-clearance').textContent = "with Datalink clearance";
+          document.getElementById('card-pdc').textContent = data['pdc'] || '';
+          document.getElementById('card-gate-india').textContent = data['gate'] || '';
+          document.getElementById('card-info-india').textContent = data['info'] || '';
           document.getElementById('card-qnh').textContent = data['qnh'] || '';
           document.getElementById('card-india_pob').textContent = data['india_pob'] || '';
-          document.getElementById('card-all-secure').textContent = "All through security";
       } else if (selectedFormat === 'australia') {
           document.getElementById('card-australia-format-row').classList.add('active');
+          document.getElementById('card-gate-aus').textContent = data['gate'] || '';
           document.getElementById('card-aus_cleared_sid').textContent = data['aus_cleared_sid'] || '';
           document.getElementById('card-aus_cleared_wpt').textContent = data['aus_cleared_wpt'] || '';
           document.getElementById('card-aus_climb_alt').textContent = data['aus_climb_alt'] || '';
