@@ -61,8 +61,10 @@
 
     /* Format Selector Row */
     .format-selector-row {
-        padding: 5px;
-        background-color: #f0f0f0;
+        padding: 5px; /* Consistent padding with cells */
+        background-color: #eeeeee; /* Match readonly inputs for subtlety */
+        border-bottom: 1px solid black;
+        box-sizing: border-box; /* Crucial for correct width calculation */
     }
      .format-selector-row select {
         font-size: 10px;
@@ -348,6 +350,7 @@
       gap: 4px;
       min-width: 200px; /* Keep CAPT cell width */
       box-sizing: border-box;
+      align-items: flex-start; /* Align all children to the left */
     }
     .capt-top {
       display: flex;
@@ -372,6 +375,7 @@
         flex-direction: column;
         gap: 4px; /* Space between crew rows */
         margin-top: 4px;
+        width: 100%; /* Ensure it takes full width of capt-cell */
      }
 
     /* Fixed width for Capt label and FZ select for alignment */
@@ -643,6 +647,7 @@
          color: #aaaaaa; /* Lighter grey for night mode */
         }
 
+
      /*--------------------*/
      /* Print Styles       */
      /*--------------------*/
@@ -674,6 +679,7 @@
               width: 100% !important;
               max-width: 100% !important;
           }
+           /* Force the card page content to be visible */
            #cardPage {
                display: block !important;
                background-color: #ffffff !important;
@@ -682,6 +688,7 @@
             #cardPage h3 {
                  color: #000000 !important;
              }
+           /* Style the card container for print */
            #cardPage .form-section {
               display: block !important;
               border: 1px solid black !important;
@@ -1253,7 +1260,7 @@
         'remarks', 'formatSelector', // Dynamic format fields start here
         'pdc', 'qnh', 'aus_cleared_sid', 'aus_cleared_wpt', 'aus_climb_alt', 'aus_sqwk'
     ];
-     // IDs of calculated/readonly fields (for card display)
+     // IDs of calculated/readonly fields
      const calculatedIds = [
          'pob', 'india_pob', 'ezfw_du', 'fzfw_du', 'v2_plus_15',
          'std-lt-hours', 'std-lt-minutes', 'sta-lt-hours', 'sta-lt-minutes',
@@ -1449,7 +1456,6 @@
     }
 
     // --- Formatting Functions ---
-     // Helper to format numbers with one decimal place for display
      function formatDecimalForDisplay(value) {
         const num = parseFloat(value);
         if (!isNaN(num)) {
@@ -1459,7 +1465,6 @@
         return '';
      }
 
-      // Helper to format time parts into HH:MM for display
       function formatTimeForDisplay(hours, minutes) {
           if (hours && minutes && hours.trim() !== '' && minutes.trim() !== '') {
               return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
@@ -1478,7 +1483,6 @@
               data[id] = '';
           }
       });
-        // Special handling for dynamic crew
         const crewData = [];
         document.querySelectorAll('#additional-crew-container .crew-row').forEach(row => {
             const typeEl = row.querySelector('.crew-type-select');
@@ -1527,10 +1531,12 @@
         const cardCrewContainer = document.getElementById('card-additional-crew');
         cardCrewContainer.innerHTML = ''; // Clear previous entries
         crewData.forEach(crew => {
-            const crewRowDiv = document.createElement('div');
-            crewRowDiv.className = 'card-crew-row';
-            crewRowDiv.innerHTML = `<span class="data-display card-crew-type">${crew.type}</span><span class="data-display card-crew-name">${crew.name}</span>`;
-            cardCrewContainer.appendChild(crewRowDiv);
+            if(crew.type || crew.name) { // Only add row if there is data
+                const crewRowDiv = document.createElement('div');
+                crewRowDiv.className = 'card-crew-row';
+                crewRowDiv.innerHTML = `<span class="data-display card-crew-type">${crew.type}</span><span class="data-display card-crew-name">${crew.name}</span>`;
+                cardCrewContainer.appendChild(crewRowDiv);
+            }
         });
 
 
@@ -1794,13 +1800,13 @@
           <option value="OBS">OBS</option>
           <option value="IFM">IFM</option>
         `;
-        typeSelect.value = data.type; // Set value from loaded data
+        typeSelect.value = data.type;
         
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
         nameInput.placeholder = 'Name';
         nameInput.className = 'crew-name-input';
-        nameInput.value = data.name; // Set value from loaded data
+        nameInput.value = data.name;
 
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
@@ -1821,12 +1827,10 @@
      function updateRemoveButtonVisibility() {
          const container = document.getElementById('additional-crew-container');
          const rows = container.querySelectorAll('.crew-row');
-         // If there's only one crew row, hide its remove button
-         if (rows.length === 1) {
-             const removeBtn = rows[0].querySelector('.remove-crew-btn');
+         if (rows.length <= 1) {
+             const removeBtn = rows[0]?.querySelector('.remove-crew-btn');
              if (removeBtn) removeBtn.style.display = 'none';
          } else {
-             // Otherwise, ensure all are visible
              rows.forEach(row => {
                  const removeBtn = row.querySelector('.remove-crew-btn');
                  if (removeBtn) removeBtn.style.display = 'inline-block';
@@ -1844,7 +1848,8 @@
           }
       }
       
-      function autoTab(currentEl, nextElId) {
+      function autoTab(currentElId, nextElId) {
+          const currentEl = document.getElementById(currentElId);
           if(!currentEl) return;
           currentEl.addEventListener('input', () => {
               if (currentEl.maxLength > 0 && currentEl.value.length >= currentEl.maxLength) {
@@ -1928,6 +1933,7 @@
           saveData(this);
       });
 
+
        // Textarea
        document.getElementById('remarks').addEventListener('input', function() { saveData(this); });
 
@@ -1992,24 +1998,19 @@
        document.getElementById('aus_sqwk').addEventListener('input', function() { validateNumericOnly(this, 4); saveData(this); });
 
       // Auto-tab setup
-      autoTab(document.getElementById('plan'), 'reg');
-      autoTab(document.getElementById('reg'), 'gate');
-      autoTab(document.getElementById('gate'), 'info');
-      autoTab(document.getElementById('fl'), 'dest');
-      autoTab(document.getElementById('pdc'), 'qnh');
-      autoTab(document.getElementById('aus_cleared_sid'), 'aus_cleared_wpt');
-      autoTab(document.getElementById('aus_cleared_wpt'), 'aus_climb_alt');
-      autoTab(document.getElementById('aus_climb_alt'), 'aus_sqwk');
+      autoTab('plan', 'reg'); autoTab('reg', 'gate'); autoTab('gate', 'info');
+      autoTab('pdc', 'qnh');
+      autoTab('aus_cleared_sid', 'aus_cleared_wpt');
+      autoTab('aus_cleared_wpt', 'aus_climb_alt');
+      autoTab('aus_climb_alt', 'aus_sqwk');
       
-
        // --- Button Listeners ---
        document.getElementById('saveButton').addEventListener('click', saveDataToFile);
        document.getElementById('loadButton').addEventListener('click', () => { document.getElementById('fileInput').click(); });
        document.getElementById('fileInput').addEventListener('change', loadDataFromFile);
        document.getElementById('purgeButton').addEventListener('click', purgeData);
        document.getElementById('add-crew-btn').addEventListener('click', () => addCrewRow());
-
-       // Dark mode listeners
+       
        const dmToggleForm = document.getElementById('darkModeToggle');
        const dmToggleCard = document.getElementById('darkModeToggleCard');
        if(dmToggleForm) dmToggleForm.addEventListener('change', () => toggleDarkMode(dmToggleForm.checked));
@@ -2026,6 +2027,7 @@
        if(dmToggleForm && dmToggleCard) {
            dmToggleForm.checked = dmToggleCard.checked;
        }
+
     }
 
     // --- Initialize the form ---
@@ -2041,31 +2043,28 @@
           }
       });
 
-      setupEventListeners();
+      setupEventListeners(); 
       
-      // Setup initial crew rows
-        const savedCrew = localStorage.getItem('crewMembers');
-        const crewContainer = document.getElementById('additional-crew-container');
-        crewContainer.innerHTML = ''; // Clear just in case
-        if (savedCrew) {
-            try {
-                const crewData = JSON.parse(savedCrew);
-                if (crewData.length > 0) {
-                    crewData.forEach(addCrewRow);
-                } else {
-                    addCrewRow(); // Add one if saved array is empty
-                }
-            } catch(e) {
-                addCrewRow(); // Add one if saved data is corrupt
-            }
-        } else {
-            addCrewRow(); // Add one if no saved data
-        }
-
+      const savedCrew = localStorage.getItem('crewMembers');
+      const crewContainer = document.getElementById('additional-crew-container');
+      crewContainer.innerHTML = '';
+      if (savedCrew) {
+          try {
+              const crewData = JSON.parse(savedCrew);
+              if (crewData.length > 0) {
+                  crewData.forEach(addCrewRow);
+              } else {
+                  addCrewRow();
+              }
+          } catch(e) {
+              addCrewRow();
+          }
+      } else {
+          addCrewRow();
+      }
 
       updateAllCalculatedFields();
       
-      // Manually trigger format change on load to show correct row
       document.getElementById('formatSelector').dispatchEvent(new Event('change'));
 
       const savedDarkMode = localStorage.getItem('darkModePref');
