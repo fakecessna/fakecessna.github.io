@@ -97,8 +97,8 @@
      .row:last-child {
          border-bottom: none; /* No border for the last row */
      }
-    .row-1 {
-      /* border-bottom: 1px solid black; */ /* Handled by general .row now */
+    .row.align-top {
+        align-items: flex-start; /* Aligns all cells in the row to their top edge */
     }
      .row.no-bottom-border { /* Added class to remove specific borders */
          border-bottom: none;
@@ -123,8 +123,7 @@
     }
     .cell:last-child {
       border-right: none;
-      /* flex-grow: 1; */ /* Allow last cell to fill remaining space if any - Changed for seamless rows */
-        min-width: 0; /* Allow last cell to be very small if needed */
+      min-width: 0;
     }
 
     /* Styles for rows from PLAN downwards for alignment */
@@ -370,18 +369,12 @@
       width: 100%;
       align-items: center;
     }
-     .dynamic-crew-wrapper {
-        display: flex;
-        align-items: flex-start; /* Align list and buttons at their top */
-        width: 100%;
-        gap: 5px;
-     }
      #additional-crew-container {
         display: flex;
         flex-direction: column;
         gap: 4px; /* Space between crew rows */
         margin-top: 4px;
-        flex-grow: 1; /* Take up available space */
+        width: 100%; /* Ensure it takes full width of capt-cell */
      }
 
     /* Fixed width for Capt label and FZ select for alignment */
@@ -396,8 +389,9 @@
     }
      /* Crew controls (+/- buttons) */
     .crew-controls {
+        margin-left: auto; /* Push buttons to the right */
         display: flex;
-        margin-top: 4px; /* Align with top of crew container */
+        gap: 4px;
     }
      .crew-control-btn {
         width: 18px;
@@ -406,7 +400,6 @@
         line-height: 16px;
         text-align: center;
         padding: 0;
-        margin-left: 4px;
         border-radius: 3px;
         border: 1px solid #888;
         cursor: pointer;
@@ -415,16 +408,17 @@
       .crew-control-btn:hover {
           background-color: #e0e0e0;
       }
-       .crew-row .remove-crew-btn {
-         background-color: #f8d7da;
-         border-color: #f5c6cb;
+      .remove-crew-btn {
+          background-color: #f8d7da;
+          border-color: #f5c6cb;
       }
-      .crew-row .remove-crew-btn:hover {
-         background-color: #f1c3c7;
-      }
-      .crew-row:only-child .remove-crew-btn {
-          display: none !important; /* Hide remove button if it's the only row */
-      }
+       .remove-crew-btn:hover {
+          background-color: #f1c3c7;
+       }
+       /* Hide buttons based on position */
+       .crew-row .add-crew-btn { display: none; }
+       .crew-row:last-child .add-crew-btn { display: inline-block; }
+       .crew-row:only-child .remove-crew-btn { display: none; }
 
 
      #card-additional-crew {
@@ -597,7 +591,7 @@
          border-color: #666;
          color: #eee;
      }
-     .night-mode .crew-row .remove-crew-btn {
+     .night-mode .remove-crew-btn {
          background-color: #573333;
          border-color: #884444;
      }
@@ -738,7 +732,7 @@
         </div>
     </div>
     <div class="form-section">
-      <div class="row row-1">
+      <div class="row row-1 align-top">
         <div class="cell label-small">
           <label for="flightNo">SQ</label>
           <input type="text" id="flightNo" maxlength="3">
@@ -754,13 +748,8 @@
               <input type="text" id="staffNo" maxlength="8">
             </div>
           </div>
-           <div class="dynamic-crew-wrapper">
-              <div id="additional-crew-container">
+           <div id="additional-crew-container">
                 </div>
-              <div class="crew-controls">
-                  <button type="button" id="add-crew-btn" class="crew-control-btn">+</button>
-              </div>
-           </div>
         </div>
         <div class="cell crew-cell">
           <label for="crew">CREW/PAX</label>
@@ -1029,7 +1018,7 @@
          </div>
     </div>
     <div class="form-section flight-card">
-       <div class="row row-1">
+       <div class="row row-1 align-top">
         <div class="cell label-small">
           <div id="card-flight-number-display">
               <label>SQ</label>
@@ -1283,7 +1272,7 @@
         'pfit', 'exs', 'bo', 'res', 'fzfw', 'percent_mac', 'sid', 'star', 'v2',
         'remarks', 'formatSelector', // Dynamic format fields start here
         'pdc', 'qnh', 'aus_cleared_sid', 'aus_cleared_wpt', 'aus_climb_alt', 'aus_sqwk',
-        'opti_climb', 'opti_mach', 'opti_desc1', 'opti_desc2' // New fields
+        'opti_climb', 'opti_mach', 'opti_desc1', 'opti_desc2'
     ];
      // IDs of calculated/readonly fields
      const calculatedIds = [
@@ -1842,20 +1831,28 @@
         nameInput.placeholder = 'Name';
         nameInput.className = 'crew-name-input';
         nameInput.value = data.name;
+        
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'crew-controls';
 
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
         removeBtn.className = 'crew-control-btn remove-crew-btn';
         removeBtn.textContent = '-';
-        removeBtn.onclick = () => {
-            container.removeChild(newRow);
-            // After removing, we don't need to do anything else,
-            // as the :only-child CSS pseudo-class will handle visibility automatically.
-        };
+        removeBtn.onclick = () => newRow.remove();
+        
+        const addBtn = document.createElement('button');
+        addBtn.type = 'button';
+        addBtn.className = 'crew-control-btn add-crew-btn';
+        addBtn.textContent = '+';
+        addBtn.onclick = () => addCrewRow();
+
+        controlsDiv.appendChild(removeBtn);
+        controlsDiv.appendChild(addBtn);
         
         newRow.appendChild(typeSelect);
         newRow.appendChild(nameInput);
-        newRow.appendChild(removeBtn);
+        newRow.appendChild(controlsDiv);
         container.appendChild(newRow);
     }
 
@@ -1873,7 +1870,6 @@
           const currentEl = document.getElementById(currentElId);
           if(!currentEl) return;
           currentEl.addEventListener('input', () => {
-              // Only auto-tab if the input has a maxlength defined
               if (currentEl.maxLength > 0 && currentEl.value.length >= currentEl.maxLength) {
                   const nextEl = document.getElementById(nextElId);
                   if(nextEl) {
