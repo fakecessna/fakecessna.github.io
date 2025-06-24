@@ -314,8 +314,8 @@
     /* --- Input Widths --- */
     input#plan { width: 25px !important; } /* Max 2 */
     input#reg, input#fl, input#dest, input#flightNo, input#pdc { width: 35px !important; } /* Max 3 */
-    input#gate, input#bi, input#v2, input#v2_plus_15, input#qnh, input#aus_sqwk, input#new_val1, input#new_val3, input#new_val4 { width: 45px !important; } /* Max 4 */
-    input#new_val2 { width: 30px !important; } /* Mach number field */
+    input#gate, input#bi, input#v2, input#v2_plus_15, input#qnh, input#aus_sqwk, input#opti_climb, input#opti_desc1, input#opti_desc2 { width: 45px !important; } /* Max 4 */
+    input#opti_mach { width: 30px !important; } /* Mach number field */
     input#pob, input#india_pob { width: 40px !important; } /* Fixed for readonly */
     select#info { width: 35px !important; } /* Select */
     input#pzfw, input#ezfw, input#pfit, input#exs, input#bo, input#res, input#fzfw, input#ezfw_du, input#fzfw_du, input#percent_mac, input#aus_climb_alt { width: 55px !important; } /* Max 5 */
@@ -415,13 +415,16 @@
       .crew-control-btn:hover {
           background-color: #e0e0e0;
       }
-      .crew-control-btn.remove-crew-btn {
-          background-color: #f8d7da;
-          border-color: #f5c6cb;
+       .crew-row .remove-crew-btn {
+         background-color: #f8d7da;
+         border-color: #f5c6cb;
       }
-       .crew-control-btn.remove-crew-btn:hover {
-          background-color: #f1c3c7;
-       }
+      .crew-row .remove-crew-btn:hover {
+         background-color: #f1c3c7;
+      }
+      .crew-row:only-child .remove-crew-btn {
+          display: none !important; /* Hide remove button if it's the only row */
+      }
 
 
      #card-additional-crew {
@@ -559,13 +562,6 @@
         text-align: left;
         color: #555555; /* Default light grey */
     }
-     .footer-text a { /* Keep link style just in case */
-         color: inherit; /* Link color matches surrounding text */
-         text-decoration: none;
-     }
-      .footer-text a:hover {
-         text-decoration: underline;
-     }
 
 
     /*--------------------*/
@@ -601,7 +597,7 @@
          border-color: #666;
          color: #eee;
      }
-     .night-mode .crew-control-btn.remove-crew-btn {
+     .night-mode .crew-row .remove-crew-btn {
          background-color: #573333;
          border-color: #884444;
      }
@@ -774,30 +770,27 @@
             <input type="text" id="pax" maxlength="4">
           </div>
         </div>
-      </div>
-      <div class="row no-bottom-border">
-          <div class="cell prefix-cell">
-            <label for="m2000">(M/2000ft)</label>
-            <div class="prefix-input">
-              <span>+</span>
-              <input type="text" id="m2000">
-            </div>
+        <div class="cell prefix-cell">
+          <label for="m2000">(M/2000ft)</label>
+          <div class="prefix-input">
+            <span>+</span>
+            <input type="text" id="m2000">
           </div>
-          <div class="cell prefix-cell">
-            <label for="p1000">(P/1000kg)</label>
-            <div class="prefix-input">
-              <span>+</span>
-              <input type="text" id="p1000">
-            </div>
+        </div>
+        <div class="cell prefix-cell">
+          <label for="p1000">(P/1000kg)</label>
+          <div class="prefix-input">
+            <span>+</span>
+            <input type="text" id="p1000">
           </div>
-          <div class="cell prefix-cell">
-            <label for="m1000">(M/1000kg)</label>
-            <div class="prefix-input">
-              <span>-</span>
-              <input type="text" id="m1000">
-            </div>
+        </div>
+        <div class="cell prefix-cell">
+          <label for="m1000">(M/1000kg)</label>
+          <div class="prefix-input">
+            <span>-</span>
+            <input type="text" id="m1000">
           </div>
-          <div class="cell filler-cell" style="border-right: none !important;"></div>
+        </div>
       </div>
       
       <div class="row no-bottom-border">
@@ -986,7 +979,8 @@
         </div>
       </div>
 
-      <div class="row seamless-row add-top-border"> <div class="cell">
+      <div class="row seamless-row add-top-border">
+        <div class="cell">
           <label class="label-fixed" for="sid">SID</label>
           <input type="text" id="sid">
         </div>
@@ -994,22 +988,18 @@
           <label class="label-fixed label-reg" for="star">STAR</label>
           <input type="text" id="star">
         </div>
+         <div class="cell" style="gap: 2px; border-left: 1px solid black;">
+            <input type="text" id="opti_climb" maxlength="3" pattern="[0-9]*" inputmode="numeric">
+            <span>/ .</span>
+            <input type="text" id="opti_mach" maxlength="2" pattern="[0-9]*" inputmode="numeric">
+        </div>
+        <div class="cell" style="gap: 2px; border-left: 1px solid black;">
+            <input type="text" id="opti_desc1" maxlength="3" pattern="[0-9]*" inputmode="numeric">
+            <span>/</span>
+            <input type="text" id="opti_desc2" maxlength="3" pattern="[0-9]*" inputmode="numeric">
+        </div>
          <div class="cell filler-cell"></div>
       </div>
-
-       <div class="row add-top-border">
-           <div class="cell" style="gap: 2px; border-right: none;">
-                <input type="text" id="new_val1" maxlength="3" pattern="[0-9]*" inputmode="numeric">
-                <span>/ .</span>
-                <input type="text" id="new_val2" maxlength="2" pattern="[0-9]*" inputmode="numeric">
-           </div>
-            <div class="cell" style="gap: 2px;">
-                <input type="text" id="new_val3" maxlength="3" pattern="[0-9]*" inputmode="numeric">
-                <span>/</span>
-                <input type="text" id="new_val4" maxlength="3" pattern="[0-9]*" inputmode="numeric">
-           </div>
-           <div class="cell filler-cell" style="border-right: none;"></div>
-       </div>
 
       <div class="row add-top-border"> <div class="cell remarks-cell">
               <textarea id="remarks" placeholder="RMK" rows="3"></textarea>
@@ -1067,30 +1057,27 @@
              <span class="data-display" id="card-pax"></span>
           </div>
         </div>
-      </div>
-      <div class="row no-bottom-border">
-          <div class="cell prefix-cell">
-            <label>(M/2000ft)</label>
-            <div class="prefix-input data-display">
-              <span>+</span>
-              <span class="data-display" id="card-m2000"></span>
-            </div>
+        <div class="cell prefix-cell">
+          <label>(M/2000ft)</label>
+          <div class="prefix-input data-display">
+            <span>+</span>
+            <span class="data-display" id="card-m2000"></span>
           </div>
-          <div class="cell prefix-cell">
-            <label>(P/1000kg)</label>
-            <div class="prefix-input data-display">
-              <span>+</span>
-               <span class="data-display" id="card-p1000"></span>
-            </div>
+        </div>
+        <div class="cell prefix-cell">
+          <label>(P/1000kg)</label>
+          <div class="prefix-input data-display">
+            <span>+</span>
+             <span class="data-display" id="card-p1000"></span>
           </div>
-          <div class="cell prefix-cell">
-            <label>(M/1000kg)</label>
-            <div class="prefix-input data-display">
-              <span>-</span>
-               <span class="data-display" id="card-m1000"></span>
-            </div>
+        </div>
+        <div class="cell prefix-cell">
+          <label>(M/1000kg)</label>
+          <div class="prefix-input data-display">
+            <span>-</span>
+             <span class="data-display" id="card-m1000"></span>
           </div>
-          <div class="cell filler-cell" style="border-right: none !important;"></div>
+        </div>
       </div>
       <div class="row no-bottom-border">
         <div class="cell time-cell">
@@ -1260,20 +1247,18 @@
           <label class="label-fixed label-reg">STAR</label>
           <span class="data-display" id="card-star"></span>
         </div>
+        <div class="cell" style="gap: 2px; border-left: 1px solid black;">
+            <span class="data-display" id="card-opti_climb"></span>
+            <span id="card-opti_mach_prefix"></span>
+            <span class="data-display" id="card-opti_mach"></span>
+        </div>
+        <div class="cell" style="gap: 2px; border-left: 1px solid black;">
+            <span class="data-display" id="card-opti_desc1"></span>
+            <span id="card-opti_desc2_prefix"></span>
+            <span class="data-display" id="card-opti_desc2"></span>
+        </div>
          <div class="cell filler-cell"></div>
       </div>
-       <div class="row add-top-border">
-           <div class="cell" style="gap: 2px; border-right: none;">
-                <span class="data-display" id="card-new_val1"></span>
-                <span id="card-new_val2_prefix"></span> <span class="data-display" id="card-new_val2"></span>
-           </div>
-            <div class="cell" style="gap: 2px;">
-                <span class="data-display" id="card-new_val3"></span>
-                <span id="card-new_val4_prefix"></span> <span class="data-display" id="card-new_val4"></span>
-           </div>
-           <div class="cell filler-cell" style="border-right: none;"></div>
-       </div>
-
        <div class="row add-top-border"> <div class="cell remarks-cell"> <span class="data-display" id="card-remarks"></span>
           </div>
           <div class="cell filler-cell"></div> </div>
@@ -1298,7 +1283,7 @@
         'pfit', 'exs', 'bo', 'res', 'fzfw', 'percent_mac', 'sid', 'star', 'v2',
         'remarks', 'formatSelector', // Dynamic format fields start here
         'pdc', 'qnh', 'aus_cleared_sid', 'aus_cleared_wpt', 'aus_climb_alt', 'aus_sqwk',
-        'new_val1', 'new_val2', 'new_val3', 'new_val4' // New fields
+        'opti_climb', 'opti_mach', 'opti_desc1', 'opti_desc2' // New fields
     ];
      // IDs of calculated/readonly fields
      const calculatedIds = [
@@ -1566,21 +1551,20 @@
       document.getElementById('card-sid').textContent = data['sid'] || '';
       document.getElementById('card-star').textContent = data['star'] || '';
       document.getElementById('card-remarks').textContent = data['remarks'] || '';
-
+      
       // Populate new row
-      document.getElementById('card-new_val1').textContent = data['new_val1'] || '';
-      document.getElementById('card-new_val2').textContent = data['new_val2'] || '';
-      document.getElementById('card-new_val3').textContent = data['new_val3'] || '';
-      document.getElementById('card-new_val4').textContent = data['new_val4'] || '';
-      document.getElementById('card-new_val2_prefix').textContent = (data['new_val1'] && data['new_val2']) ? ' / .' : '';
-      document.getElementById('card-new_val4_prefix').textContent = (data['new_val3'] && data['new_val4']) ? ' / ' : '';
-
+      document.getElementById('card-opti_climb').textContent = data['opti_climb'] || '';
+      document.getElementById('card-opti_mach').textContent = data['opti_mach'] || '';
+      document.getElementById('card-opti_desc1').textContent = data['opti_desc1'] || '';
+      document.getElementById('card-opti_desc2').textContent = data['opti_desc2'] || '';
+      document.getElementById('card-opti_mach_prefix').textContent = (data['opti_climb'] && data['opti_mach']) ? ' / .' : '';
+      document.getElementById('card-opti_desc2_prefix').textContent = (data['opti_desc1'] && data['opti_desc2']) ? ' / ' : '';
 
         // Populate dynamic crew display
         const cardCrewContainer = document.getElementById('card-additional-crew');
         cardCrewContainer.innerHTML = ''; // Clear previous entries
         crewData.forEach(crew => {
-            if(crew.type || crew.name) { // Only add row if there is data
+            if(crew.type || crew.name) {
                 const crewRowDiv = document.createElement('div');
                 crewRowDiv.className = 'card-crew-row';
                 crewRowDiv.innerHTML = `<span class="data-display card-crew-type">${crew.type}</span><span class="data-display card-crew-name">${crew.name}</span>`;
@@ -1846,6 +1830,10 @@
           <option value="SCO">SCO</option>
           <option value="OBS">OBS</option>
           <option value="IFM">IFM</option>
+          <option value="WIA">WIA</option>
+          <option value="CSS/CS">CSS/CS</option>
+          <option value="LSS/LS">LSS/LS</option>
+          <option value="FSS/FS">FSS/FS</option>
         `;
         typeSelect.value = data.type;
         
@@ -1861,27 +1849,15 @@
         removeBtn.textContent = '-';
         removeBtn.onclick = () => {
             container.removeChild(newRow);
-            updateRemoveButtonVisibility();
+            // After removing, we don't need to do anything else,
+            // as the :only-child CSS pseudo-class will handle visibility automatically.
         };
         
         newRow.appendChild(typeSelect);
         newRow.appendChild(nameInput);
         newRow.appendChild(removeBtn);
         container.appendChild(newRow);
-
-        updateRemoveButtonVisibility();
     }
-     function updateRemoveButtonVisibility() {
-         const container = document.getElementById('additional-crew-container');
-         const rows = container.querySelectorAll('.crew-row');
-         rows.forEach((row, index) => {
-             const removeBtn = row.querySelector('.remove-crew-btn');
-             if(removeBtn) {
-                 // Show remove button for all rows except the first one
-                 removeBtn.style.display = (index === 0) ? 'none' : 'inline-block';
-             }
-         });
-     }
 
 
     // --- Setup Event Listeners ---
@@ -1897,11 +1873,11 @@
           const currentEl = document.getElementById(currentElId);
           if(!currentEl) return;
           currentEl.addEventListener('input', () => {
+              // Only auto-tab if the input has a maxlength defined
               if (currentEl.maxLength > 0 && currentEl.value.length >= currentEl.maxLength) {
                   const nextEl = document.getElementById(nextElId);
                   if(nextEl) {
                       nextEl.focus();
-                      // nextEl.select(); // Select can be annoying on touch devices, focus is better
                   }
               }
           });
@@ -2041,18 +2017,21 @@
        document.getElementById('aus_cleared_wpt').addEventListener('input', function() { this.value = this.value.toUpperCase(); saveData(this); });
        document.getElementById('aus_climb_alt').addEventListener('input', function() { validateNumericOnly(this, 5); saveData(this); });
        document.getElementById('aus_sqwk').addEventListener('input', function() { validateNumericOnly(this, 4); saveData(this); });
-       document.getElementById('new_val1').addEventListener('input', function() { validateNumericOnly(this, 3); saveData(this); });
-       document.getElementById('new_val2').addEventListener('input', function() { validateNumericOnly(this, 2); saveData(this); });
-       document.getElementById('new_val3').addEventListener('input', function() { validateNumericOnly(this, 3); saveData(this); });
-       document.getElementById('new_val4').addEventListener('input', function() { validateNumericOnly(this, 3); saveData(this); });
+       document.getElementById('opti_climb').addEventListener('input', function() { validateNumericOnly(this, 3); saveData(this); });
+       document.getElementById('opti_mach').addEventListener('input', function() { validateNumericOnly(this, 2); saveData(this); });
+       document.getElementById('opti_desc1').addEventListener('input', function() { validateNumericOnly(this, 3); saveData(this); });
+       document.getElementById('opti_desc2').addEventListener('input', function() { validateNumericOnly(this, 3); saveData(this); });
 
       // Auto-tab setup
-      autoTab('plan', 'reg'); autoTab('reg', 'gate'); autoTab('gate', 'info');
+      autoTab('plan', 'reg'); autoTab('reg', 'gate');
+      autoTab('gate', 'info');
       autoTab('fl', 'dest');
       autoTab('pdc', 'qnh');
+      autoTab('aus_cleared_sid', 'aus_cleared_wpt');
+      autoTab('aus_cleared_wpt', 'aus_climb_alt');
       autoTab('aus_climb_alt', 'aus_sqwk');
-      autoTab('new_val1', 'new_val2');
-      autoTab('new_val3', 'new_val4');
+      autoTab('opti_climb', 'opti_mach');
+      autoTab('opti_desc1', 'opti_desc2');
       
        // --- Button Listeners ---
        document.getElementById('saveButton').addEventListener('click', saveDataToFile);
