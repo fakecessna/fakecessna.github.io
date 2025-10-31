@@ -35,9 +35,9 @@
         .button:hover { opacity: 0.85; }
         body.night-mode .button { background-color: var(--button-bg-night); color: var(--button-text-night); }
         .button-secondary { background-color: #6c757d; color: white; }
-        body.night-mode .button-secondary { background-color: #5a6268; color: var(--button-text-night); }
+        body.night-mode .button-secondary { background-color: #5a6268; color: var(--text-color-night); }
         .button-back { background-color: #6c757d; color: white; }
-        body.night-mode .button-back { background-color: #5a6268; color: var(--button-text-night); }
+        body.night-mode .button-back { background-color: #5a6268; color: var(--text-color-night); }
         .button-delete { background-color: #dc3545; color: white; padding: 3px 8px; font-size: 12px; margin-left: 10px; vertical-align: middle; }
         body.night-mode .button-delete { background-color: #c82333; color: white;}
         button:disabled { background-color: #adb5bd; cursor: not-allowed; opacity: 0.7; }
@@ -224,7 +224,7 @@
         function processAllData() {
              if (!allSheetData) return; console.log("Processing fetched data..."); captainProfiles = {};
              allSheetData.forEach(row => { const name = row[1]; if (!name || name.trim() === '') return; if (!captainProfiles[name]) { captainProfiles[name] = { name: name, submissions: [], appointments: [], ratings: [], goodCount: 0, badCount: 0, aggregate: { appointment: 'N/A', status: 'Neutral' } }; } const submission = { timestamp: row[0] ? new Date(Math.round((row[0] - 25569) * 86400 * 1000)) : null, appointment: row[2] || '', experience: row[3] || '', dos: row[4] || '', donts: row[5] || '', questions: [], rating: row[7] || '', id: row[8] || '' }; try { if(row[6]) { submission.questions = JSON.parse(row[6]); if (!Array.isArray(submission.questions)) submission.questions = []; } } catch(e) { console.warn(`Could not parse questions JSON for ${name}, submission ID ${submission.id}: ${row[6]}`); submission.questions = []; } captainProfiles[name].submissions.push(submission); if (submission.appointment) captainProfiles[name].appointments.push(submission.appointment); if (submission.rating === 'good') captainProfiles[name].goodCount++; if (submission.rating === 'bad') captainProfiles[name].badCount++; if (submission.rating) captainProfiles[name].ratings.push(submission.rating); });
-             Object.values(captainProfiles).forEach(profile => { if (profile.goodCount > profile.badCount) { profile.aggregate.status = 'Good'; } else if (profile.badCount > profile.goodCount) { profile.aggregate.status = 'Bad'; } else { profile.aggregate.status = 'Neutral'; } profile.aggregate.appointment = findMode(profile.appointments) || 'N/A'; });
+             Object.values(captainProfiles).forEach(profile => { if (profile.goodCount > profile.badCount) { profile.aggregate.status = 'Good'; } else if (profile.badCount > profile.goodCount) { profile.aggregate.status = 'Bad'; } else { if (profile.goodCount === 0) { profile.aggregate.status = 'Neutral'; } else { profile.aggregate.status = 'Bad'; } } profile.aggregate.appointment = findMode(profile.appointments) || 'N/A'; });
              console.log("Data processed:", captainProfiles); populateSubmitDropdown(); /* Removed populateSearchDropdown */
         }
 
