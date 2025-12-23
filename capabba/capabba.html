@@ -178,6 +178,7 @@
             box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
             transition: all 0.2s;
             margin: 5px; text-transform: uppercase; letter-spacing: 1px;
+            box-sizing: border-box; /* Ensure padding doesn't increase width beyond 100% */
         }
         body.day-mode .button { 
             border-radius: 6px; 
@@ -351,11 +352,11 @@
     <!-- Password Page (Overlay) -->
     <div id="password-view" style="display: flex;">
         <div id="password-card">
-            <h2><i class="fas fa-user-shield"></i> Captain's Log</h2>
+            <h2><i class="fas fa-user-shield"></i> Free Abba</h2>
             <p style="margin-bottom: 20px;">Restricted Access. Identity Confirmation Required.</p>
             <form id="password-form">
                 <input type="password" id="password-input" placeholder="Enter Access Code" style="margin-bottom: 15px; text-align: center;">
-                <button type="submit" class="button" style="width: 100%;">Authenticate</button>
+                <button type="submit" class="button" style="width: 100%; margin: 0;">Authenticate</button>
             </form>
             <p id="password-error" style="color: #ff5252; display: none; margin-top: 10px;">Access Denied.</p>
         </div>
