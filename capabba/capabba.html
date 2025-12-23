@@ -20,17 +20,23 @@
             --accent-night: #00bcd4; /* Cyan */
             --card-bg-night: rgba(0, 0, 0, 0.5);
             --card-shadow-night: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+            --btn-text-night: #000;
+            --input-bg-night: rgba(255, 255, 255, 0.05);
+            --input-border-night: rgba(0, 229, 255, 0.2);
             
-            /* SUNNY THEME (Day) */
-            --bg-grad-start-day: #56CCF2;
-            --bg-grad-end-day: #2F80ED;
-            --glass-bg-day: rgba(255, 255, 255, 0.85);
-            --glass-border-day: rgba(255, 255, 255, 0.6);
-            --text-main-day: #2c3e50;
-            --text-heading-day: #1D4886;
-            --accent-day: #FCB130; /* Sunny Orange */
-            --card-bg-day: rgba(255, 255, 255, 0.9);
-            --card-shadow-day: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            /* SOPHISTICATED DAY THEME */
+            --bg-grad-start-day: #e0eafc;
+            --bg-grad-end-day: #cfdef3; /* Cool Grey-Blue */
+            --glass-bg-day: rgba(255, 255, 255, 0.95);
+            --glass-border-day: rgba(44, 62, 80, 0.1);
+            --text-main-day: #34495e;
+            --text-heading-day: #2c3e50; /* Dark Slate Blue */
+            --accent-day: #2c3e50; /* Deep Navy/Slate - Serious */
+            --card-bg-day: #ffffff;
+            --card-shadow-day: 0 4px 15px rgba(0, 0, 0, 0.05);
+            --btn-text-day: #ffffff;
+            --input-bg-day: #f8f9fa;
+            --input-border-day: #b0bec5;
 
             /* Current active variables (Default to Night) */
             --bg-grad-start: var(--bg-grad-start-night);
@@ -42,9 +48,12 @@
             --accent: var(--accent-night);
             --card-bg: var(--card-bg-night);
             --card-shadow: var(--card-shadow-night);
-            --input-bg: rgba(255, 255, 255, 0.05);
-            --input-border: rgba(0, 229, 255, 0.2);
-            --btn-text: #fff;
+            --input-bg: var(--input-bg-night);
+            --input-border: var(--input-border-night);
+            --btn-text: var(--btn-text-night);
+            
+            /* Planet Opacity Control */
+            --planet-opacity: 0.6;
         }
 
         body.day-mode {
@@ -57,9 +66,10 @@
             --accent: var(--accent-day);
             --card-bg: var(--card-bg-day);
             --card-shadow: var(--card-shadow-day);
-            --input-bg: rgba(255, 255, 255, 0.6);
-            --input-border: #ccc;
-            --btn-text: #fff;
+            --input-bg: var(--input-bg-day);
+            --input-border: var(--input-border-day);
+            --btn-text: var(--btn-text-day);
+            --planet-opacity: 0; /* Hide space planets in day mode */
         }
 
         /* --- GLOBAL STYLES --- */
@@ -67,18 +77,32 @@
             margin: 0; padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             width: 100%; min-height: 100vh;
-            background: radial-gradient(circle at center, var(--bg-grad-mid-night, #0b1021) 0%, var(--bg-grad-start) 100%);
             color: var(--text-main);
             overflow-x: hidden;
+            background-color: #05070a; /* Fallback */
             transition: all 0.5s ease;
         }
 
-        body.day-mode {
+        /* --- BACKGROUND LAYERS --- */
+        .bg-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
+        }
+
+        /* Layer 1: The Gradient */
+        #bg-gradient {
+            z-index: -10;
+            background: radial-gradient(circle at center, var(--bg-grad-mid-night, #0b1021) 0%, var(--bg-grad-start) 100%);
+            transition: background 0.5s ease;
+        }
+        body.day-mode #bg-gradient {
             background: linear-gradient(135deg, var(--bg-grad-start-day), var(--bg-grad-end-day));
         }
 
-        /* --- BACKGROUND ANIMATION ELEMENTS (Planets & Stars) --- */
-        .space-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; overflow: hidden; }
+        /* Layer 2: The Planets & Stars (Visible in Night Mode) */
+        #space-elements {
+            z-index: -5;
+            transition: opacity 0.5s ease;
+        }
         
         .star {
             position: absolute; background: white; border-radius: 50%;
@@ -87,32 +111,35 @@
         @keyframes twinkle { 0% { opacity: 0; } 50% { opacity: 0.8; } 100% { opacity: 0; } }
 
         .planet {
-            position: absolute; border-radius: 50%; opacity: 0.4;
-            box-shadow: inset -20px -20px 60px rgba(0,0,0,0.8);
+            position: absolute; border-radius: 50%;
+            box-shadow: inset -10px -10px 40px rgba(0,0,0,0.5);
             animation: floatPlanet linear infinite;
+            opacity: var(--planet-opacity);
+            transition: opacity 0.5s ease;
         }
-        /* Planet 1: Large faint gas giant */
+        
+        /* Planet 1: Large Gas Giant (Purple/Blue) */
         .planet-1 {
-            width: 300px; height: 300px; top: -50px; left: -50px;
-            background: radial-gradient(circle at 30% 30%, #4facfe, #00f2fe);
-            animation-duration: 240s; opacity: 0.15;
+            width: 400px; height: 400px; top: -100px; left: -100px;
+            background: radial-gradient(circle at 30% 30%, rgba(79, 172, 254, 0.4), rgba(0, 242, 254, 0.1));
+            animation-duration: 200s;
         }
-        /* Planet 2: Distant rocky world */
+        /* Planet 2: Rocky World (Red/Grey) */
         .planet-2 {
-            width: 100px; height: 100px; bottom: 20%; right: -20px;
-            background: radial-gradient(circle at 30% 30%, #5f6368, #202124);
-            animation-duration: 180s; animation-direction: reverse; opacity: 0.3;
+            width: 150px; height: 150px; bottom: 15%; right: -50px;
+            background: radial-gradient(circle at 30% 30%, rgba(142, 142, 142, 0.5), rgba(43, 43, 43, 0.8));
+            animation-duration: 150s; animation-direction: reverse;
         }
-        /* Planet 3: Small moon */
+        /* Planet 3: Distant Moon */
         .planet-3 {
-            width: 40px; height: 40px; top: 40%; left: 10%;
-            background: #ccc;
-            animation-duration: 120s; opacity: 0.2;
+            width: 60px; height: 60px; top: 30%; right: 20%;
+            background: rgba(200, 200, 200, 0.3);
+            animation-duration: 100s;
         }
 
         @keyframes floatPlanet {
             0% { transform: translate(0, 0) rotate(0deg); }
-            50% { transform: translate(20px, 30px) rotate(2deg); }
+            50% { transform: translate(30px, 40px) rotate(5deg); }
             100% { transform: translate(0, 0) rotate(0deg); }
         }
 
@@ -122,36 +149,56 @@
             margin: 80px auto 40px auto;
             padding: 30px;
             background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 1px; /* Sci-fi boxy look */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 2px;
             border: 1px solid var(--glass-border);
             box-shadow: var(--card-shadow);
             clip-path: polygon(0 0, 100% 0, 100% 98%, 98% 100%, 0 100%); /* Tech corner cut */
             transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
         }
-        body.day-mode .container { border-radius: 16px; clip-path: none; }
+        body.day-mode .container { 
+            border-radius: 12px; 
+            clip-path: none; 
+            border: 1px solid rgba(0,0,0,0.05);
+        }
 
         .header-controls { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; align-items: center; gap: 10px; }
         
-        h2, h3, h4 { color: var(--text-heading); margin-top: 0; text-transform: uppercase; letter-spacing: 1px; }
-        h2 { border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 25px; }
+        h2, h3, h4 { color: var(--text-heading); margin-top: 0; text-transform: uppercase; letter-spacing: 1.5px; }
+        h2 { border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 25px; font-weight: 700; }
+        body.day-mode h2, body.day-mode h3 { text-transform: none; letter-spacing: 0.5px; }
 
         /* --- BUTTONS --- */
         .button {
             padding: 12px 24px; font-size: 15px; cursor: pointer; border: none; border-radius: 2px;
             background: var(--accent); color: var(--btn-text); font-weight: bold;
-            box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
             transition: all 0.2s;
             margin: 5px; text-transform: uppercase; letter-spacing: 1px;
         }
-        body.day-mode .button { border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        body.day-mode .button { 
+            border-radius: 6px; 
+            box-shadow: none; 
+            text-transform: none; 
+            letter-spacing: normal;
+        }
         
-        .button:hover { background: #00e5ff; box-shadow: 0 0 15px rgba(0, 229, 255, 0.6); color: #000; }
-        body.day-mode .button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); background: var(--accent); color: white; }
+        .button:hover { 
+            filter: brightness(1.2);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.4); 
+        }
+        body.day-mode .button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            filter: brightness(1.1);
+        }
         
         .button-secondary, .button-back { background: #37474f; color: #eceff1; }
-        .button-secondary:hover, .button-back:hover { background: #546e7a; color: #fff; }
+        body.day-mode .button-secondary, body.day-mode .button-back { background: #78909c; color: #fff; }
+
         .button-delete { padding: 4px 10px; font-size: 12px; background: #c62828; border-radius: 2px; margin-left: auto; color: white; }
         .menu-buttons button { display: block; width: 100%; margin-bottom: 15px; text-align: center; font-size: 1.1em; }
 
@@ -167,14 +214,22 @@
             font-size: 15px; box-sizing: border-box;
             transition: all 0.3s; font-family: 'Consolas', 'Courier New', monospace; /* Tech font for inputs */
         }
-        body.day-mode input[type="text"], body.day-mode select, body.day-mode textarea { font-family: inherit; border-radius: 8px; }
+        body.day-mode input[type="text"], body.day-mode select, body.day-mode textarea { 
+            font-family: 'Segoe UI', sans-serif; 
+            border-radius: 6px; 
+            background: #fff;
+            color: #333;
+        }
 
         input:focus, select:focus, textarea:focus {
             outline: none; border-color: var(--accent);
             box-shadow: 0 0 10px var(--accent);
             background: rgba(0, 229, 255, 0.05);
         }
-        body.day-mode input:focus { background: #fff; }
+        body.day-mode input:focus, body.day-mode textarea:focus { 
+            background: #fff; 
+            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+        }
 
         /* Select Options */
         select option { background-color: #0b1021; color: #e0e0e0; }
@@ -182,14 +237,21 @@
 
         /* --- RICH TEXT TOOLBAR --- */
         .rich-text-container { border: 1px solid var(--input-border); border-radius: 2px; overflow: hidden; background: var(--input-bg); }
+        body.day-mode .rich-text-container { background: #fff; border-radius: 6px; }
+        
         .toolbar { padding: 5px 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--input-border); display: flex; gap: 5px; }
+        body.day-mode .toolbar { background: #eceff1; }
+        
         .toolbar button { background: none; border: none; color: var(--text-main); cursor: pointer; padding: 5px; border-radius: 4px; font-weight: bold; }
         .toolbar button:hover { background: rgba(0,229,255,0.2); color: var(--accent); }
+        body.day-mode .toolbar button:hover { background: #cfd8dc; color: #333; }
+        
         .rich-input { 
             width: 100%; min-height: 100px; padding: 12px; 
             background: transparent; color: var(--text-main); 
             border: none; outline: none; resize: vertical; overflow-y: auto; font-family: inherit;
         }
+        body.day-mode .rich-input { color: #333; font-family: sans-serif; }
 
         /* --- DATA LISTS & CARDS --- */
         .data-list ul { list-style: none; padding: 0; }
@@ -200,7 +262,12 @@
             display: flex; justify-content: space-between; align-items: center;
             cursor: pointer; transition: all 0.2s;
         }
+        body.day-mode .data-list li {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
         .data-list li:hover { transform: translateX(5px); border-color: var(--accent); box-shadow: 0 0 10px rgba(0,229,255,0.1); }
+        body.day-mode .data-list li:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.05); border-color: #2c3e50; }
         
         .entry-card {
             background: var(--card-bg);
@@ -208,13 +275,16 @@
             margin-bottom: 20px; border-left: 4px solid var(--accent);
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
+        body.day-mode .entry-card { border: 1px solid #eee; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border-radius: 8px; }
         .entry-meta { font-size: 0.85em; color: #888; margin-bottom: 10px; font-style: italic; display: flex; justify-content: space-between; font-family: monospace; }
+        body.day-mode .entry-meta { font-family: sans-serif; color: #607d8b; }
         
         /* --- STATS BARS --- */
         .stats-container { margin-bottom: 30px; }
         .stat-bar-row { display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; }
         .stat-label { width: 120px; font-weight: bold; text-align: right; margin-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .stat-track { flex-grow: 1; background: rgba(255,255,255,0.1); height: 20px; border-radius: 2px; overflow: hidden; position: relative; }
+        body.day-mode .stat-track { background: #eceff1; border-radius: 4px; }
         .stat-fill { height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 5px; font-size: 12px; color: white; font-weight: bold; transition: width 1s ease-in-out; }
         .fill-good { background: linear-gradient(90deg, #00695c, #00bfa5); }
         .fill-bad { background: linear-gradient(90deg, #c62828, #ff5252); }
@@ -227,7 +297,6 @@
         #password-view { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
             display: flex; align-items: center; justify-content: center; z-index: 2000;
-            background: inherit; 
         }
         #password-card {
             background: var(--glass-bg);
@@ -236,14 +305,20 @@
             backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
             width: 90%; max-width: 400px;
         }
+        body.day-mode #password-card {
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid #eee;
+        }
 
         /* --- TOGGLE SWITCH --- */
         .switch { position: relative; display: inline-block; width: 60px; height: 30px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid #555; }
         .slider:before { position: absolute; content: "🌙"; display:flex; align-items: center; justify-content: center; height: 24px; width: 24px; left: 3px; bottom: 2px; background-color: #1a1a1a; transition: .4s; border-radius: 50%; font-size: 14px; }
-        input:checked + .slider { background-color: #87CEEB; border-color: #fff; }
-        input:checked + .slider:before { transform: translateX(28px); content: "☀️"; background-color: #ffdb4d; }
+        
+        input:checked + .slider { background-color: #cfd8dc; border-color: #b0bec5; }
+        input:checked + .slider:before { transform: translateX(28px); content: "☀️"; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
         /* --- RESPONSIVE --- */
         @media (max-width: 600px) {
@@ -255,8 +330,10 @@
 </head>
 <body>
 
-    <!-- Background Animations -->
-    <div class="space-bg">
+    <!-- Background Layers -->
+    <div id="bg-gradient" class="bg-layer"></div>
+    
+    <div id="space-elements" class="bg-layer">
         <div id="stars-container"></div>
         <div class="planet planet-1"></div>
         <div class="planet planet-2"></div>
