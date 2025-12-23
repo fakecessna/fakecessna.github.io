@@ -9,17 +9,17 @@
     <style>
         /* --- CSS VARIABLES & THEMES --- */
         :root {
-            /* COSMIC THEME (Default/Night) */
-            --bg-grad-start-night: #0f0c29;
-            --bg-grad-mid-night: #302b63;
-            --bg-grad-end-night: #24243e;
-            --glass-bg-night: rgba(30, 30, 30, 0.65);
-            --glass-border-night: rgba(255, 255, 255, 0.1);
-            --text-main-night: #e0e0e0;
-            --text-heading-night: #ffcc00; /* Gold */
-            --accent-night: #b540c9; /* Cosmic Purple */
-            --card-bg-night: rgba(0, 0, 0, 0.4);
-            --card-shadow-night: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            /* SCI-FI THEME (Default/Night) */
+            --bg-grad-start-night: #05070a;
+            --bg-grad-mid-night: #0b1021;
+            --bg-grad-end-night: #05070a;
+            --glass-bg-night: rgba(10, 15, 30, 0.75);
+            --glass-border-night: rgba(0, 229, 255, 0.15); /* Faint Cyan border */
+            --text-main-night: #cdd6f4;
+            --text-heading-night: #00e5ff; /* Neon Cyan */
+            --accent-night: #00bcd4; /* Cyan */
+            --card-bg-night: rgba(0, 0, 0, 0.5);
+            --card-shadow-night: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
             
             /* SUNNY THEME (Day) */
             --bg-grad-start-day: #56CCF2;
@@ -42,8 +42,9 @@
             --accent: var(--accent-night);
             --card-bg: var(--card-bg-night);
             --card-shadow: var(--card-shadow-night);
-            --input-bg: rgba(255, 255, 255, 0.1);
-            --input-border: rgba(255, 255, 255, 0.2);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-border: rgba(0, 229, 255, 0.2);
+            --btn-text: #fff;
         }
 
         body.day-mode {
@@ -58,6 +59,7 @@
             --card-shadow: var(--card-shadow-day);
             --input-bg: rgba(255, 255, 255, 0.6);
             --input-border: #ccc;
+            --btn-text: #fff;
         }
 
         /* --- GLOBAL STYLES --- */
@@ -65,9 +67,7 @@
             margin: 0; padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             width: 100%; min-height: 100vh;
-            background: linear-gradient(135deg, var(--bg-grad-start), var(--bg-grad-mid-night, #302b63), var(--bg-grad-end));
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            background: radial-gradient(circle at center, var(--bg-grad-mid-night, #0b1021) 0%, var(--bg-grad-start) 100%);
             color: var(--text-main);
             overflow-x: hidden;
             transition: all 0.5s ease;
@@ -77,22 +77,45 @@
             background: linear-gradient(135deg, var(--bg-grad-start-day), var(--bg-grad-end-day));
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* --- BACKGROUND ANIMATION ELEMENTS --- */
-        .stars, .clouds {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1;
-        }
+        /* --- BACKGROUND ANIMATION ELEMENTS (Planets & Stars) --- */
+        .space-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; overflow: hidden; }
+        
         .star {
             position: absolute; background: white; border-radius: 50%;
             animation: twinkle linear infinite; opacity: 0;
         }
-        @keyframes twinkle { 0% { opacity: 0; transform: translateY(0); } 50% { opacity: 1; } 100% { opacity: 0; transform: translateY(-100px); } }
-        
+        @keyframes twinkle { 0% { opacity: 0; } 50% { opacity: 0.8; } 100% { opacity: 0; } }
+
+        .planet {
+            position: absolute; border-radius: 50%; opacity: 0.4;
+            box-shadow: inset -20px -20px 60px rgba(0,0,0,0.8);
+            animation: floatPlanet linear infinite;
+        }
+        /* Planet 1: Large faint gas giant */
+        .planet-1 {
+            width: 300px; height: 300px; top: -50px; left: -50px;
+            background: radial-gradient(circle at 30% 30%, #4facfe, #00f2fe);
+            animation-duration: 240s; opacity: 0.15;
+        }
+        /* Planet 2: Distant rocky world */
+        .planet-2 {
+            width: 100px; height: 100px; bottom: 20%; right: -20px;
+            background: radial-gradient(circle at 30% 30%, #5f6368, #202124);
+            animation-duration: 180s; animation-direction: reverse; opacity: 0.3;
+        }
+        /* Planet 3: Small moon */
+        .planet-3 {
+            width: 40px; height: 40px; top: 40%; left: 10%;
+            background: #ccc;
+            animation-duration: 120s; opacity: 0.2;
+        }
+
+        @keyframes floatPlanet {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(20px, 30px) rotate(2deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
         /* --- LAYOUT & CONTAINER --- */
         .container {
             width: 90%; max-width: 900px;
@@ -101,92 +124,100 @@
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border-radius: 16px;
+            border-radius: 1px; /* Sci-fi boxy look */
             border: 1px solid var(--glass-border);
             box-shadow: var(--card-shadow);
-            transform-style: preserve-3d;
-            perspective: 1000px;
+            clip-path: polygon(0 0, 100% 0, 100% 98%, 98% 100%, 0 100%); /* Tech corner cut */
             transition: all 0.3s ease;
         }
+        body.day-mode .container { border-radius: 16px; clip-path: none; }
 
         .header-controls { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; align-items: center; gap: 10px; }
         
-        h2, h3, h4 { color: var(--text-heading); margin-top: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2, h3, h4 { color: var(--text-heading); margin-top: 0; text-transform: uppercase; letter-spacing: 1px; }
         h2 { border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 25px; }
 
         /* --- BUTTONS --- */
         .button {
-            padding: 12px 24px; font-size: 15px; cursor: pointer; border: none; border-radius: 8px;
-            background: var(--accent); color: #fff; font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
-            margin: 5px;
+            padding: 12px 24px; font-size: 15px; cursor: pointer; border: none; border-radius: 2px;
+            background: var(--accent); color: var(--btn-text); font-weight: bold;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+            transition: all 0.2s;
+            margin: 5px; text-transform: uppercase; letter-spacing: 1px;
         }
-        .button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); filter: brightness(1.1); }
-        .button:active { transform: translateY(0); }
-        .button-secondary, .button-back { background: #6c757d; }
-        .button-delete { padding: 4px 10px; font-size: 12px; background: #dc3545; border-radius: 4px; margin-left: auto; }
+        body.day-mode .button { border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
+        .button:hover { background: #00e5ff; box-shadow: 0 0 15px rgba(0, 229, 255, 0.6); color: #000; }
+        body.day-mode .button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); background: var(--accent); color: white; }
+        
+        .button-secondary, .button-back { background: #37474f; color: #eceff1; }
+        .button-secondary:hover, .button-back:hover { background: #546e7a; color: #fff; }
+        .button-delete { padding: 4px 10px; font-size: 12px; background: #c62828; border-radius: 2px; margin-left: auto; color: white; }
         .menu-buttons button { display: block; width: 100%; margin-bottom: 15px; text-align: center; font-size: 1.1em; }
 
         /* --- FORMS & INPUTS --- */
         .form-section { margin-bottom: 25px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-heading); }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-heading); letter-spacing: 0.5px; }
         
         input[type="text"], select, textarea, input[type="password"] {
-            width: 100%; padding: 12px; border-radius: 8px;
+            width: 100%; padding: 12px; border-radius: 2px;
             border: 1px solid var(--input-border);
             background: var(--input-bg);
             color: var(--text-main);
             font-size: 15px; box-sizing: border-box;
-            transition: all 0.3s;
+            transition: all 0.3s; font-family: 'Consolas', 'Courier New', monospace; /* Tech font for inputs */
         }
+        body.day-mode input[type="text"], body.day-mode select, body.day-mode textarea { font-family: inherit; border-radius: 8px; }
+
         input:focus, select:focus, textarea:focus {
             outline: none; border-color: var(--accent);
             box-shadow: 0 0 10px var(--accent);
-            background: rgba(255,255,255,0.15);
+            background: rgba(0, 229, 255, 0.05);
         }
-        body.day-mode input:focus, body.day-mode textarea:focus { background: #fff; }
+        body.day-mode input:focus { background: #fff; }
+
+        /* Select Options */
+        select option { background-color: #0b1021; color: #e0e0e0; }
+        body.day-mode select option { background-color: #ffffff; color: #2c3e50; }
 
         /* --- RICH TEXT TOOLBAR --- */
-        .rich-text-container { border: 1px solid var(--input-border); border-radius: 8px; overflow: hidden; background: var(--input-bg); }
-        .toolbar { padding: 5px 10px; background: rgba(0,0,0,0.1); border-bottom: 1px solid var(--input-border); display: flex; gap: 5px; }
+        .rich-text-container { border: 1px solid var(--input-border); border-radius: 2px; overflow: hidden; background: var(--input-bg); }
+        .toolbar { padding: 5px 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--input-border); display: flex; gap: 5px; }
         .toolbar button { background: none; border: none; color: var(--text-main); cursor: pointer; padding: 5px; border-radius: 4px; font-weight: bold; }
-        .toolbar button:hover { background: rgba(255,255,255,0.1); color: var(--accent); }
+        .toolbar button:hover { background: rgba(0,229,255,0.2); color: var(--accent); }
         .rich-input { 
             width: 100%; min-height: 100px; padding: 12px; 
             background: transparent; color: var(--text-main); 
             border: none; outline: none; resize: vertical; overflow-y: auto; font-family: inherit;
         }
-        .rich-input:focus { box-shadow: none; border: none; }
-        .rich-input ul, .rich-input ol { padding-left: 20px; margin: 5px 0; }
 
         /* --- DATA LISTS & CARDS --- */
         .data-list ul { list-style: none; padding: 0; }
         .data-list li {
             padding: 15px; margin-bottom: 10px;
-            background: var(--card-bg); border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background: var(--card-bg); border-radius: 2px;
+            border: 1px solid rgba(255,255,255,0.05);
             display: flex; justify-content: space-between; align-items: center;
-            cursor: pointer; transition: transform 0.2s;
+            cursor: pointer; transition: all 0.2s;
         }
-        .data-list li:hover { transform: translateX(5px); border-left: 4px solid var(--accent); }
+        .data-list li:hover { transform: translateX(5px); border-color: var(--accent); box-shadow: 0 0 10px rgba(0,229,255,0.1); }
         
         .entry-card {
             background: var(--card-bg);
-            padding: 20px; border-radius: 10px;
+            padding: 20px; border-radius: 4px;
             margin-bottom: 20px; border-left: 4px solid var(--accent);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
-        .entry-meta { font-size: 0.85em; color: #888; margin-bottom: 10px; font-style: italic; display: flex; justify-content: space-between; }
+        .entry-meta { font-size: 0.85em; color: #888; margin-bottom: 10px; font-style: italic; display: flex; justify-content: space-between; font-family: monospace; }
         
         /* --- STATS BARS --- */
         .stats-container { margin-bottom: 30px; }
         .stat-bar-row { display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; }
         .stat-label { width: 120px; font-weight: bold; text-align: right; margin-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .stat-track { flex-grow: 1; background: rgba(255,255,255,0.1); height: 20px; border-radius: 10px; overflow: hidden; position: relative; }
+        .stat-track { flex-grow: 1; background: rgba(255,255,255,0.1); height: 20px; border-radius: 2px; overflow: hidden; position: relative; }
         .stat-fill { height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 5px; font-size: 12px; color: white; font-weight: bold; transition: width 1s ease-in-out; }
-        .fill-good { background: linear-gradient(90deg, #11998e, #38ef7d); }
-        .fill-bad { background: linear-gradient(90deg, #cb2d3e, #ef473a); }
+        .fill-good { background: linear-gradient(90deg, #00695c, #00bfa5); }
+        .fill-bad { background: linear-gradient(90deg, #c62828, #ff5252); }
 
         /* --- VIEWS --- */
         .view { display: none; opacity: 0; transition: opacity 0.4s ease; }
@@ -196,12 +227,12 @@
         #password-view { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
             display: flex; align-items: center; justify-content: center; z-index: 2000;
-            background: inherit; /* Use cosmic background */
+            background: inherit; 
         }
         #password-card {
             background: var(--glass-bg);
-            padding: 40px; border-radius: 20px; text-align: center;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            padding: 40px; border-radius: 2px; text-align: center;
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.1);
             backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
             width: 90%; max-width: 400px;
         }
@@ -225,7 +256,12 @@
 <body>
 
     <!-- Background Animations -->
-    <div id="stars-container" class="stars"></div>
+    <div class="space-bg">
+        <div id="stars-container"></div>
+        <div class="planet planet-1"></div>
+        <div class="planet planet-2"></div>
+        <div class="planet planet-3"></div>
+    </div>
 
     <!-- Header / Mode Toggle -->
     <div class="header-controls">
@@ -244,7 +280,7 @@
                 <input type="password" id="password-input" placeholder="Enter Access Code" style="margin-bottom: 15px; text-align: center;">
                 <button type="submit" class="button" style="width: 100%;">Authenticate</button>
             </form>
-            <p id="password-error" style="color: #ff6b6b; display: none; margin-top: 10px;">Access Denied.</p>
+            <p id="password-error" style="color: #ff5252; display: none; margin-top: 10px;">Access Denied.</p>
         </div>
     </div>
 
@@ -287,7 +323,7 @@
                     <select id="appointment" name="appointment" required> <option value="" selected disabled>-- Select Appointment --</option> <option value="Line">Line</option> <option value="SUC">SUC</option> <option value="LIP">LIP</option> <option value="MGMT">MGMT</option> </select> 
                  </div>
 
-                 <!-- Rich Text Fields -->
+                 <!-- Rich Text Field -->
                  <div class="form-section"> 
                     <label>Experience / Remarks</label> 
                     <div class="rich-text-container">
@@ -301,28 +337,15 @@
                     </div>
                  </div>
 
+                 <!-- Plain Text Fields -->
                  <div class="form-section"> 
                     <label>Do's</label> 
-                    <div class="rich-text-container">
-                        <div class="toolbar">
-                            <button type="button" onclick="formatText('dos', 'bold')">B</button>
-                            <button type="button" onclick="formatText('dos', 'italic')">I</button>
-                            <button type="button" onclick="formatText('dos', 'insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
-                        </div>
-                        <div id="dos" class="rich-input" contenteditable="true"></div>
-                    </div>
+                    <textarea id="dos" name="dos" rows="4" placeholder="Plain text only..."></textarea>
                  </div>
 
                  <div class="form-section"> 
                     <label>Don'ts</label> 
-                    <div class="rich-text-container">
-                        <div class="toolbar">
-                            <button type="button" onclick="formatText('donts', 'bold')">B</button>
-                            <button type="button" onclick="formatText('donts', 'italic')">I</button>
-                            <button type="button" onclick="formatText('donts', 'insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
-                        </div>
-                        <div id="donts" class="rich-input" contenteditable="true"></div>
-                    </div>
+                    <textarea id="donts" name="donts" rows="4" placeholder="Plain text only..."></textarea>
                  </div>
 
                  <div class="form-section"> 
@@ -334,14 +357,14 @@
                  <div class="form-section">
                     <label>Assessment:</label>
                     <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                        <label style="color: #38ef7d;"><input type="radio" name="rating" value="good" required> Good Guy</label>
-                        <label style="color: #FFD700;"><input type="radio" name="rating" value="mid"> Mid</label>
-                        <label style="color: #ff6b6b;"><input type="radio" name="rating" value="bad"> Bad Guy</label>
+                        <label><input type="radio" name="rating" value="good" required> Good Guy</label>
+                        <label><input type="radio" name="rating" value="mid"> Mid Guy</label>
+                        <label><input type="radio" name="rating" value="bad"> Bad Guy</label>
                     </div>
                  </div>
 
                  <div class="form-section"> 
-                    <button type="submit" class="button">Submit Log</button> 
+                    <button type="submit" class="button">Submit</button> 
                     <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back to Menu</button> 
                  </div>
              </form>
@@ -355,12 +378,12 @@
             </div>
             
             <div class="stats-container">
-                <h3 style="color: #38ef7d;"><i class="fas fa-crown"></i> Top 3 Good Guys</h3>
+                <h3 style="color: #00bfa5;"><i class="fas fa-crown"></i> Top 3 Good Guys</h3>
                 <div id="top-good-list">Loading...</div>
             </div>
 
             <div class="stats-container">
-                <h3 style="color: #ff6b6b;"><i class="fas fa-skull"></i> Top 3 Bad Guys</h3>
+                <h3 style="color: #ff5252;"><i class="fas fa-skull"></i> Top 3 Bad Guys</h3>
                 <div id="top-bad-list">Loading...</div>
             </div>
 
@@ -370,7 +393,7 @@
         <!-- Good Guys View -->
         <div id="good-guys-view" class="view">
               <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>Good Guys Roster</h2>
+                <h2>Good Guys</h2>
                 <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
               </div>
               <div id="good-guys-list-content" class="data-list">Loading...</div>
@@ -380,7 +403,7 @@
         <!-- Bad Guys View -->
         <div id="bad-guys-view" class="view">
               <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>Bad Guys Roster</h2>
+                <h2>Bad Guys</h2>
                 <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
               </div>
               <div id="bad-guys-list-content" class="data-list">Loading...</div>
@@ -440,12 +463,11 @@
         // --- ANIMATIONS (STARS) ---
         function createStars() {
             const container = document.getElementById('stars-container');
-            const count = 50;
+            const count = 70;
             for(let i=0; i<count; i++){
                 const star = document.createElement('div');
                 star.className = 'star';
-                const xy = Math.random() * 100;
-                const duration = Math.random() * 5 + 5;
+                const duration = Math.random() * 3 + 2;
                 const size = Math.random() * 2 + 1;
                 star.style.left = Math.random() * 100 + '%';
                 star.style.top = Math.random() * 100 + '%';
@@ -618,10 +640,22 @@
 
             // Calculate Status
             Object.values(captainProfiles).forEach(p => {
-                if (p.goodCount > p.badCount && p.goodCount > p.midCount) p.status = 'Good';
-                else if (p.badCount > p.goodCount && p.badCount > p.midCount) p.status = 'Bad';
-                else if (p.midCount >= p.goodCount && p.midCount >= p.badCount && p.midCount > 0) p.status = 'Mid';
-                else p.status = 'Neutral'; // Tie or 0
+                // If Bad >= Good (tied or worse), it's Bad.
+                // We check max logic.
+                const max = Math.max(p.goodCount, p.midCount, p.badCount);
+                
+                if (max === 0) {
+                     p.status = 'Neutral';
+                } else if (p.midCount === max && p.midCount > p.goodCount && p.midCount > p.badCount) {
+                     // Strictly Mid
+                     p.status = 'Mid';
+                } else if (p.goodCount > p.badCount && p.goodCount > p.midCount) {
+                     // Strictly Good
+                     p.status = 'Good';
+                } else {
+                     // If Bad is max, OR if Good == Bad (tie goes to Bad), OR Mid tie, defaulting to Bad for caution/safety as per request
+                     p.status = 'Bad';
+                }
                 
                 p.modeAppointment = findMode(p.appointments);
             });
@@ -698,7 +732,7 @@
             document.getElementById('profile-view-captain-name').textContent = p.name;
             const container = document.getElementById('profile-view-content');
             
-            let statusColor = p.status === 'Good' ? '#38ef7d' : (p.status === 'Bad' ? '#ff6b6b' : '#FFD700');
+            let statusColor = p.status === 'Good' ? '#00bfa5' : (p.status === 'Bad' ? '#ff5252' : '#FFD700');
             
             let html = `<div class="entry-card" style="border-left-color: ${statusColor};">
                             <h3>Summary</h3>
@@ -722,8 +756,8 @@
                             </div>`;
                 
                 if(sub.experience) html += `<h4>Experience</h4><div style="margin-bottom:15px; line-height:1.5;">${sub.experience}</div>`;
-                if(sub.dos) html += `<h4>Do's</h4><div style="margin-bottom:15px; line-height:1.5;">${sub.dos}</div>`;
-                if(sub.donts) html += `<h4>Don'ts</h4><div style="margin-bottom:15px; line-height:1.5;">${sub.donts}</div>`;
+                if(sub.dos) html += `<h4>Do's</h4><div style="margin-bottom:15px; line-height:1.5; white-space: pre-wrap;">${sub.dos}</div>`;
+                if(sub.donts) html += `<h4>Don'ts</h4><div style="margin-bottom:15px; line-height:1.5; white-space: pre-wrap;">${sub.donts}</div>`;
                 
                 if(sub.questions && sub.questions.length > 0) {
                     html += `<h4>Q&A</h4>`;
@@ -798,8 +832,9 @@
 
             // Get Rich Text HTML
             formData.append('experience', document.getElementById('experience').innerHTML);
-            formData.append('dos', document.getElementById('dos').innerHTML);
-            formData.append('donts', document.getElementById('donts').innerHTML);
+            // Get Plain Text
+            formData.append('dos', document.getElementById('dos').value);
+            formData.append('donts', document.getElementById('donts').value);
 
             // Get Q&A
             const qaList = [];
@@ -820,8 +855,8 @@
                     alert("Log Entry Saved.");
                     this.reset();
                     document.getElementById('experience').innerHTML = '';
-                    document.getElementById('dos').innerHTML = '';
-                    document.getElementById('donts').innerHTML = '';
+                    document.getElementById('dos').value = '';
+                    document.getElementById('donts').value = '';
                     document.getElementById('qa-container').innerHTML = '';
                     await fetchAllData();
                     navigateTo('menu-view');
@@ -831,7 +866,7 @@
             } catch(e) {
                 alert("Submission failed: " + e.message);
             } finally {
-                btn.disabled = false; btn.textContent = "Submit Log";
+                btn.disabled = false; btn.textContent = "Submit";
             }
         });
 
