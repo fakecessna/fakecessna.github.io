@@ -730,21 +730,21 @@
 
             // Calculate Status
             Object.values(captainProfiles).forEach(p => {
-                // If Bad >= Good (tied or worse), it's Bad.
-                // We check max logic.
                 const max = Math.max(p.goodCount, p.midCount, p.badCount);
                 
                 if (max === 0) {
                      p.status = 'Neutral';
-                } else if (p.midCount === max && p.midCount > p.goodCount && p.midCount > p.badCount) {
-                     // Strictly Mid
-                     p.status = 'Mid';
-                } else if (p.goodCount > p.badCount && p.goodCount > p.midCount) {
-                     // Strictly Good
-                     p.status = 'Good';
-                } else {
-                     // If Bad is max, OR if Good == Bad (tie goes to Bad), OR Mid tie, defaulting to Bad for caution/safety as per request
+                } else if (p.badCount === max) {
+                     // Priority 1: If Bad is highest OR tied for highest with anything, classify as Bad.
+                     // (Covers: Strict Bad, Bad==Mid, Bad==Good, Bad==Mid==Good)
                      p.status = 'Bad';
+                } else if (p.midCount === max) {
+                     // Priority 2: If Mid is highest OR tied for highest (implied with Good only, since Bad checked above), classify as Mid.
+                     // (Covers: Strict Mid, Mid==Good)
+                     p.status = 'Mid';
+                } else {
+                     // Priority 3: Good is strictly highest.
+                     p.status = 'Good';
                 }
                 
                 p.modeAppointment = findMode(p.appointments);
