@@ -372,6 +372,7 @@
                  <button class="button" onclick="navigateTo('submit-view')"><i class="fas fa-plus-circle"></i> Submit New Entry</button>
                  <button class="button" onclick="navigateTo('stats-view')"><i class="fas fa-chart-bar"></i> Hall of Fame / Stats</button>
                  <button class="button" onclick="navigateTo('good-guys-view')"><i class="fas fa-user-astronaut"></i> View Good Guys</button>
+                 <button class="button" onclick="navigateTo('mid-guys-view')"><i class="fas fa-user-tie"></i> View Mid Guys</button>
                  <button class="button" onclick="navigateTo('bad-guys-view')"><i class="fas fa-user-ninja"></i> View Bad Guys</button>
                  <button class="button" onclick="navigateTo('search-view')"><i class="fas fa-search"></i> Search Captains</button>
                  <button class="button" onclick="navigateTo('abba-view')"><i class="fas fa-question-circle"></i> ABBA Q&A Compilation</button>
@@ -475,6 +476,16 @@
                 <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
               </div>
               <div id="good-guys-list-content" class="data-list">Loading...</div>
+              <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
+        </div>
+
+        <!-- Mid Guys View -->
+        <div id="mid-guys-view" class="view">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Mid Guys</h2>
+                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
+              </div>
+              <div id="mid-guys-list-content" class="data-list">Loading...</div>
               <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
         </div>
 
@@ -602,6 +613,7 @@
 
             // View specific logic
             if (viewId === 'good-guys-view') displayList('good');
+            if (viewId === 'mid-guys-view') displayList('mid');
             if (viewId === 'bad-guys-view') displayList('bad');
             if (viewId === 'abba-view') displayAbba();
             if (viewId === 'submit-view') populateSubmitDropdown();
@@ -751,7 +763,11 @@
         // --- DISPLAY LOGIC ---
         function displayList(type) {
             const listDiv = document.getElementById(`${type}-guys-list-content`);
-            const statusTarget = type === 'good' ? 'Good' : 'Bad';
+            
+            let statusTarget = '';
+            if (type === 'good') statusTarget = 'Good';
+            else if (type === 'bad') statusTarget = 'Bad';
+            else if (type === 'mid') statusTarget = 'Mid';
             
             const filtered = Object.values(captainProfiles).filter(p => p.status === statusTarget);
             
