@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captain Database</title>
+    <!-- Font Awesome for Icons (Optional, using CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* --- CSS VARIABLES & THEMES --- */
+        :root {
+            /* COSMIC THEME (Default/Night) */
+            --bg-grad-start-night: #0f0c29;
+            --bg-grad-mid-night: #302b63;
+            --bg-grad-end-night: #24243e;
+            --glass-bg-night: rgba(30, 30, 30, 0.65);
+            --glass-border-night: rgba(255, 255, 255, 0.1);
+            --text-main-night: #e0e0e0;
+            --text-heading-night: #ffcc00; /* Gold */
+            --accent-night: #b540c9; /* Cosmic Purple */
+            --card-bg-night: rgba(0, 0, 0, 0.4);
+            --card-shadow-night: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            
+            /* SUNNY THEME (Day) */
+            --bg-grad-start-day: #56CCF2;
+            --bg-grad-end-day: #2F80ED;
+            --glass-bg-day: rgba(255, 255, 255, 0.85);
+            --glass-border-day: rgba(255, 255, 255, 0.6);
+            --text-main-day: #2c3e50;
+            --text-heading-day: #1D4886;
+            --accent-day: #FCB130; /* Sunny Orange */
+            --card-bg-day: rgba(255, 255, 255, 0.9);
+            --card-shadow-day: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+
+            /* Current active variables (Default to Night) */
+            --bg-grad-start: var(--bg-grad-start-night);
+            --bg-grad-end: var(--bg-grad-end-night);
+            --glass-bg: var(--glass-bg-night);
+            --glass-border: var(--glass-border-night);
+            --text-main: var(--text-main-night);
+            --text-heading: var(--text-heading-night);
+            --accent: var(--accent-night);
+            --card-bg: var(--card-bg-night);
+            --card-shadow: var(--card-shadow-night);
+            --input-bg: rgba(255, 255, 255, 0.1);
+            --input-border: rgba(255, 255, 255, 0.2);
+        }
+
+        body.day-mode {
+            --bg-grad-start: var(--bg-grad-start-day);
+            --bg-grad-end: var(--bg-grad-end-day);
+            --glass-bg: var(--glass-bg-day);
+            --glass-border: var(--glass-border-day);
+            --text-main: var(--text-main-day);
+            --text-heading: var(--text-heading-day);
+            --accent: var(--accent-day);
+            --card-bg: var(--card-bg-day);
+            --card-shadow: var(--card-shadow-day);
+            --input-bg: rgba(255, 255, 255, 0.6);
+            --input-border: #ccc;
+        }
+
+        /* --- GLOBAL STYLES --- */
+        html, body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            width: 100%; min-height: 100vh;
+            background: linear-gradient(135deg, var(--bg-grad-start), var(--bg-grad-mid-night, #302b63), var(--bg-grad-end));
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-main);
+            overflow-x: hidden;
+            transition: all 0.5s ease;
+        }
+
+        body.day-mode {
+            background: linear-gradient(135deg, var(--bg-grad-start-day), var(--bg-grad-end-day));
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- BACKGROUND ANIMATION ELEMENTS --- */
+        .stars, .clouds {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1;
+        }
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkle linear infinite; opacity: 0;
+        }
+        @keyframes twinkle { 0% { opacity: 0; transform: translateY(0); } 50% { opacity: 1; } 100% { opacity: 0; transform: translateY(-100px); } }
+        
+        /* --- LAYOUT & CONTAINER --- */
+        .container {
+            width: 90%; max-width: 900px;
+            margin: 80px auto 40px auto;
+            padding: 30px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--card-shadow);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            transition: all 0.3s ease;
+        }
+
+        .header-controls { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; align-items: center; gap: 10px; }
+        
+        h2, h3, h4 { color: var(--text-heading); margin-top: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 25px; }
+
+        /* --- BUTTONS --- */
+        .button {
+            padding: 12px 24px; font-size: 15px; cursor: pointer; border: none; border-radius: 8px;
+            background: var(--accent); color: #fff; font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+            margin: 5px;
+        }
+        .button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); filter: brightness(1.1); }
+        .button:active { transform: translateY(0); }
+        .button-secondary, .button-back { background: #6c757d; }
+        .button-delete { padding: 4px 10px; font-size: 12px; background: #dc3545; border-radius: 4px; margin-left: auto; }
+        .menu-buttons button { display: block; width: 100%; margin-bottom: 15px; text-align: center; font-size: 1.1em; }
+
+        /* --- FORMS & INPUTS --- */
+        .form-section { margin-bottom: 25px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-heading); }
+        
+        input[type="text"], select, textarea, input[type="password"] {
+            width: 100%; padding: 12px; border-radius: 8px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-size: 15px; box-sizing: border-box;
+            transition: all 0.3s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none; border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            background: rgba(255,255,255,0.15);
+        }
+        body.day-mode input:focus, body.day-mode textarea:focus { background: #fff; }
+
+        /* --- RICH TEXT TOOLBAR --- */
+        .rich-text-container { border: 1px solid var(--input-border); border-radius: 8px; overflow: hidden; background: var(--input-bg); }
+        .toolbar { padding: 5px 10px; background: rgba(0,0,0,0.1); border-bottom: 1px solid var(--input-border); display: flex; gap: 5px; }
+        .toolbar button { background: none; border: none; color: var(--text-main); cursor: pointer; padding: 5px; border-radius: 4px; font-weight: bold; }
+        .toolbar button:hover { background: rgba(255,255,255,0.1); color: var(--accent); }
+        .rich-input { 
+            width: 100%; min-height: 100px; padding: 12px; 
+            background: transparent; color: var(--text-main); 
+            border: none; outline: none; resize: vertical; overflow-y: auto; font-family: inherit;
+        }
+        .rich-input:focus { box-shadow: none; border: none; }
+        .rich-input ul, .rich-input ol { padding-left: 20px; margin: 5px 0; }
+
+        /* --- DATA LISTS & CARDS --- */
+        .data-list ul { list-style: none; padding: 0; }
+        .data-list li {
+            padding: 15px; margin-bottom: 10px;
+            background: var(--card-bg); border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .data-list li:hover { transform: translateX(5px); border-left: 4px solid var(--accent); }
+        
+        .entry-card {
+            background: var(--card-bg);
+            padding: 20px; border-radius: 10px;
+            margin-bottom: 20px; border-left: 4px solid var(--accent);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .entry-meta { font-size: 0.85em; color: #888; margin-bottom: 10px; font-style: italic; display: flex; justify-content: space-between; }
+        
+        /* --- STATS BARS --- */
+        .stats-container { margin-bottom: 30px; }
+        .stat-bar-row { display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; }
+        .stat-label { width: 120px; font-weight: bold; text-align: right; margin-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .stat-track { flex-grow: 1; background: rgba(255,255,255,0.1); height: 20px; border-radius: 10px; overflow: hidden; position: relative; }
+        .stat-fill { height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 5px; font-size: 12px; color: white; font-weight: bold; transition: width 1s ease-in-out; }
+        .fill-good { background: linear-gradient(90deg, #11998e, #38ef7d); }
+        .fill-bad { background: linear-gradient(90deg, #cb2d3e, #ef473a); }
+
+        /* --- VIEWS --- */
+        .view { display: none; opacity: 0; transition: opacity 0.4s ease; }
+        .view.active { display: block; opacity: 1; }
+        
+        /* --- PASSWORD PAGE --- */
+        #password-view { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            display: flex; align-items: center; justify-content: center; z-index: 2000;
+            background: inherit; /* Use cosmic background */
+        }
+        #password-card {
+            background: var(--glass-bg);
+            padding: 40px; border-radius: 20px; text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
+            width: 90%; max-width: 400px;
+        }
+
+        /* --- TOGGLE SWITCH --- */
+        .switch { position: relative; display: inline-block; width: 60px; height: 30px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid #555; }
+        .slider:before { position: absolute; content: "🌙"; display:flex; align-items: center; justify-content: center; height: 24px; width: 24px; left: 3px; bottom: 2px; background-color: #1a1a1a; transition: .4s; border-radius: 50%; font-size: 14px; }
+        input:checked + .slider { background-color: #87CEEB; border-color: #fff; }
+        input:checked + .slider:before { transform: translateX(28px); content: "☀️"; background-color: #ffdb4d; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 600px) {
+            .container { margin-top: 60px; padding: 15px; width: 95%; }
+            .header-controls { top: 10px; right: 10px; }
+            .menu-buttons button { font-size: 1em; padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Animations -->
+    <div id="stars-container" class="stars"></div>
+
+    <!-- Header / Mode Toggle -->
+    <div class="header-controls">
+        <label class="switch" title="Toggle Day/Night Mode">
+            <input type="checkbox" id="darkModeToggle">
+            <span class="slider round"></span>
+        </label>
+    </div>
+
+    <!-- Password Page (Overlay) -->
+    <div id="password-view" style="display: flex;">
+        <div id="password-card">
+            <h2><i class="fas fa-user-shield"></i> Captain's Log</h2>
+            <p style="margin-bottom: 20px;">Restricted Access. Identity Confirmation Required.</p>
+            <form id="password-form">
+                <input type="password" id="password-input" placeholder="Enter Access Code" style="margin-bottom: 15px; text-align: center;">
+                <button type="submit" class="button" style="width: 100%;">Authenticate</button>
+            </form>
+            <p id="password-error" style="color: #ff6b6b; display: none; margin-top: 10px;">Access Denied.</p>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="container" id="main-container" style="display: none;">
+        
+        <!-- Menu View -->
+        <div id="menu-view" class="view">
+             <h2><i class="fas fa-rocket"></i> Command Center</h2>
+             <div class="menu-buttons">
+                 <button class="button" onclick="navigateTo('submit-view')"><i class="fas fa-plus-circle"></i> Submit New Entry</button>
+                 <button class="button" onclick="navigateTo('stats-view')"><i class="fas fa-chart-bar"></i> Hall of Fame / Stats</button>
+                 <button class="button" onclick="navigateTo('good-guys-view')"><i class="fas fa-user-astronaut"></i> View Good Guys</button>
+                 <button class="button" onclick="navigateTo('bad-guys-view')"><i class="fas fa-user-ninja"></i> View Bad Guys</button>
+                 <button class="button" onclick="navigateTo('search-view')"><i class="fas fa-search"></i> Search Captains</button>
+                 <button class="button" onclick="navigateTo('abba-view')"><i class="fas fa-question-circle"></i> ABBA Q&A Compilation</button>
+             </div>
+        </div>
+
+        <!-- Submit View -->
+        <div id="submit-view" class="view">
+             <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>New Log Entry</h2>
+                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
+             </div>
+             
+             <form id="entry-form">
+                 <div class="form-section"> 
+                     <label for="captain-name-select">Captain Identity</label> 
+                     <div style="display: flex; gap: 10px;"> 
+                        <select id="captain-name-select" name="captainNameSelect" required> <option value="" selected disabled>-- Select or Add New --</option> <option value="__add_new__">+ Add New Captain</option> </select> 
+                     </div> 
+                     <div id="add-captain-field" style="display:none; margin-top: 10px;"> 
+                        <input type="text" id="captain-name-new" name="captainNameNew" placeholder="Enter New Captain's Name"> 
+                     </div> 
+                 </div>
+                 
+                 <div class="form-section"> 
+                    <label for="appointment">Appointment</label> 
+                    <select id="appointment" name="appointment" required> <option value="" selected disabled>-- Select Appointment --</option> <option value="Line">Line</option> <option value="SUC">SUC</option> <option value="LIP">LIP</option> <option value="MGMT">MGMT</option> </select> 
+                 </div>
+
+                 <!-- Rich Text Fields -->
+                 <div class="form-section"> 
+                    <label>Experience / Remarks</label> 
+                    <div class="rich-text-container">
+                        <div class="toolbar">
+                            <button type="button" onclick="formatText('experience', 'bold')" title="Bold">B</button>
+                            <button type="button" onclick="formatText('experience', 'italic')" title="Italic">I</button>
+                            <button type="button" onclick="formatText('experience', 'underline')" title="Underline">U</button>
+                            <button type="button" onclick="formatText('experience', 'insertUnorderedList')" title="Bullet List"><i class="fas fa-list-ul"></i></button>
+                        </div>
+                        <div id="experience" class="rich-input" contenteditable="true"></div>
+                    </div>
+                 </div>
+
+                 <div class="form-section"> 
+                    <label>Do's</label> 
+                    <div class="rich-text-container">
+                        <div class="toolbar">
+                            <button type="button" onclick="formatText('dos', 'bold')">B</button>
+                            <button type="button" onclick="formatText('dos', 'italic')">I</button>
+                            <button type="button" onclick="formatText('dos', 'insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
+                        </div>
+                        <div id="dos" class="rich-input" contenteditable="true"></div>
+                    </div>
+                 </div>
+
+                 <div class="form-section"> 
+                    <label>Don'ts</label> 
+                    <div class="rich-text-container">
+                        <div class="toolbar">
+                            <button type="button" onclick="formatText('donts', 'bold')">B</button>
+                            <button type="button" onclick="formatText('donts', 'italic')">I</button>
+                            <button type="button" onclick="formatText('donts', 'insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
+                        </div>
+                        <div id="donts" class="rich-input" contenteditable="true"></div>
+                    </div>
+                 </div>
+
+                 <div class="form-section"> 
+                    <h3>Specific Q&A</h3> 
+                    <div id="qa-container"></div> 
+                    <button type="button" class="button button-secondary" onclick="addQaPair()">+ Add Question</button> 
+                 </div>
+
+                 <div class="form-section">
+                    <label>Assessment:</label>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                        <label style="color: #38ef7d;"><input type="radio" name="rating" value="good" required> Good Guy</label>
+                        <label style="color: #FFD700;"><input type="radio" name="rating" value="mid"> Mid</label>
+                        <label style="color: #ff6b6b;"><input type="radio" name="rating" value="bad"> Bad Guy</label>
+                    </div>
+                 </div>
+
+                 <div class="form-section"> 
+                    <button type="submit" class="button">Submit Log</button> 
+                    <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back to Menu</button> 
+                 </div>
+             </form>
+        </div>
+
+        <!-- Stats View -->
+        <div id="stats-view" class="view">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Mission Statistics</h2>
+                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
+            </div>
+            
+            <div class="stats-container">
+                <h3 style="color: #38ef7d;"><i class="fas fa-crown"></i> Top 3 Good Guys</h3>
+                <div id="top-good-list">Loading...</div>
+            </div>
+
+            <div class="stats-container">
+                <h3 style="color: #ff6b6b;"><i class="fas fa-skull"></i> Top 3 Bad Guys</h3>
+                <div id="top-bad-list">Loading...</div>
+            </div>
+
+            <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back to Menu</button>
+        </div>
+
+        <!-- Good Guys View -->
+        <div id="good-guys-view" class="view">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Good Guys Roster</h2>
+                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
+              </div>
+              <div id="good-guys-list-content" class="data-list">Loading...</div>
+              <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
+        </div>
+
+        <!-- Bad Guys View -->
+        <div id="bad-guys-view" class="view">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Bad Guys Roster</h2>
+                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
+              </div>
+              <div id="bad-guys-list-content" class="data-list">Loading...</div>
+              <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
+        </div>
+
+        <!-- Search View -->
+        <div id="search-view" class="view">
+             <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Database Search</h2>
+                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
+             </div>
+             <div id="search-container" class="form-section">
+                 <input type="text" id="search-box" placeholder="Start typing a captain's name...">
+                 <div id="search-results-list" class="data-list" style="display: none; margin-top: 10px;"></div>
+             </div>
+              <div id="search-profile-content" style="display: none;"></div>
+              <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
+        </div>
+
+        <!-- ABBA View -->
+        <div id="abba-view" class="view">
+             <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>ABBA Q&A Archive</h2>
+                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
+             </div>
+             <div id="abba-list-content" class="data-list">Loading...</div>
+             <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
+        </div>
+
+        <!-- Profile View -->
+        <div id="profile-view" class="view">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 id="profile-view-captain-name">Captain Profile</h2>
+                <button type="button" class="button button-back" onclick="window.history.back()">Back</button>
+              </div>
+              <div id="profile-view-content"></div>
+              <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
+        </div>
+
+    </div> 
+
+    <script>
+        // --- CONFIGURATION ---
+        const API_KEY = 'AIzaSyA0JGGJAYg_xY8EpR-cVn4hVFKkZyji5ck'; // Replace if needed
+        const SPREADSHEET_ID = '1JNwm0Tl2HpaDW6MJdrF_0bcTL7imtwvYldt1UDx1r3Q'; // Replace if needed
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzS42fKFx8_A2XL1Aa1nOAOpeelyz1w02T_nl1zF-cGXR1CwOvJSYaCiy06IKWTzBDPWA/exec'; // Replace if needed
+        const PASSWORD_SHEET_NAME = 'Sheet2';
+        const PASSWORD_CELL = 'A1';
+
+        // --- STATE ---
+        let allSheetData = null;
+        let captainProfiles = {};
+        let isFetching = false;
+        let isAuthenticated = false;
+
+        // --- ANIMATIONS (STARS) ---
+        function createStars() {
+            const container = document.getElementById('stars-container');
+            const count = 50;
+            for(let i=0; i<count; i++){
+                const star = document.createElement('div');
+                star.className = 'star';
+                const xy = Math.random() * 100;
+                const duration = Math.random() * 5 + 5;
+                const size = Math.random() * 2 + 1;
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.animationDuration = duration + 's';
+                star.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(star);
+            }
+        }
+        createStars();
+
+        // --- NIGHT MODE TOGGLE ---
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        function setDarkMode(isDay) {
+            if (isDay) { 
+                document.body.classList.add('day-mode'); 
+                localStorage.setItem('dayMode', 'true');
+            } else { 
+                document.body.classList.remove('day-mode'); 
+                localStorage.setItem('dayMode', 'false');
+            }
+        }
+        if (darkModeToggle) {
+            // Check pref
+            const savedMode = localStorage.getItem('dayMode');
+            if(savedMode === 'true') { darkModeToggle.checked = true; setDarkMode(true); }
+            
+            darkModeToggle.addEventListener('change', () => setDarkMode(darkModeToggle.checked));
+        }
+
+        // --- NAVIGATION & HISTORY (BACK BUTTON SUPPORT) ---
+        function navigateTo(viewId) {
+            if (!isAuthenticated && viewId !== 'password-view') return;
+            
+            // Push state to history
+            window.history.pushState({ view: viewId }, "", `#${viewId}`);
+            renderView(viewId);
+        }
+
+        function renderView(viewId) {
+            console.log("Rendering view:", viewId);
+            document.querySelectorAll('.view').forEach(v => {
+                v.classList.remove('active');
+                setTimeout(() => { if(!v.classList.contains('active')) v.style.display = 'none'; }, 400); // Fade out
+            });
+
+            const active = document.getElementById(viewId);
+            if(active) {
+                active.style.display = 'block';
+                // Small delay to allow display:block to apply before opacity transition
+                setTimeout(() => active.classList.add('active'), 10);
+            }
+
+            // View specific logic
+            if (viewId === 'good-guys-view') displayList('good');
+            if (viewId === 'bad-guys-view') displayList('bad');
+            if (viewId === 'abba-view') displayAbba();
+            if (viewId === 'submit-view') populateSubmitDropdown();
+            if (viewId === 'stats-view') displayStats();
+            if (viewId === 'search-view') {
+                document.getElementById('search-box').value = '';
+                document.getElementById('search-results-list').style.display = 'none';
+                document.getElementById('search-profile-content').style.display = 'none';
+            }
+        }
+
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.view) {
+                renderView(event.state.view);
+            } else {
+                // Default if no state (e.g., initial load)
+                if (isAuthenticated) renderView('menu-view');
+                else renderView('password-view');
+            }
+        });
+
+        // --- AUTHENTICATION ---
+        const passwordForm = document.getElementById('password-form');
+        passwordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('password-input').value;
+            const btn = passwordForm.querySelector('button');
+            const err = document.getElementById('password-error');
+            
+            btn.textContent = 'Authenticating...';
+            btn.disabled = true;
+            err.style.display = 'none';
+
+            try {
+                // Fetch password from sheet
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${PASSWORD_SHEET_NAME}!${PASSWORD_CELL}?key=${API_KEY}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                if(!res.ok) throw new Error("API Error");
+                
+                const correctPass = data.values?.[0]?.[0];
+                
+                if(String(input) === String(correctPass)) {
+                    isAuthenticated = true;
+                    document.getElementById('password-view').style.display = 'none';
+                    document.getElementById('main-container').style.display = 'block';
+                    await fetchAllData();
+                    // Initial History State
+                    window.history.replaceState({ view: 'menu-view' }, "", "#menu-view");
+                    renderView('menu-view');
+                } else {
+                    err.style.display = 'block';
+                    err.textContent = "Incorrect Access Code.";
+                }
+            } catch (error) {
+                console.error(error);
+                err.style.display = 'block';
+                err.textContent = "System Offline or Config Error.";
+            } finally {
+                btn.textContent = 'Authenticate';
+                btn.disabled = false;
+            }
+        });
+
+        // --- DATA LOGIC ---
+        async function fetchAllData() {
+            if (isFetching) return;
+            isFetching = true;
+            try {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Sheet1!A2:I?key=${API_KEY}&valueRenderOption=UNFORMATTED_VALUE`;
+                const res = await fetch(url);
+                const data = await res.json();
+                allSheetData = data.values || [];
+                processData();
+            } catch(e) {
+                console.error("Data fetch error", e);
+                alert("Could not load database.");
+            } finally {
+                isFetching = false;
+            }
+        }
+
+        function processData() {
+            captainProfiles = {};
+            allSheetData.forEach(row => {
+                const name = row[1];
+                if (!name) return;
+                
+                if (!captainProfiles[name]) {
+                    captainProfiles[name] = { 
+                        name: name, submissions: [], goodCount: 0, midCount: 0, badCount: 0, 
+                        appointments: [], status: 'Neutral' 
+                    };
+                }
+
+                const sub = {
+                    timestamp: row[0],
+                    appointment: row[2],
+                    experience: row[3], // Raw HTML/Text
+                    dos: row[4],
+                    donts: row[5],
+                    questions: parseJSON(row[6]),
+                    rating: row[7]
+                };
+
+                captainProfiles[name].submissions.push(sub);
+                if (sub.appointment) captainProfiles[name].appointments.push(sub.appointment);
+                
+                if (sub.rating === 'good') captainProfiles[name].goodCount++;
+                else if (sub.rating === 'bad') captainProfiles[name].badCount++;
+                else if (sub.rating === 'mid') captainProfiles[name].midCount++;
+            });
+
+            // Calculate Status
+            Object.values(captainProfiles).forEach(p => {
+                if (p.goodCount > p.badCount && p.goodCount > p.midCount) p.status = 'Good';
+                else if (p.badCount > p.goodCount && p.badCount > p.midCount) p.status = 'Bad';
+                else if (p.midCount >= p.goodCount && p.midCount >= p.badCount && p.midCount > 0) p.status = 'Mid';
+                else p.status = 'Neutral'; // Tie or 0
+                
+                p.modeAppointment = findMode(p.appointments);
+            });
+        }
+
+        function findMode(arr) {
+            if(!arr.length) return "N/A";
+            return arr.sort((a,b) => arr.filter(v => v===a).length - arr.filter(v => v===b).length).pop();
+        }
+
+        function parseJSON(str) {
+            try { return JSON.parse(str); } catch(e) { return []; }
+        }
+
+        // --- DISPLAY LOGIC ---
+        function displayList(type) {
+            const listDiv = document.getElementById(`${type}-guys-list-content`);
+            const statusTarget = type === 'good' ? 'Good' : 'Bad';
+            
+            const filtered = Object.values(captainProfiles).filter(p => p.status === statusTarget);
+            
+            if(filtered.length === 0) {
+                listDiv.innerHTML = `<div style="text-align:center; padding:20px;">No captains classified as ${statusTarget}.</div>`;
+                return;
+            }
+
+            let html = '<ul>';
+            filtered.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
+                html += `<li onclick="showProfile('${p.name}')">
+                            <span style="font-weight:bold; font-size:1.1em;">${p.name}</span>
+                            <span style="font-size:0.9em; opacity:0.8;">${p.modeAppointment} (${p.goodCount}G / ${p.midCount}M / ${p.badCount}B)</span>
+                         </li>`;
+            });
+            html += '</ul>';
+            listDiv.innerHTML = html;
+        }
+
+        function displayStats() {
+            const goodList = document.getElementById('top-good-list');
+            const badList = document.getElementById('top-bad-list');
+
+            const all = Object.values(captainProfiles);
+            
+            // Top 3 Good
+            const topGood = [...all].sort((a,b) => b.goodCount - a.goodCount).slice(0, 3).filter(p => p.goodCount > 0);
+            renderBarChart(goodList, topGood, 'goodCount', 'good');
+
+            // Top 3 Bad
+            const topBad = [...all].sort((a,b) => b.badCount - a.badCount).slice(0, 3).filter(p => p.badCount > 0);
+            renderBarChart(badList, topBad, 'badCount', 'bad');
+        }
+
+        function renderBarChart(container, data, metric, styleType) {
+            if(data.length === 0) { container.innerHTML = "No data available."; return; }
+            let html = '';
+            const maxVal = data[0][metric]; // Highest value for scaling
+            
+            data.forEach(p => {
+                const widthPct = (p[metric] / maxVal) * 100;
+                html += `<div class="stat-bar-row" onclick="showProfile('${p.name}')">
+                            <div class="stat-label">${p.name}</div>
+                            <div class="stat-track">
+                                <div class="stat-fill fill-${styleType}" style="width: ${widthPct}%;">${p[metric]}</div>
+                            </div>
+                         </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function showProfile(name) {
+            const p = captainProfiles[name];
+            if(!p) return;
+            
+            document.getElementById('profile-view-captain-name').textContent = p.name;
+            const container = document.getElementById('profile-view-content');
+            
+            let statusColor = p.status === 'Good' ? '#38ef7d' : (p.status === 'Bad' ? '#ff6b6b' : '#FFD700');
+            
+            let html = `<div class="entry-card" style="border-left-color: ${statusColor};">
+                            <h3>Summary</h3>
+                            <p><strong>Status:</strong> <span style="color:${statusColor}; font-weight:bold; font-size:1.2em;">${p.status}</span></p>
+                            <p><strong>Appointment:</strong> ${p.modeAppointment}</p>
+                            <p><strong>Votes:</strong> ${p.goodCount} Good | ${p.midCount} Mid | ${p.badCount} Bad</p>
+                        </div>`;
+
+            // Render Segregated Entries
+            // Sort by newest first (assuming timestamp exists)
+            p.submissions.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+            p.submissions.forEach((sub, index) => {
+                let ratingIcon = sub.rating === 'good' ? '😇' : (sub.rating === 'bad' ? '👿' : '😐');
+                let dateStr = sub.timestamp ? new Date((sub.timestamp - 25569) * 86400 * 1000).toLocaleDateString() : 'Unknown Date';
+                
+                html += `<div class="entry-card">
+                            <div class="entry-meta">
+                                <span>Entry #${p.submissions.length - index} (${ratingIcon})</span>
+                                <span>${dateStr} | ${sub.appointment}</span>
+                            </div>`;
+                
+                if(sub.experience) html += `<h4>Experience</h4><div style="margin-bottom:15px; line-height:1.5;">${sub.experience}</div>`;
+                if(sub.dos) html += `<h4>Do's</h4><div style="margin-bottom:15px; line-height:1.5;">${sub.dos}</div>`;
+                if(sub.donts) html += `<h4>Don'ts</h4><div style="margin-bottom:15px; line-height:1.5;">${sub.donts}</div>`;
+                
+                if(sub.questions && sub.questions.length > 0) {
+                    html += `<h4>Q&A</h4>`;
+                    sub.questions.forEach(q => {
+                        html += `<div style="background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; margin-bottom:5px;">
+                                    <strong>Q: ${q.q}</strong><br>
+                                    <span style="opacity:0.8;">A: ${q.a}</span>
+                                 </div>`;
+                    });
+                }
+                html += `</div>`;
+            });
+
+            container.innerHTML = html;
+            navigateTo('profile-view');
+        }
+
+        // --- SUBMIT FORM LOGIC ---
+        function populateSubmitDropdown() {
+            const select = document.getElementById('captain-name-select');
+            select.innerHTML = '<option value="" selected disabled>-- Select or Add New --</option><option value="__add_new__">+ Add New Captain</option>';
+            Object.keys(captainProfiles).sort().forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name; opt.textContent = name;
+                select.appendChild(opt);
+            });
+        }
+        
+        document.getElementById('captain-name-select').addEventListener('change', function() {
+            document.getElementById('add-captain-field').style.display = this.value === '__add_new__' ? 'block' : 'none';
+        });
+
+        // Rich Text Logic
+        function formatText(elementId, command) {
+            // execCommand is deprecated but still the only way for single-file vanilla JS rich text without massive libraries.
+            // It works in all major browsers.
+            document.execCommand(command, false, null);
+            document.getElementById(elementId).focus();
+        }
+
+        // Q&A Logic
+        let qaCount = 0;
+        function addQaPair() {
+            qaCount++;
+            const div = document.createElement('div');
+            div.className = 'qa-pair';
+            div.style = "background: rgba(0,0,0,0.1); padding: 10px; margin-bottom: 10px; border-radius: 8px; position:relative;";
+            div.innerHTML = `
+                <button type="button" class="button-delete" onclick="this.parentElement.remove()" style="position:absolute; right:5px; top:5px;">X</button>
+                <input type="text" placeholder="Question" class="qa-q" style="margin-bottom:5px;">
+                <input type="text" placeholder="Answer" class="qa-a">
+            `;
+            document.getElementById('qa-container').appendChild(div);
+        }
+
+        document.getElementById('entry-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true; btn.textContent = "Transmitting...";
+
+            const formData = new FormData();
+            
+            // Get Name
+            const selectVal = document.getElementById('captain-name-select').value;
+            let name = selectVal === '__add_new__' ? document.getElementById('captain-name-new').value.trim() : selectVal;
+            if(!name) { alert("Name required"); btn.disabled=false; return; }
+            
+            formData.append('captainName', name);
+            formData.append('appointment', document.getElementById('appointment').value);
+            formData.append('rating', document.querySelector('input[name="rating"]:checked').value);
+            formData.append('timestamp', new Date().toISOString());
+
+            // Get Rich Text HTML
+            formData.append('experience', document.getElementById('experience').innerHTML);
+            formData.append('dos', document.getElementById('dos').innerHTML);
+            formData.append('donts', document.getElementById('donts').innerHTML);
+
+            // Get Q&A
+            const qaList = [];
+            document.querySelectorAll('#qa-container > div').forEach(div => {
+                const q = div.querySelector('.qa-q').value.trim();
+                const a = div.querySelector('.qa-a').value.trim();
+                if(q) qaList.push({q, a});
+            });
+            formData.append('questions', JSON.stringify(qaList));
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: new URLSearchParams(formData) // Google Apps Script requires form-urlencoded usually
+                });
+                const res = await response.json();
+                if(res.status === 'success') {
+                    alert("Log Entry Saved.");
+                    this.reset();
+                    document.getElementById('experience').innerHTML = '';
+                    document.getElementById('dos').innerHTML = '';
+                    document.getElementById('donts').innerHTML = '';
+                    document.getElementById('qa-container').innerHTML = '';
+                    await fetchAllData();
+                    navigateTo('menu-view');
+                } else {
+                    throw new Error(res.message);
+                }
+            } catch(e) {
+                alert("Submission failed: " + e.message);
+            } finally {
+                btn.disabled = false; btn.textContent = "Submit Log";
+            }
+        });
+
+        // --- SEARCH LOGIC ---
+        document.getElementById('search-box').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase().trim();
+            const resultsDiv = document.getElementById('search-results-list');
+            const profileDiv = document.getElementById('search-profile-content');
+            
+            profileDiv.style.display = 'none';
+            if(!term) { resultsDiv.style.display = 'none'; return; }
+
+            const matches = Object.keys(captainProfiles).filter(n => n.toLowerCase().includes(term));
+            
+            if(matches.length > 0) {
+                resultsDiv.style.display = 'block';
+                let html = '<ul>';
+                matches.forEach(name => {
+                    html += `<li onclick="showProfile('${name}')">${name}</li>`;
+                });
+                html += '</ul>';
+                resultsDiv.innerHTML = html;
+            } else {
+                resultsDiv.style.display = 'block';
+                resultsDiv.innerHTML = '<div style="padding:10px;">No match found.</div>';
+            }
+        });
+
+        // ABBA Display
+        function displayAbba() {
+            const container = document.getElementById('abba-list-content');
+            let pairs = [];
+            Object.values(captainProfiles).forEach(p => {
+                p.submissions.forEach(sub => {
+                    if(sub.questions) {
+                        sub.questions.forEach(q => {
+                            if(q.q && q.a) pairs.push({ c: p.name, q: q.q, a: q.a });
+                        });
+                    }
+                });
+            });
+
+            if(pairs.length === 0) { container.innerHTML = "No Data"; return; }
+
+            let html = '<ul>';
+            pairs.forEach(item => {
+                html += `<li>
+                            <div style="width:100%;">
+                                <strong>Q: ${item.q}</strong> <br>
+                                <span style="opacity:0.8;">A: ${item.a}</span> <br>
+                                <small style="float:right; color:var(--accent);"> - re: ${item.c}</small>
+                            </div>
+                         </li>`;
+            });
+            html += '</ul>';
+            container.innerHTML = html;
+        }
+
+    </script>
+</body>
+</html>
