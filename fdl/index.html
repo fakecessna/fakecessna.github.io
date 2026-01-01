@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FDL Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#151f32',
+                            900: '#0f172a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #10b981;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #10b981;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-slate-900 text-gray-800 transition-colors duration-300 min-h-screen flex flex-col font-sans antialiased overflow-hidden">
+
+    <!-- Navbar -->
+    <nav class="bg-white dark:bg-slate-850 shadow-sm z-20 transition-colors duration-300 flex-none">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <span class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+                        FDL Calculator
+                    </span>
+                    <span class="hidden sm:inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        Acclimatised
+                    </span>
+                </div>
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none transition-colors">
+                    <svg id="sun-icon" class="w-6 h-6 text-yellow-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg id="moon-icon" class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-4rem)] overflow-hidden">
+        
+        <!-- Left Column: Inputs (Scrollable) -->
+        <div class="lg:col-span-5 flex flex-col gap-4 overflow-y-auto pr-1 pb-20 lg:pb-0 scroll-smooth">
+            
+            <!-- Core Parameters -->
+            <div class="bg-white dark:bg-slate-850 rounded-2xl shadow-sm p-5 transition-colors duration-300">
+                <h2 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-4">Core Parameters</h2>
+                
+                <!-- Report Time -->
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Report Time (Local)</label>
+                    <input type="time" id="reportTime" class="block w-full text-3xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 shadow-sm transition-colors" value="06:00">
+                </div>
+
+                <!-- Sectors -->
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Number of Sectors</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="setSectors(1)" class="sector-btn bg-blue-600 text-white py-3 rounded-lg font-bold shadow-md hover:bg-blue-700 transition-all active:scale-95" data-val="1">1</button>
+                        <button onclick="setSectors(2)" class="sector-btn bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 py-3 rounded-lg font-bold hover:bg-gray-50 dark:hover:bg-slate-600 transition-all active:scale-95" data-val="2">2</button>
+                        <button onclick="setSectors(3)" class="sector-btn bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 py-3 rounded-lg font-bold hover:bg-gray-50 dark:hover:bg-slate-600 transition-all active:scale-95" data-val="3">3</button>
+                        <button onclick="setSectors(4)" class="sector-btn bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 py-3 rounded-lg font-bold hover:bg-gray-50 dark:hover:bg-slate-600 transition-all active:scale-95" data-val="4">4+</button>
+                    </div>
+                    <input type="hidden" id="sectors" value="1">
+                </div>
+
+                <!-- Flight Time -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Planned Flight Time</label>
+                    <div class="flex gap-3">
+                        <div class="relative w-1/2">
+                            <input type="number" id="flightHours" min="0" max="20" class="block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 text-center shadow-sm" value="04">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold">HRS</span>
+                        </div>
+                        <div class="relative w-1/2">
+                            <input type="number" id="flightMins" min="0" max="59" class="block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 text-center shadow-sm" value="30">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold">MIN</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Crew & Rest Options -->
+            <div class="bg-white dark:bg-slate-850 rounded-2xl shadow-sm p-5 transition-colors duration-300">
+                <h2 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-4">Rest & Complement</h2>
+                
+                <!-- Crew Complement -->
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Crew Complement</label>
+                    <select id="crewComplement" class="block w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 p-3">
+                        <option value="std">Standard (2 Pilots)</option>
+                        <option value="aug3">3 Pilots (Class 1 Rest)</option>
+                        <option value="aug4">4 Pilots (Class 1 Rest)</option>
+                    </select>
+                </div>
+
+                <!-- Split Duty / Ground Break -->
+                <div class="mb-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex justify-between">
+                        <span>Split Duty (Ground Break)</span>
+                        <span class="text-xs text-gray-400 font-normal">Adds 50% of break to FDP</span>
+                    </label>
+                    <div class="flex gap-3 items-center">
+                        <div class="relative w-full">
+                            <input type="number" id="breakHours" min="0" max="12" step="0.5" class="block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 pl-4 shadow-sm" placeholder="0">
+                            <span class="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400 text-xs">HOURS</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discretion -->
+            <div class="bg-white dark:bg-slate-850 rounded-2xl shadow-sm p-5 transition-colors duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-900 dark:text-white">Commander's Discretion</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Extend max FDP by 3 hours</p>
+                    </div>
+                    <div class="relative inline-block w-12 align-middle select-none">
+                        <input type="checkbox" id="discretionToggle" class="toggle-checkbox absolute block w-7 h-7 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 transition-all duration-300"/>
+                        <label for="discretionToggle" class="toggle-label block overflow-hidden h-7 rounded-full bg-gray-300 cursor-pointer transition-colors duration-300"></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Results -->
+        <div class="lg:col-span-7 flex flex-col gap-5 h-full overflow-y-auto">
+            
+            <!-- Latest COT Card -->
+            <div class="bg-blue-600 dark:bg-blue-800 rounded-2xl shadow-xl p-6 lg:p-10 text-white flex flex-col justify-center items-center relative overflow-hidden transition-colors duration-300 min-h-[250px] lg:flex-grow">
+                <!-- Background Pattern -->
+                <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
+                
+                <h2 class="text-blue-200 uppercase tracking-widest text-xs lg:text-sm font-bold mb-3 z-10">Latest Permissible</h2>
+                <h1 class="text-6xl lg:text-8xl font-mono font-bold tracking-tighter mb-3 z-10" id="latestCotDisplay">--:--</h1>
+                <p class="text-blue-100 font-medium text-lg z-10">Chocks Off Time (COT)</p>
+
+                <!-- Status Badges -->
+                <div class="absolute top-4 right-4 flex flex-col gap-2 items-end">
+                    <div id="discretionBadge" class="hidden bg-red-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide shadow-sm border border-red-400">
+                        +3H Discretion
+                    </div>
+                    <div id="augmentedBadge" class="hidden bg-indigo-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide shadow-sm border border-indigo-400">
+                        Augmented
+                    </div>
+                    <div id="splitBadge" class="hidden bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide shadow-sm border border-emerald-400">
+                        Split Duty
+                    </div>
+                </div>
+            </div>
+
+            <!-- Secondary Metrics -->
+            <div class="grid grid-cols-2 gap-4 h-auto lg:h-40 flex-none">
+                
+                <!-- Max Duty End -->
+                <div class="bg-white dark:bg-slate-850 rounded-2xl shadow-sm p-4 flex flex-col justify-center items-center border-l-[6px] border-orange-500">
+                    <p class="text-gray-400 dark:text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Max Duty End</p>
+                    <div class="text-3xl lg:text-4xl font-mono font-bold text-gray-900 dark:text-white" id="dutyEndDisplay">--:--</div>
+                    <p class="text-gray-400 text-xs mt-1">Latest On Chocks</p>
+                </div>
+
+                <!-- Max FDP Limit -->
+                <div class="bg-white dark:bg-slate-850 rounded-2xl shadow-sm p-4 flex flex-col justify-center items-center border-l-[6px] border-emerald-500">
+                    <p class="text-gray-400 dark:text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Permissible FDP</p>
+                    <div class="text-3xl lg:text-4xl font-mono font-bold text-gray-900 dark:text-white" id="maxFdpDisplay">--:--</div>
+                    <p class="text-emerald-600 dark:text-emerald-400 text-xs mt-1 font-medium" id="fdpDetailText">Standard</p>
+                </div>
+            </div>
+
+            <p class="text-[10px] text-center text-gray-400 dark:text-gray-600 mt-2">
+                Calculations based on standard CAAS FDP tables. Verify against specific OM tables.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        // Standard unaugmented limits (Start Time -> Limits for Sectors 1, 2, 3, 4+)
+        const standardTable = [
+            { start: 0, end: 6,     limits: [11.00, 10.25, 9.50, 9.00] },
+            { start: 6, end: 8,     limits: [13.00, 12.25, 11.50, 10.75] },
+            { start: 8, end: 15,    limits: [14.00, 13.25, 12.50, 11.75] },
+            { start: 15, end: 22,   limits: [13.00, 12.25, 11.50, 10.75] },
+            { start: 22, end: 24,   limits: [11.00, 10.25, 9.50, 9.00] } 
+        ];
+
+        // --- DOM ELEMENTS ---
+        const els = {
+            reportTime: document.getElementById('reportTime'),
+            flightH: document.getElementById('flightHours'),
+            flightM: document.getElementById('flightMins'),
+            sectors: document.getElementById('sectors'),
+            crew: document.getElementById('crewComplement'),
+            breakH: document.getElementById('breakHours'),
+            discretion: document.getElementById('discretionToggle'),
+            
+            displayCOT: document.getElementById('latestCotDisplay'),
+            displayDutyEnd: document.getElementById('dutyEndDisplay'),
+            displayMaxFDP: document.getElementById('maxFdpDisplay'),
+            displayFDPDetail: document.getElementById('fdpDetailText'),
+            
+            badges: {
+                disc: document.getElementById('discretionBadge'),
+                aug: document.getElementById('augmentedBadge'),
+                split: document.getElementById('splitBadge')
+            },
+            
+            sectorBtns: document.querySelectorAll('.sector-btn'),
+            themeToggle: document.getElementById('theme-toggle'),
+            icons: { sun: document.getElementById('sun-icon'), moon: document.getElementById('moon-icon') }
+        };
+
+        // --- UTILS ---
+        const timeToDec = (t) => { const [h, m] = t.split(':').map(Number); return h + (m/60); };
+        const decToTime = (d) => {
+            d = d % 24; if(d < 0) d += 24;
+            const h = Math.floor(d);
+            const m = Math.round((d - h) * 60);
+            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+        };
+        const decToDur = (d) => `${Math.floor(d)}h ${Math.round((d - Math.floor(d)) * 60)}m`;
+
+        // --- CALCULATION ---
+        function calculate() {
+            const reportDec = timeToDec(els.reportTime.value || "00:00");
+            const sectors = parseInt(els.sectors.value);
+            const crewMode = els.crew.value;
+            const breakHours = parseFloat(els.breakH.value) || 0;
+            const useDiscretion = els.discretion.checked;
+            const flightDur = (parseInt(els.flightH.value)||0) + ((parseInt(els.flightM.value)||0)/60);
+
+            // 1. Determine Base FDP
+            let maxFdp = 0;
+            let fdpType = "Standard";
+
+            if (crewMode === 'std') {
+                // Use Table
+                const row = standardTable.find(r => reportDec >= r.start && reportDec < r.end) || standardTable[0];
+                const idx = Math.min(sectors - 1, 3);
+                maxFdp = row.limits[idx];
+                els.badges.aug.classList.add('hidden');
+            } else if (crewMode === 'aug3') {
+                maxFdp = 16.00; // Standard 3-pilot limit
+                fdpType = "Augmented (3 Crew)";
+                els.badges.aug.classList.remove('hidden');
+            } else if (crewMode === 'aug4') {
+                maxFdp = 18.00; // Standard 4-pilot limit
+                fdpType = "Augmented (4 Crew)";
+                els.badges.aug.classList.remove('hidden');
+            }
+
+            // 2. Apply Split Duty (Ground Break)
+            // Rule: Add 50% of break duration to FDP
+            if (breakHours > 0) {
+                const extension = breakHours * 0.5;
+                maxFdp += extension;
+                els.badges.split.classList.remove('hidden');
+                fdpType += ` + ${extension}h Split`;
+            } else {
+                els.badges.split.classList.add('hidden');
+            }
+
+            // 3. Apply Discretion
+            if (useDiscretion) {
+                maxFdp += 3;
+                els.badges.disc.classList.remove('hidden');
+            } else {
+                els.badges.disc.classList.add('hidden');
+            }
+
+            // 4. Calculate End Times
+            const dutyEndDec = reportDec + maxFdp;
+            const cotDec = dutyEndDec - flightDur;
+
+            // 5. Update UI
+            els.displayMaxFDP.textContent = decToDur(maxFdp);
+            els.displayFDPDetail.textContent = fdpType;
+            els.displayDutyEnd.textContent = decToTime(dutyEndDec);
+
+            if (flightDur > maxFdp) {
+                els.displayCOT.textContent = "N/A";
+                els.displayCOT.classList.add('text-red-300');
+                els.displayCOT.classList.remove('text-blue-100');
+            } else {
+                els.displayCOT.textContent = decToTime(cotDec);
+                els.displayCOT.classList.remove('text-red-300');
+                els.displayCOT.classList.add('text-blue-100'); // Reset color
+                
+                // Warn if COT is close (within 30 mins)
+                // (Optional visual logic could go here)
+            }
+        }
+
+        // --- EVENTS & INIT ---
+        function setSectors(val) {
+            els.sectors.value = val;
+            els.sectorBtns.forEach(btn => {
+                const active = parseInt(btn.dataset.val) === val;
+                btn.className = `sector-btn py-3 rounded-lg font-bold transition-all ${active 
+                    ? 'bg-blue-600 text-white shadow-md transform scale-105' 
+                    : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-slate-600'}`;
+            });
+            calculate();
+        }
+
+        ['input', 'change'].forEach(evt => {
+            [els.reportTime, els.flightH, els.flightM, els.crew, els.breakH, els.discretion].forEach(el => {
+                el.addEventListener(evt, calculate);
+            });
+        });
+
+        // Theme
+        els.themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            els.icons.sun.classList.toggle('hidden', !isDark);
+            els.icons.moon.classList.toggle('hidden', isDark);
+        });
+
+        // Init
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            els.icons.sun.classList.remove('hidden');
+            els.icons.moon.classList.add('hidden');
+        }
+        calculate();
+    </script>
+</body>
+</html>
