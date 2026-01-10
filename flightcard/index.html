@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flight Card Cloud</title>
+  <title>Flight Card Cloud v2</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-    /* --- ORIGINAL STYLES PRESERVED --- */
+    /* --- CORE STYLES --- */
     html, body {
       margin: 0; padding: 0; font-family: monospace; font-size: 10px;
       box-sizing: border-box; width: 100%; height: 100%;
@@ -24,7 +24,7 @@
     }
     .active { display: block; }
 
-    /* Heading Area */
+    /* Heading & Controls */
     .heading-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .heading-controls { display: flex; align-items: center; gap: 10px; }
     #cardPage .heading-controls { gap: 0; }
@@ -33,10 +33,10 @@
     /* Sync Status Indicator */
     #sync-status {
         font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 5px;
-        padding: 4px 8px; border-radius: 4px; background: #eee;
+        padding: 4px 8px; border-radius: 4px; background: #eee; cursor: default;
     }
-    #sync-status.synced { color: #008000; background: #e8f5e9; }
-    #sync-status.pending { color: #d32f2f; background: #ffebee; }
+    #sync-status.synced { color: #2e7d32; background: #e8f5e9; } 
+    #sync-status.pending { color: #c62828; background: #ffebee; } 
     #sync-status.offline { color: #555; background: #eee; }
 
     /* Modal Styles */
@@ -81,7 +81,7 @@
     .reg-prefix { margin-right: 1px; }
     .label-right-aligned { text-align: right; width: auto; flex-shrink: 0; }
 
-    /* Input Styles */
+    /* Input Widths & Styles */
     .cell.label-small input { width: 45px; }
     .cell.crew-cell { flex-direction: row; }
     .cell.prefix-cell { flex-direction: column; align-items: flex-start; width: 75px !important; min-width: 75px !important; flex: 0 0 75px !important; padding: 5px; gap: 5px; }
@@ -91,7 +91,7 @@
     .cell textarea { width: 100%; max-width: 100%; resize: both; min-height: calc(3 * 1.2em + 4px); line-height: 1.2em; }
     .remarks-cell { flex-basis: 280px; flex-grow: 0; flex-shrink: 0; border-right: none !important; align-items: stretch; padding: 5px 2px !important; margin-right: 3px; }
 
-    /* Data Display Styles */
+    /* Data Display Styles (Card View) */
     .data-display { display: inline-block; min-height: 1em; padding: 1px; box-sizing: border-box; white-space: pre; }
     #card-remarks { white-space: pre-wrap; display: block; text-align: left; min-height: calc(3 * 1.2em); line-height: 1.2em; width: 100%; }
     
@@ -160,13 +160,15 @@
     .card-crew-type { width: 40px; flex-shrink: 0; }
 
     /* Buttons */
-    .button-container { margin-top: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .button-container { margin-top: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .button { margin: 0; font-size: 12px; background-color: #0066cc; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; transition: background-color 0.3s; }
     .button:hover { background-color: #0055aa; }
     #purgeButton { background-color: #cc3300; }
     #purgeButton:hover { background-color: #aa2b00; }
     .btn-green { background-color: #2e7d32; }
     .btn-green:hover { background-color: #1b5e20; }
+    .btn-grey { background-color: #757575; }
+    .btn-grey:hover { background-color: #616161; }
     
     /* Time Inputs */
     .time-input-container { display: flex; align-items: center; gap: 2px; }
@@ -185,6 +187,7 @@
     input:checked + .slider:before { transform: translateX(20px); }
 
     .footer-text { font-size: 8px; margin-top: 15px; text-align: left; color: #555555; }
+    #fileInput { display: none; }
 
     /* NIGHT MODE */
     body.night-mode { background-color: #1a1a1a; color: #e0e0e0; }
@@ -217,6 +220,8 @@
   </style>
 </head>
 <body>
+
+  <input type="file" id="fileInput" accept=".78x" />
 
   <div id="loadModal" class="modal-overlay">
       <div class="modal">
@@ -304,7 +309,8 @@
             <input type="text" id="std-minutes" class="time-input" maxlength="2" placeholder="MM">
             <span class="time-suffix">Z</span>
             <select id="std-gmt" class="gmt-select">
-               <option value="">GMT</option> <option value="+8">+8</option> <option value="+0">0</option> <option value="+14">+14</option><option value="+13">+13</option><option value="+12">+12</option><option value="+11">+11</option><option value="+10">+10</option><option value="+9">+9</option><option value="+7">+7</option><option value="+6">+6</option><option value="+5.5">+5.5</option><option value="+4">+4</option><option value="+1">+1</option><option value="-5">-5</option><option value="-7">-7</option><option value="-8">-8</option>
+               <option value="">GMT</option>
+               <option value="+14">+14</option><option value="+13">+13</option><option value="+12.75">+12.75</option><option value="+12">+12</option><option value="+11">+11</option><option value="+10.5">+10.5</option><option value="+10">+10</option><option value="+9.5">+9.5</option><option value="+9">+9</option><option value="+8.75">+8.75</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6.5">+6.5</option><option value="+6">+6</option><option value="+5.75">+5.75</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4.5">+4.5</option><option value="+4">+4</option><option value="+3.5">+3.5</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option><option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-3.5">-3.5</option><option value="-4">-4</option><option value="-4.5">-4.5</option><option value="-5">-5</option><option value="-6">-6</option><option value="-7">-7</option><option value="-8">-8</option><option value="-9">-9</option><option value="-9.5">-9.5</option><option value="-10">-10</option><option value="-11">-11</option><option value="-12">-12</option>
             </select>
             <input type="text" id="std-lt-hours" class="time-input" maxlength="2" readonly>
             <span class="time-separator">:</span>
@@ -328,7 +334,8 @@
             <input type="text" id="sta-minutes" class="time-input" maxlength="2">
             <span class="time-suffix">Z</span>
             <select id="sta-gmt" class="gmt-select">
-              <option value="">GMT</option><option value="+8">+8</option><option value="+1">+1</option>
+              <option value="">GMT</option>
+              <option value="+14">+14</option><option value="+13">+13</option><option value="+12.75">+12.75</option><option value="+12">+12</option><option value="+11">+11</option><option value="+10.5">+10.5</option><option value="+10">+10</option><option value="+9.5">+9.5</option><option value="+9">+9</option><option value="+8.75">+8.75</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6.5">+6.5</option><option value="+6">+6</option><option value="+5.75">+5.75</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4.5">+4.5</option><option value="+4">+4</option><option value="+3.5">+3.5</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option><option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-3.5">-3.5</option><option value="-4">-4</option><option value="-4.5">-4.5</option><option value="-5">-5</option><option value="-6">-6</option><option value="-7">-7</option><option value="-8">-8</option><option value="-9">-9</option><option value="-9.5">-9.5</option><option value="-10">-10</option><option value="-11">-11</option><option value="-12">-12</option>
             </select>
             <input type="text" id="sta-lt-hours" class="time-input" maxlength="2" readonly>
             <span class="time-separator">:</span>
@@ -358,7 +365,7 @@
         <div class="cell"> <label class="label-fixed" for="plan">PLAN</label> <input type="text" id="plan" maxlength="2"> </div>
         <div class="cell"> <label class="label-fixed label-reg" for="reg">REG</label> <span class="reg-prefix">9V-</span><input type="text" id="reg" maxlength="3"> </div>
         <div class="cell"> <label class="label-right-aligned" for="gate">GATE</label> <input type="text" id="gate" maxlength="4"> </div>
-        <div class="cell"> <label class="label-right-aligned" for="info">INFO</label> <select id="info"><option value="">-</option><option value="A">A</option><option value="B">B</option></select> </div>
+        <div class="cell"> <label class="label-right-aligned" for="info">INFO</label> <select id="info"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option><option value="G">G</option><option value="H">H</option><option value="I">I</option><option value="J">J</option><option value="K">K</option><option value="L">L</option><option value="M">M</option><option value="N">N</option><option value="O">O</option><option value="P">P</option><option value="Q">Q</option><option value="R">R</option><option value="S">S</option><option value="T">T</option><option value="U">U</option><option value="V">V</option><option value="W">W</option><option value="X">X</option><option value="Y">Y</option><option value="Z">Z</option></select> </div>
         <div class="cell"> <label class="label-right-aligned" for="fl">FL</label> <input type="text" id="fl" maxlength="3"> </div>
         <div class="cell"> <label class="label-right-aligned" for="dest">DEST</label> <input type="text" id="dest" maxlength="3"> </div>
         <div class="cell"> <label class="label-right-aligned" for="pob">POB</label> <input type="text" id="pob" readonly> </div>
@@ -367,7 +374,7 @@
        <div class="row seamless-row format-row" id="india-format-row">
             <div class="cell"> <label for="pdc">PDC</label> <input type="text" id="pdc" maxlength="3"> </div>
             <div class="cell"> <label class="label-right-aligned" for="gate">GATE</label> <input type="text" id="gate" maxlength="4"> </div>
-            <div class="cell"> <label class="label-right-aligned" for="info">ATIS</label> <select id="info"><option value="">-</option></select> </div>
+            <div class="cell"> <label class="label-right-aligned" for="info">ATIS</label> <select id="info"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option><option value="G">G</option><option value="H">H</option><option value="I">I</option><option value="J">J</option><option value="K">K</option><option value="L">L</option><option value="M">M</option><option value="N">N</option><option value="O">O</option><option value="P">P</option><option value="Q">Q</option><option value="R">R</option><option value="S">S</option><option value="T">T</option><option value="U">U</option><option value="V">V</option><option value="W">W</option><option value="X">X</option><option value="Y">Y</option><option value="Z">Z</option></select> </div>
              <div class="cell"> <label for="qnh">QNH</label> <input type="text" id="qnh" maxlength="4"> </div>
              <div class="cell"> <label for="india_pob">POB</label> <input type="text" id="india_pob" readonly> </div>
             <div class="cell filler-cell"></div>
@@ -429,8 +436,10 @@
     </div>
     
     <div class="button-container">
-        <button id="cloudSaveBtn" class="button btn-green"><i class="fas fa-cloud-upload-alt"></i> Save Flight</button>
-        <button id="cloudLoadBtn" class="button"><i class="fas fa-cloud-download-alt"></i> Load Flight</button>
+        <button id="cloudSaveBtn" class="button btn-green"><i class="fas fa-cloud-upload-alt"></i> Sync</button>
+        <button id="cloudLoadBtn" class="button"><i class="fas fa-cloud-download-alt"></i> Load</button>
+        <button id="saveFileBtn" class="button btn-grey"><i class="fas fa-file-download"></i> Save File</button>
+        <button id="loadFileBtn" class="button btn-grey"><i class="fas fa-file-upload"></i> Load File</button>
         <button onclick="generateCard()" class="button">Generate Flight Card</button>
     </div>
     <p class="footer-text">Note to User: Add to "Reading List" on Safari for offline use. Syncs automatically when online.</p>
@@ -549,15 +558,13 @@
 
   <script>
     // --- BACKEND CONFIG ---
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzgo5MyUVoC2UVWMhIG-ZwuG6nJE1PvPeTsTCqEKEoS-hpoZnmdxNhJotxK4qrM-Hxn/exec'; 
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyI995l-5YqLNgX_yMo6o95dasKDKbQaEpSwjTDnrEQKQ_zDts_WHSd7GjhVbpSVXoa/exec'; 
 
     // --- ID LISTS ---
     const savableInputIds = ['flightNo', 'capt', 'staffNo', 'crew', 'pax', 'm2000', 'p1000', 'm1000', 'std-hours', 'std-minutes', 'std-gmt', 'flt-t-hours', 'flt-t-minutes', 'sta-hours', 'sta-minutes', 'sta-gmt', 'plan', 'reg', 'gate', 'info', 'fl', 'dest', 'bw', 'bi', 'pzfw', 'ezfw', 'pfit', 'exs', 'bo', 'res', 'fzfw', 'percent_mac', 'sid', 'star', 'v2', 'remarks', 'formatSelector', 'pdc', 'qnh', 'aus_cleared_sid', 'aus_cleared_wpt', 'aus_climb_alt', 'aus_sqwk', 'opti_climb', 'opti_mach', 'opti_desc1', 'opti_desc2'];
     const calculatedIds = ['pob', 'india_pob', 'ezfw_du', 'fzfw_du', 'v2_plus_15', 'std-lt-hours', 'std-lt-minutes', 'sta-lt-hours', 'sta-lt-minutes', 'blk-t-hours', 'blk-t-minutes'];
     
     let aircraftData = {}; // Will be populated from Cloud
-    let syncQueue = [];
-    let isSyncing = false;
 
     // --- INITIALIZATION ---
     document.addEventListener('DOMContentLoaded', function() {
@@ -592,7 +599,6 @@
             const json = await res.json();
             if(json.status === 'success') {
                 aircraftData = json.data;
-                console.log("Aircraft DB Loaded", aircraftData);
             }
         } catch(e) { console.error("DB Fetch Error", e); }
     }
@@ -600,21 +606,19 @@
     async function saveToCloud() {
         const btn = document.getElementById('cloudSaveBtn');
         const origText = btn.innerHTML;
-        btn.innerHTML = 'Saving...'; btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; btn.disabled = true;
 
         const data = getAllFormData();
         
-        // Check if BW/BI update needed (Reg Changed or BW Changed)
+        // Check if BW/BI update needed
         if(data.reg && data.bw && data.bi) {
             const existing = aircraftData[data.reg];
-            // If new reg OR values different from DB, trigger update
             if(!existing || existing.bw != data.bw || existing.bi != data.bi) {
                 updateAircraftDB(data.reg, data.bw, data.bi);
             }
         }
 
         try {
-            // Send Flight Data
             const payload = new URLSearchParams({ 
                 action: 'SAVE_FLIGHT', 
                 data: JSON.stringify(data)
@@ -629,13 +633,10 @@
     }
 
     async function updateAircraftDB(reg, bw, bi) {
-        // Optimistic UI Update
         aircraftData[reg] = { bw, bi };
-        
-        // Backend Update
         try {
             const payload = new URLSearchParams({ action: 'UPDATE_AIRCRAFT', reg, bw, bi });
-            fetch(WEB_APP_URL, { method: 'POST', body: payload }); // No await needed, fire and forget
+            fetch(WEB_APP_URL, { method: 'POST', body: payload });
         } catch(e) { console.error("Aircraft DB Update Failed"); }
     }
 
@@ -654,11 +655,12 @@
             
             let html = '';
             json.data.forEach(row => {
-                // row: [uuid, date, flightNo, timestamp, jsonData]
                 const date = row[1];
                 const flight = row[2];
                 const rawData = row[4];
-                html += `<div class="modal-list-item" onclick='loadSelectedFlight(${rawData})'>
+                // We stringify the object back so it can be passed in the onClick handler
+                const jsonStr = JSON.stringify(JSON.parse(rawData)).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+                html += `<div class="modal-list-item" onclick='loadSelectedFlight(${jsonStr})'>
                             <span><strong>SQ${flight}</strong> - ${date}</span>
                             <span><i class="fas fa-chevron-right"></i></span>
                          </div>`;
@@ -694,8 +696,49 @@
         }
     }
 
-    // --- FETCH TIMES (MOCK) ---
-   async function fetchTimes() {
+    // --- LOCAL FILE SAVE/LOAD ---
+    function saveDataToFile() {
+        const data = getAllFormData();
+        const flightNo = data.flightNo || '000';
+        
+        // Filename generation
+        const now = new Date();
+        const day = now.getDate().toString().padStart(2, '0');
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const year = now.getFullYear().toString().slice(-2);
+        const filename = `SQ${flightNo}_${day}${month}${year}.78x`;
+
+        const jsonString = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function loadDataFromFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                loadSelectedFlight(data); // Re-use the cloud loader logic!
+            } catch(error) {
+                alert("Error parsing file.");
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = null; // Reset input
+    }
+
+    // --- FETCH TIMES ---
+    async function fetchTimes() {
         const btn = document.getElementById('fetchTimesBtn');
         const originalText = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
@@ -710,18 +753,13 @@
             
             if(json.status === 'success') {
                 const d = json.data;
-                
-                // Populate Departure
                 if(d.std_hours) document.getElementById('std-hours').value = d.std_hours;
                 if(d.std_minutes) document.getElementById('std-minutes').value = d.std_minutes;
                 if(d.std_gmt) document.getElementById('std-gmt').value = d.std_gmt;
-                
-                // Populate Arrival
                 if(d.sta_hours) document.getElementById('sta-hours').value = d.sta_hours;
                 if(d.sta_minutes) document.getElementById('sta-minutes').value = d.sta_minutes;
                 if(d.sta_gmt) document.getElementById('sta-gmt').value = d.sta_gmt;
 
-                // Trigger change events to calculate Local Times automatically
                 document.getElementById('std-hours').dispatchEvent(new Event('input'));
                 document.getElementById('std-gmt').dispatchEvent(new Event('change'));
                 document.getElementById('sta-hours').dispatchEvent(new Event('input'));
@@ -734,19 +772,17 @@
         } catch(e) { 
             alert("Connection failed."); 
         } finally { 
-            btn.innerHTML = originalText; 
-            btn.disabled = false; 
+            btn.innerHTML = originalText; btn.disabled = false; 
         }
     }
 
-    // --- CORE LOGIC (Maintained) ---
+    // --- CORE LOGIC ---
     function getAllFormData() {
         const data = {};
         savableInputIds.forEach(id => {
             const el = document.getElementById(id);
             if (el) data[id] = el.value;
         });
-        // Crew
         const crewData = [];
         document.querySelectorAll('#additional-crew-container .crew-row').forEach(row => {
             const type = row.querySelector('.crew-type-select').value;
@@ -776,7 +812,7 @@
         } else { addCrewRow(); }
     }
 
-    // --- CALCULATION FUNCTIONS (Original Logic) ---
+    // --- CALCULATION FUNCTIONS ---
     function updateAllCalculatedFields() {
         calculatePOB();
         calculateEZFW_DU();
@@ -787,7 +823,6 @@
         updateBlockTime();
     }
     
-    // Time Utils
     function calculateLocalTime(h, m, gmt) {
       if (!h || !m || !gmt) return { hours: '', minutes: '' };
       let total = parseInt(h) * 60 + parseInt(m);
@@ -814,7 +849,6 @@
         }
     }
 
-    // Weight Utils
     function calculatePOB() {
         const pob = (parseInt(document.getElementById('crew').value)||0) + (parseInt(document.getElementById('pax').value)||0);
         const val = pob > 0 ? pob : '';
@@ -868,21 +902,16 @@
         ['flightNo','capt','staffNo','crew','pax','m2000','p1000','m1000','bw','bi','pzfw','ezfw','ezfw_du','pfit','exs','bo','res','fzfw','fzfw_du','percent_mac','v2','v2_plus_15','sid','star','remarks','opti_climb','opti_mach','opti_desc1','opti_desc2','plan','reg','gate','info','fl','dest','pob','pdc','qnh','aus_cleared_sid','aus_cleared_wpt','aus_climb_alt','aus_sqwk'].forEach(id => {
             const el = document.getElementById('card-'+id);
             if(el) {
-                // Handle India fields specially if needed or generic match
                 const val = data[id.replace('india_','')] || data[id] || ''; 
                 el.textContent = val;
             }
         });
         
-        // India specific mappings (re-map because IDs differ slightly)
         const indiaGate = document.getElementById('card-gate-india'); if(indiaGate) indiaGate.textContent = data.gate;
         const indiaInfo = document.getElementById('card-info-india'); if(indiaInfo) indiaInfo.textContent = data.info;
-        const indiaPob = document.getElementById('card-india_pob'); if(indiaPob) indiaPob.textContent = data.pob; // Uses common POB
-        
-        // Aus Specific mappings
+        const indiaPob = document.getElementById('card-india_pob'); if(indiaPob) indiaPob.textContent = data.pob;
         const ausGate = document.getElementById('card-gate-aus'); if(ausGate) ausGate.textContent = data.gate;
 
-        // Times
         const fmt = (h, m) => (h && m) ? `${h}:${m}` : '';
         document.getElementById('card-std-time').textContent = fmt(data['std-hours'], data['std-minutes']);
         document.getElementById('card-std-gmt').textContent = data['std-gmt'] ? `(GMT${data['std-gmt']})` : '';
@@ -893,11 +922,9 @@
         document.getElementById('card-sta-lt-time').textContent = fmt(data['sta-lt-hours'], data['sta-lt-minutes']);
         document.getElementById('card-blk-t-time').textContent = fmt(data['blk-t-hours'], data['blk-t-minutes']);
 
-        // Format Rows
         document.querySelectorAll('#cardPage .format-row').forEach(r => r.classList.remove('active'));
         document.getElementById(`card-${data.formatSelector}-format-row`).classList.add('active');
 
-        // Dynamic Crew
         const cc = document.getElementById('card-additional-crew'); cc.innerHTML = '';
         data.crewMembers.forEach(c => {
              cc.innerHTML += `<div class="card-crew-row"><span class="data-display card-crew-type">${c.type}</span><span class="data-display card-crew-name">${c.name}</span></div>`;
@@ -907,11 +934,34 @@
         document.getElementById("cardPage").classList.add("active");
     }
 
-    // --- SETUP LISTENERS ---
+    // --- SETUP LISTENERS & AUTOTAB ---
     function setupEventListeners() {
+        
+        // Auto-Tab Helper
+        function autoTab(currentElId, nextElId) {
+          const currentEl = document.getElementById(currentElId);
+          if(!currentEl) return;
+          currentEl.addEventListener('input', () => {
+              // Only auto-tab if max length reached
+              if (currentEl.maxLength > 0 && currentEl.value.length >= currentEl.maxLength) {
+                  const nextEl = document.getElementById(nextElId);
+                  if(nextEl) nextEl.focus();
+              }
+          });
+        }
+        
+        // Register Auto-Tabs
+        autoTab('plan', 'reg'); autoTab('reg', 'gate');
+        autoTab('gate', 'info'); autoTab('fl', 'dest');
+        autoTab('pdc', 'qnh');
+        autoTab('aus_cleared_sid', 'aus_cleared_wpt');
+        autoTab('aus_cleared_wpt', 'aus_climb_alt');
+        autoTab('aus_climb_alt', 'aus_sqwk');
+        autoTab('opti_climb', 'opti_mach');
+        autoTab('opti_desc1', 'opti_desc2');
+
         document.getElementById('reg').addEventListener('input', function() {
             this.value = this.value.toUpperCase().slice(0,3);
-            // Dynamic Lookup
             if(aircraftData[this.value]) {
                 document.getElementById('bw').value = aircraftData[this.value].bw;
                 document.getElementById('bi').value = aircraftData[this.value].bi;
@@ -920,7 +970,6 @@
         });
 
         document.getElementById('bw').addEventListener('change', () => { 
-             // Trigger DB update logic on save
              saveAllToLocalStorage(); 
         });
 
@@ -936,9 +985,14 @@
             });
         });
 
+        // Button Actions
         document.getElementById('cloudSaveBtn').addEventListener('click', saveToCloud);
         document.getElementById('cloudLoadBtn').addEventListener('click', loadFlightList);
+        document.getElementById('saveFileBtn').addEventListener('click', saveDataToFile);
+        document.getElementById('loadFileBtn').addEventListener('click', () => document.getElementById('fileInput').click());
+        document.getElementById('fileInput').addEventListener('change', loadDataFromFile);
         document.getElementById('fetchTimesBtn').addEventListener('click', fetchTimes);
+        
         document.getElementById('purgeButton').addEventListener('click', () => {
             if(confirm("Clear Data?")) {
                 savableInputIds.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ''; });
