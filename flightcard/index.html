@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flight Card v3</title>
+  <title>Flight Card v3.1</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-    /* --- CSS STYLES --- */
+    /* --- CORE STYLES (Based on Original) --- */
     html, body {
       margin: 0; padding: 0; font-family: monospace; font-size: 10px;
       box-sizing: border-box; width: 100%; height: 100%;
@@ -24,7 +24,7 @@
     }
     .active { display: block; }
 
-    /* Heading & Controls */
+    /* Heading */
     .heading-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .heading-controls { display: flex; align-items: center; gap: 10px; }
     #cardPage .heading-controls { gap: 0; }
@@ -54,10 +54,7 @@
     .modal-list-item:hover { background: #f0f8ff; }
     .modal-close { float: right; cursor: pointer; font-size: 14px; font-weight: bold; }
 
-    /* Layout */
-    .format-selector-row { padding: 5px; background-color: #eeeeee; border-bottom: 1px solid black; box-sizing: border-box; }
-    .format-selector-row select { font-size: 10px; padding: 2px; }
-
+    /* Table Structure */
     .form-section { display: flex; flex-direction: column; width: 100%; border: 1px solid black; border-collapse: collapse; transition: border-color 0.3s; }
     #cardPage .form-section { border: none; }
     
@@ -68,7 +65,7 @@
     .cell { border-right: 1px solid black; padding: 5px; display: flex; align-items: center; gap: 5px; flex-shrink: 0; box-sizing: border-box; white-space: nowrap; transition: border-color 0.3s; }
     .cell:last-child { border-right: none; min-width: 0; }
 
-    /* Seamless Rows (Restored Logic) */
+    /* Seamless Alignment */
     .seamless-row .cell { border-right: none; padding: 5px 2px; gap: 2px; border-bottom: none; margin-right: 3px; }
     .seamless-row .cell:last-child { margin-right: 0; flex-grow: 0; }
     .seamless-row { border-bottom: none; }
@@ -85,11 +82,12 @@
     .cell textarea { width: 100%; max-width: 100%; resize: both; min-height: 40px; }
     .remarks-cell { flex-basis: 280px; flex-grow: 0; flex-shrink: 0; border-right: none !important; padding: 5px 2px !important; margin-right: 3px; }
 
-    /* Data Display */
-    .data-display { display: inline-block; min-height: 1em; padding: 1px; box-sizing: border-box; white-space: pre; }
-    #card-remarks { white-space: pre-wrap; display: block; text-align: left; min-height: 3.6em; width: 100%; }
+    /* --- INPUT WIDTHS (ADJUSTED FOR ALIGNMENT) --- */
+    /* Original was 140px and 90px. Reduced to fit 750px width perfectly with buttons */
+    .name-input, .crew-name-input { width: 125px !important; } 
+    input#staffNo { width: 80px !important; }
+    .crew-pax-inputs input { width: 35px !important; } /* Reduced from 40px */
     
-    /* Input Widths */
     input#plan { width: 25px !important; }
     input#reg, input#fl, input#dest, input#flightNo, input#pdc { width: 35px !important; }
     input#gate, input#bi, input#v2, input#v2_plus_15, input#qnh, input#aus_sqwk, input#opti_climb, input#opti_desc1, input#opti_desc2 { width: 45px !important; }
@@ -99,26 +97,26 @@
     input#pzfw, input#ezfw, input#pfit, input#exs, input#bo, input#res, input#fzfw, input#ezfw_du, input#fzfw_du, input#percent_mac, input#aus_climb_alt { width: 55px !important; }
     input#bw { width: 65px !important; }
     input#sid, input#star, input#aus_cleared_sid, input#aus_cleared_wpt { width: 100px !important; }
-    .crew-pax-inputs input { width: 40px !important; }
-    .prefix-input input { width: 45px !important; }
-    .name-input, .crew-name-input { width: 140px !important; }
-    input#staffNo { width: 90px !important; }
     
-    /* Opti Section Specifics */
-    .opti-mach-wrapper { display: flex; align-items: center; gap: 2px; }
-    .crz-check-label { font-size: 8px; margin-left: 2px; display: flex; align-items: center; cursor: pointer; }
-    .crz-check-label input { margin: 0 2px 0 0; }
-    .crz-text { font-weight: bold; display: none; margin-left: 2px; }
-    
-    /* Other Components */
-    .crew-pax-inputs { display: flex; align-items: center; gap: 3px; }
-    #cardPage .crew-pax-inputs { gap: 1px; }
+    /* Prefix Cells (Exact Original Styling) */
+    .cell.prefix-cell {
+      flex-direction: column; align-items: flex-start;
+      width: 75px !important; min-width: 75px !important; max-width: 75px !important; flex: 0 0 75px !important;
+      padding: 5px; gap: 5px;
+    }
     .prefix-input { display: flex; align-items: center; gap: 2px; }
+    .prefix-input input { width: 45px !important; }
+
+    /* Crew/Capt Cells */
+    .cell.label-small input { width: 45px; }
+    .cell.crew-cell { flex-direction: row; }
+    .crew-pax-inputs { display: flex; align-items: center; gap: 3px; }
+    
     .capt-cell { display: flex; flex-direction: column; gap: 4px; min-width: 200px; }
     .capt-top { display: flex; gap: 5px; width: 100%; }
     .capt-top .field { flex: 1; display: flex; align-items: center; gap: 5px; }
+    
     .crew-row { display: flex; gap: 5px; width: 100%; align-items: center; }
-    .dynamic-crew-wrapper { display: flex; align-items: flex-start; width: 100%; gap: 5px; }
     #additional-crew-container { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; flex-grow: 1; }
     .label-capt, .crew-type-select { width: 40px !important; flex-shrink: 0; display: inline-block; }
     .crew-type-select { height: auto; padding: 1px; }
@@ -127,9 +125,11 @@
     .crew-row:only-child .remove-crew-btn { display: none !important; }
     .add-crew-btn { display: none; }
     .crew-row:last-child .add-crew-btn { display: inline-block; }
-    #card-additional-crew { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
-    .card-crew-row { display: flex; gap: 5px; align-items: center; }
-    .card-crew-type { width: 40px; flex-shrink: 0; }
+
+    /* Opti Section */
+    .opti-mach-wrapper { display: flex; align-items: center; gap: 2px; }
+    .crz-check-label { font-size: 8px; margin-left: 2px; display: flex; align-items: center; cursor: pointer; }
+    .crz-text { font-weight: bold; display: none; margin-left: 2px; }
 
     /* Time Inputs */
     .time-input-container { display: flex; align-items: center; gap: 2px; }
@@ -146,8 +146,10 @@
     #purgeButton { background-color: #cc3300; }
     .btn-green { background-color: #2e7d32; }
     .btn-grey { background-color: #757575; }
-    
-    /* Toggle */
+    .format-selector-row { padding: 5px; background-color: #eeeeee; border-bottom: 1px solid black; box-sizing: border-box; }
+    .format-selector-row select { font-size: 10px; padding: 2px; }
+
+    /* Switch */
     .switch { position: relative; display: inline-block; width: 40px; height: 20px; vertical-align: middle; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
@@ -158,12 +160,16 @@
     .footer-text { font-size: 8px; margin-top: 15px; text-align: left; color: #555555; }
     #fileInput { display: none; }
 
-    /* Display Alignment */
-    .text-blue { color: #0066cc; }
-    .text-red { color: #cc3300; }
-    .format-row { display: none; }
-    .format-row.active { display: flex; }
+    /* Card Page Display */
+    .data-display { display: inline-block; min-height: 1em; padding: 1px; box-sizing: border-box; white-space: pre; }
+    #card-remarks { white-space: pre-wrap; display: block; text-align: left; min-height: 3.6em; width: 100%; }
+    #card-flight-number-display { font-size: 20px; font-weight: bold; display: flex; align-items: baseline; gap: 5px; }
+    .text-blue { color: #0066cc; } .text-red { color: #cc3300; }
+    .format-row { display: none; } .format-row.active { display: flex; }
     .first-data-cell { flex-basis: 110px; flex-shrink: 0; flex-grow: 0; }
+    #cardPage .crew-pax-inputs { gap: 1px; }
+    #card-additional-crew { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+    .card-crew-row { display: flex; gap: 5px; align-items: center; }
 
     /* NIGHT MODE */
     body.night-mode { background-color: #1a1a1a; color: #e0e0e0; }
@@ -171,12 +177,10 @@
     .night-mode .heading-container h3 { color: #e0e0e0; }
     .night-mode .format-selector-row { background-color: #2c2c2c; }
     .night-mode .format-selector-row select { background-color: #333333; color: #e0e0e0; border-color: #666; }
-    .night-mode .form-section { border-color: #555555; }
-    .night-mode .row, .night-mode .cell { border-color: #555555; }
+    .night-mode .form-section, .night-mode .row, .night-mode .cell { border-color: #555555; }
     .night-mode .cell input[type="text"], .night-mode .cell select, .night-mode .cell textarea { background-color: #333333; color: #e0e0e0; border-color: #666; }
     .night-mode .cell input[readonly] { background-color: #444444; color: #bbbbbb; }
-    .night-mode .text-blue { color: #66aaff; }
-    .night-mode .text-red { color: #ff6666; }
+    .night-mode .text-blue { color: #66aaff; } .night-mode .text-red { color: #ff6666; }
     .night-mode #card-flight-number-display { color: #ffffff; }
     .night-mode #sync-status { background: #333; color: #aaa; }
     .night-mode #sync-status.synced { color: #66bb6a; background: #1b5e20; }
