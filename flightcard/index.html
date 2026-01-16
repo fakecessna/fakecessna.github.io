@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flight Card v3.1</title>
+  <title>Flight Card v2.1</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-    /* --- CORE STYLES (Based on Original) --- */
+    /* --- CORE STYLES --- */
+    * { box-sizing: border-box; }
     html, body {
       margin: 0; padding: 0; font-family: monospace; font-size: 10px;
-      box-sizing: border-box; width: 100%; height: 100%;
+      width: 100%; height: 100%;
       transition: background-color 0.3s, color 0.3s;
     }
     body {
@@ -24,20 +25,23 @@
     }
     .active { display: block; }
 
-    /* Heading */
+    /* Heading Area */
     .heading-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .heading-left { display: flex; align-items: center; gap: 10px; }
     .heading-controls { display: flex; align-items: center; gap: 10px; }
     #cardPage .heading-controls { gap: 0; }
     .heading-container h3 { margin: 0; }
 
+    /* Sync Status Indicator */
     #sync-status {
-        font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 5px;
-        padding: 4px 8px; border-radius: 4px; background: #eee; cursor: default;
+        font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 5px;
+        padding: 2px 6px; border-radius: 4px; background: #eee; cursor: pointer; user-select: none;
     }
     #sync-status.synced { color: #2e7d32; background: #e8f5e9; } 
     #sync-status.offline { color: #555; background: #eee; }
+    #sync-status.error { color: #c62828; background: #ffebee; }
 
-    /* Modal */
+    /* Modal Styles */
     .modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000;
@@ -45,14 +49,17 @@
     .modal {
         background: white; padding: 20px; border-radius: 4px; width: 400px;
         max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        font-family: monospace; font-size: 12px;
+        font-family: monospace; font-size: 12px; color: black;
     }
-    .modal h4 { margin-top: 0; border-bottom: 2px solid #0066cc; padding-bottom: 5px; }
+    .modal h4 { margin-top: 0; border-bottom: 2px solid #0066cc; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center;}
     .modal-list-item {
-        padding: 8px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between;
+        padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;
     }
     .modal-list-item:hover { background: #f0f8ff; }
-    .modal-close { float: right; cursor: pointer; font-size: 14px; font-weight: bold; }
+    .flight-info { cursor: pointer; flex-grow: 1; }
+    .delete-btn { color: #cc3300; cursor: pointer; padding: 5px 10px; margin-left: 10px; }
+    .delete-btn:hover { background-color: #ffebee; border-radius: 3px; }
+    .modal-close { cursor: pointer; font-size: 14px; font-weight: bold; }
 
     /* Table Structure */
     .form-section { display: flex; flex-direction: column; width: 100%; border: 1px solid black; border-collapse: collapse; transition: border-color 0.3s; }
@@ -62,31 +69,68 @@
     .row:last-child, .row.no-bottom-border { border-bottom: none; }
     .row.add-top-border { border-top: 1px solid black; transition: border-color 0.3s; }
     
-    .cell { border-right: 1px solid black; padding: 5px; display: flex; align-items: center; gap: 5px; flex-shrink: 0; box-sizing: border-box; white-space: nowrap; transition: border-color 0.3s; }
+    /* Cell Styling - Tightened padding to fix overflow */
+    .cell {
+      border-right: 1px solid black; padding: 3px; display: flex; align-items: center; gap: 3px;
+      flex-shrink: 0; flex-grow: 0; white-space: nowrap; transition: border-color 0.3s;
+    }
     .cell:last-child { border-right: none; min-width: 0; }
 
-    /* Seamless Alignment */
+    /* Seamless Rows (Plan -> Remarks) */
     .seamless-row .cell { border-right: none; padding: 5px 2px; gap: 2px; border-bottom: none; margin-right: 3px; }
     .seamless-row .cell:last-child { margin-right: 0; flex-grow: 0; }
     .seamless-row { border-bottom: none; }
     .filler-cell { min-width: 0; padding: 0 !important; flex-grow: 1; border: none !important; margin-right: 0; }
     
+    /* Labels */
     .label-fixed { width: 35px; flex-shrink: 0; display: inline-block; text-align: left; }
     .label-reg { width: 25px; }
     .reg-prefix { margin-right: 1px; }
     .label-right-aligned { text-align: right; width: auto; flex-shrink: 0; }
-
-    /* Inputs */
-    .cell input[type="text"], .cell select, .cell textarea { font-size: inherit; padding: 1px; height: auto; background-color: #ffffff; color: #000000; border: 1px solid #ccc; transition: all 0.3s; font-family: inherit; }
+    
+    /* Input Styling */
+    .cell input[type="text"], .cell select, .cell textarea {
+        font-size: inherit; padding: 1px; height: auto; background-color: #ffffff; color: #000000;
+        border: 1px solid #ccc; transition: all 0.3s; font-family: inherit;
+    }
     .cell input[readonly] { background-color: #eeeeee; }
     .cell textarea { width: 100%; max-width: 100%; resize: both; min-height: 40px; }
     .remarks-cell { flex-basis: 280px; flex-grow: 0; flex-shrink: 0; border-right: none !important; padding: 5px 2px !important; margin-right: 3px; }
 
-    /* --- INPUT WIDTHS (ADJUSTED FOR ALIGNMENT) --- */
-    /* Original was 140px and 90px. Reduced to fit 750px width perfectly with buttons */
-    .name-input, .crew-name-input { width: 125px !important; } 
-    input#staffNo { width: 80px !important; }
-    .crew-pax-inputs input { width: 35px !important; } /* Reduced from 40px */
+    /* --- ALIGNMENT & WIDTHS (Adjusted for 750px Fit) --- */
+    
+    /* Reduced slightly from 140px to 135px to prevent table overflow */
+    .name-input, .crew-name-input { width: 135px !important; } 
+    /* Reduced slightly from 90px to 85px */
+    input#staffNo { width: 85px !important; }
+    
+    /* Capt/Crew Structure */
+    .capt-cell { display: flex; flex-direction: column; gap: 4px; min-width: 200px; align-items: flex-start; }
+    .capt-top { display: flex; gap: 5px; width: 100%; }
+    .capt-top .field { flex: 1; display: flex; align-items: center; gap: 5px; }
+    
+    .dynamic-crew-wrapper { display: flex; flex-direction: column; width: 100%; gap: 4px; margin-top: 4px; }
+    #additional-crew-container { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+    .crew-row { display: flex; gap: 5px; width: 100%; align-items: center; }
+
+    /* Alignment Enforcement */
+    .label-capt, .crew-type-select { width: 40px !important; flex-shrink: 0; display: inline-block; }
+    .crew-type-select { height: auto; padding: 1px; }
+
+    /* Crew Controls */
+    .crew-control-btn { 
+        width: 18px; height: 18px; font-size: 12px; line-height: 16px; text-align: center; 
+        padding: 0; margin-left: 4px; border-radius: 3px; border: 1px solid #888; 
+        cursor: pointer; background-color: #f0f0f0; 
+    }
+    .remove-crew-btn { background-color: #f8d7da; border-color: #f5c6cb; }
+    .crew-row:only-child .remove-crew-btn { display: none !important; }
+    .add-crew-btn { display: none; }
+    .crew-row:last-child .add-crew-btn { display: inline-block; }
+
+    /* Other Input Widths */
+    .crew-pax-inputs input { width: 40px !important; }
+    .prefix-input input { width: 45px !important; }
     
     input#plan { width: 25px !important; }
     input#reg, input#fl, input#dest, input#flightNo, input#pdc { width: 35px !important; }
@@ -97,39 +141,18 @@
     input#pzfw, input#ezfw, input#pfit, input#exs, input#bo, input#res, input#fzfw, input#ezfw_du, input#fzfw_du, input#percent_mac, input#aus_climb_alt { width: 55px !important; }
     input#bw { width: 65px !important; }
     input#sid, input#star, input#aus_cleared_sid, input#aus_cleared_wpt { width: 100px !important; }
-    
-    /* Prefix Cells (Exact Original Styling) */
-    .cell.prefix-cell {
-      flex-direction: column; align-items: flex-start;
-      width: 75px !important; min-width: 75px !important; max-width: 75px !important; flex: 0 0 75px !important;
-      padding: 5px; gap: 5px;
-    }
-    .prefix-input { display: flex; align-items: center; gap: 2px; }
-    .prefix-input input { width: 45px !important; }
 
-    /* Crew/Capt Cells */
+    /* Cell Specifics */
     .cell.label-small input { width: 45px; }
     .cell.crew-cell { flex-direction: row; }
     .crew-pax-inputs { display: flex; align-items: center; gap: 3px; }
     
-    .capt-cell { display: flex; flex-direction: column; gap: 4px; min-width: 200px; }
-    .capt-top { display: flex; gap: 5px; width: 100%; }
-    .capt-top .field { flex: 1; display: flex; align-items: center; gap: 5px; }
-    
-    .crew-row { display: flex; gap: 5px; width: 100%; align-items: center; }
-    #additional-crew-container { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; flex-grow: 1; }
-    .label-capt, .crew-type-select { width: 40px !important; flex-shrink: 0; display: inline-block; }
-    .crew-type-select { height: auto; padding: 1px; }
-    .crew-control-btn { width: 18px; height: 18px; font-size: 12px; line-height: 16px; text-align: center; padding: 0; margin-left: 4px; border-radius: 3px; border: 1px solid #888; cursor: pointer; background-color: #f0f0f0; }
-    .remove-crew-btn { background-color: #f8d7da; border-color: #f5c6cb; }
-    .crew-row:only-child .remove-crew-btn { display: none !important; }
-    .add-crew-btn { display: none; }
-    .crew-row:last-child .add-crew-btn { display: inline-block; }
-
-    /* Opti Section */
-    .opti-mach-wrapper { display: flex; align-items: center; gap: 2px; }
-    .crz-check-label { font-size: 8px; margin-left: 2px; display: flex; align-items: center; cursor: pointer; }
-    .crz-text { font-weight: bold; display: none; margin-left: 2px; }
+    /* Reduced Prefix Cell from 75px to 70px to fix overflow */
+    .cell.prefix-cell { 
+        flex-direction: column; align-items: flex-start; width: 70px !important; 
+        min-width: 70px !important; max-width: 70px !important; flex: 0 0 70px !important; padding: 5px; gap: 5px; 
+    }
+    .prefix-input { display: flex; align-items: center; gap: 2px; }
 
     /* Time Inputs */
     .time-input-container { display: flex; align-items: center; gap: 2px; }
@@ -139,6 +162,11 @@
     .time-separator { font-weight: bold; }
     .time-cell { border-right: none !important; flex-grow: 0 !important; flex-shrink: 0 !important; }
 
+    /* Opti Section */
+    .opti-mach-wrapper { display: flex; align-items: center; gap: 2px; }
+    .crz-check-label { font-size: 8px; margin-left: 2px; display: flex; align-items: center; cursor: pointer; }
+    .crz-text { font-weight: bold; display: none; margin-left: 2px; }
+
     /* Buttons */
     .button-container { margin-top: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .button { margin: 0; font-size: 12px; background-color: #0066cc; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; transition: background-color 0.3s; }
@@ -146,10 +174,12 @@
     #purgeButton { background-color: #cc3300; }
     .btn-green { background-color: #2e7d32; }
     .btn-grey { background-color: #757575; }
+    .btn-fetch { background-color: #0066cc; color: white; border: none; padding: 2px 5px; border-radius: 3px; cursor: pointer; font-size: 9px; margin-left: auto; margin-right: 5px;}
+    
     .format-selector-row { padding: 5px; background-color: #eeeeee; border-bottom: 1px solid black; box-sizing: border-box; }
     .format-selector-row select { font-size: 10px; padding: 2px; }
 
-    /* Switch */
+    /* Toggle Switch */
     .switch { position: relative; display: inline-block; width: 40px; height: 20px; vertical-align: middle; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
@@ -184,10 +214,11 @@
     .night-mode #card-flight-number-display { color: #ffffff; }
     .night-mode #sync-status { background: #333; color: #aaa; }
     .night-mode #sync-status.synced { color: #66bb6a; background: #1b5e20; }
+    .night-mode #sync-status.error { color: #ef5350; background: #3c1515; }
     
     @media print {
         body { background: #fff !important; color: #000 !important; transform: none !important; padding: 0 !important; }
-        .heading-controls, .button-container, .footer-text, #fileInput, .format-selector-row, #formPage, .crew-controls, #sync-status { display: none !important; }
+        .heading-controls, .button-container, .footer-text, #fileInput, .format-selector-row, #formPage, .crew-controls, #sync-status, #fetchTimesBtn { display: none !important; }
         .page { display: none !important; border: none !important; width: 100% !important; max-width: 100% !important; }
         #cardPage { display: block !important; }
         #cardPage .form-section { border: 1px solid black !important; }
@@ -202,19 +233,24 @@
 
   <input type="file" id="fileInput" accept=".78x" />
 
+  <!-- Cloud Load/Delete Modal -->
   <div id="loadModal" class="modal-overlay">
       <div class="modal">
-          <span class="modal-close" onclick="closeModal()">X</span>
-          <h4><i class="fas fa-cloud-download-alt"></i> Load Flight from Cloud</h4>
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #0066cc; margin-bottom:10px; padding-bottom:5px;">
+              <h4 style="margin:0; border:none;">Load / Delete Flight</h4>
+              <span class="modal-close" onclick="closeModal()">X</span>
+          </div>
           <div id="flight-list-container">Loading...</div>
       </div>
   </div>
 
   <div id="formPage" class="page active">
     <div class="heading-container">
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div class="heading-left">
             <h3>Flight Card Entry</h3>
-            <div id="sync-status" class="offline" title="Sync Status"><i class="fas fa-circle"></i> <span>Offline</span></div>
+            <div id="sync-status" class="offline" title="Check Connection" onclick="checkConnection()">
+                <i class="fas fa-circle-notch"></i> <span>Check</span>
+            </div>
         </div>
         <div class="heading-controls">
             <button id="purgeButton" class="button">Purge</button>
@@ -229,8 +265,10 @@
       <div class="row row-1">
         <div class="cell label-small">
           <label for="flightNo">SQ</label>
-          <input type="text" id="flightNo" maxlength="3">
+          <input type="text" id="flightNo" maxlength="3" pattern="[0-9]*" inputmode="numeric">
         </div>
+        
+        <!-- CAPT CELL: Layout Strict Enforcement -->
         <div class="cell capt-cell">
           <div class="capt-top">
             <div class="field">
@@ -239,32 +277,36 @@
             </div>
             <div class="field">
               <label for="staffNo">No.</label>
-              <input type="text" id="staffNo" maxlength="8">
+              <input type="text" id="staffNo" maxlength="8" pattern="[0-9]*" inputmode="numeric">
             </div>
           </div>
-           <div class="dynamic-crew-wrapper">
-              <div id="additional-crew-container"></div>
-           </div>
+          <!-- Dynamic Crew Wrapper for vertical alignment -->
+          <div class="dynamic-crew-wrapper">
+              <div id="additional-crew-container">
+                <!-- Rows injected by JS -->
+              </div>
+          </div>
         </div>
+
         <div class="cell crew-cell">
           <label for="crew">CREW/PAX</label>
           <div class="crew-pax-inputs">
-            <input type="text" id="crew" maxlength="4">
+            <input type="text" id="crew" maxlength="4" pattern="[0-9]*" inputmode="numeric">
             <span>/</span>
-            <input type="text" id="pax" maxlength="4">
+            <input type="text" id="pax" maxlength="4" pattern="[0-9]*" inputmode="numeric">
           </div>
         </div>
         <div class="cell prefix-cell">
           <label for="m2000">(M/2000ft)</label>
-          <div class="prefix-input"> <span>+</span> <input type="text" id="m2000"> </div>
+          <div class="prefix-input"> <span>+</span> <input type="text" id="m2000" pattern="[0-9]*" inputmode="numeric"> </div>
         </div>
         <div class="cell prefix-cell">
           <label for="p1000">(P/1000kg)</label>
-          <div class="prefix-input"> <span>+</span> <input type="text" id="p1000"> </div>
+          <div class="prefix-input"> <span>+</span> <input type="text" id="p1000" pattern="[0-9]*" inputmode="numeric"> </div>
         </div>
         <div class="cell prefix-cell">
           <label for="m1000">(M/1000kg)</label>
-          <div class="prefix-input"> <span>-</span> <input type="text" id="m1000"> </div>
+          <div class="prefix-input"> <span>-</span> <input type="text" id="m1000" pattern="[0-9]*" inputmode="numeric"> </div>
         </div>
       </div>
       
@@ -272,21 +314,21 @@
         <div class="cell time-cell">
           <label for="std-hours">STD</label>
           <div class="time-input-container">
-            <input type="text" id="std-hours" class="time-input" maxlength="2" placeholder="HH">
+            <input type="text" id="std-hours" class="time-input" maxlength="2" placeholder="HH" pattern="[0-9]*" inputmode="numeric">
             <span class="time-separator">:</span>
-            <input type="text" id="std-minutes" class="time-input" maxlength="2" placeholder="MM">
+            <input type="text" id="std-minutes" class="time-input" maxlength="2" placeholder="MM" pattern="[0-9]*" inputmode="numeric">
             <span class="time-suffix">Z</span>
             <select id="std-gmt" class="gmt-select">
                <option value="">GMT</option><option value="+14">+14</option><option value="+13">+13</option><option value="+12">+12</option><option value="+11">+11</option><option value="+10">+10</option><option value="+9">+9</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6">+6</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4">+4</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option><option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-4">-4</option><option value="-5">-5</option><option value="-6">-6</option><option value="-7">-7</option><option value="-8">-8</option><option value="-9">-9</option><option value="-10">-10</option><option value="-11">-11</option><option value="-12">-12</option>
             </select>
-            <input type="text" id="std-lt-hours" class="time-input" maxlength="2" readonly>
+            <input type="text" id="std-lt-hours" class="time-input" maxlength="2" placeholder="HH" readonly>
             <span class="time-separator">:</span>
-            <input type="text" id="std-lt-minutes" class="time-input" maxlength="2" readonly>
+            <input type="text" id="std-lt-minutes" class="time-input" maxlength="2" placeholder="MM" readonly>
             <span class="time-suffix">LT</span>
             <span class="time-suffix">FLT/T</span>
-            <input type="text" id="flt-t-hours" class="time-input" maxlength="2">
+            <input type="text" id="flt-t-hours" class="time-input" maxlength="2" placeholder="HH" pattern="[0-9]*" inputmode="numeric">
             <span class="time-separator">:</span>
-            <input type="text" id="flt-t-minutes" class="time-input" maxlength="2">
+            <input type="text" id="flt-t-minutes" class="time-input" maxlength="2" placeholder="MM" pattern="[0-9]*" inputmode="numeric">
           </div>
         </div>
         <div class="cell filler-cell"></div>
@@ -296,25 +338,25 @@
         <div class="cell time-cell">
           <label for="sta-hours">STA</label>
           <div class="time-input-container">
-            <input type="text" id="sta-hours" class="time-input" maxlength="2">
+            <input type="text" id="sta-hours" class="time-input" maxlength="2" placeholder="HH" pattern="[0-9]*" inputmode="numeric">
             <span class="time-separator">:</span>
-            <input type="text" id="sta-minutes" class="time-input" maxlength="2">
+            <input type="text" id="sta-minutes" class="time-input" maxlength="2" placeholder="MM" pattern="[0-9]*" inputmode="numeric">
             <span class="time-suffix">Z</span>
             <select id="sta-gmt" class="gmt-select">
               <option value="">GMT</option><option value="+14">+14</option><option value="+13">+13</option><option value="+12">+12</option><option value="+11">+11</option><option value="+10">+10</option><option value="+9">+9</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6">+6</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4">+4</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option><option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-4">-4</option><option value="-5">-5</option><option value="-6">-6</option><option value="-7">-7</option><option value="-8">-8</option><option value="-9">-9</option><option value="-10">-10</option><option value="-11">-11</option><option value="-12">-12</option>
             </select>
-            <input type="text" id="sta-lt-hours" class="time-input" maxlength="2" readonly>
+            <input type="text" id="sta-lt-hours" class="time-input" maxlength="2" placeholder="HH" readonly>
             <span class="time-separator">:</span>
-            <input type="text" id="sta-lt-minutes" class="time-input" maxlength="2" readonly>
+            <input type="text" id="sta-lt-minutes" class="time-input" maxlength="2" placeholder="MM" readonly>
             <span class="time-suffix">LT</span>
             <span class="time-suffix">BLK/T</span>
-            <input type="text" id="blk-t-hours" class="time-input" maxlength="2" readonly>
+            <input type="text" id="blk-t-hours" class="time-input" maxlength="2" placeholder="HH" readonly>
             <span class="time-separator">:</span>
-            <input type="text" id="blk-t-minutes" class="time-input" maxlength="2" readonly>
+            <input type="text" id="blk-t-minutes" class="time-input" maxlength="2" placeholder="MM" readonly>
           </div>
         </div>
-        <div class="cell filler-cell" style="display:flex; align-items:center; justify-content:flex-end; padding-right:5px !important;">
-            <button id="fetchTimesBtn" class="button" style="font-size:9px; padding:2px 5px;" title="Fetch from Web"><i class="fas fa-clock"></i> Fetch Times</button>
+        <div class="cell filler-cell" style="display:flex; align-items:center;">
+             <button id="fetchTimesBtn" class="btn-fetch"><i class="fas fa-clock"></i> Fetch Times</button>
         </div>
       </div>
 
@@ -328,20 +370,20 @@
        </div>
       
       <div class="row seamless-row format-row active" id="default-format-row">
-        <div class="cell"> <label class="label-fixed" for="plan">PLAN</label> <input type="text" id="plan" maxlength="2"> </div>
+        <div class="cell"> <label class="label-fixed" for="plan">PLAN</label> <input type="text" id="plan" maxlength="2" pattern="[0-9]*" inputmode="numeric"> </div>
         <div class="cell"> <label class="label-fixed label-reg" for="reg">REG</label> <span class="reg-prefix">9V-</span><input type="text" id="reg" maxlength="3"> </div>
         <div class="cell"> <label class="label-right-aligned" for="gate">GATE</label> <input type="text" id="gate" maxlength="4"> </div>
         <div class="cell"> <label class="label-right-aligned" for="info">INFO</label> <select id="info"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option><option value="G">G</option><option value="H">H</option><option value="I">I</option><option value="J">J</option><option value="K">K</option><option value="L">L</option><option value="M">M</option><option value="N">N</option><option value="O">O</option><option value="P">P</option><option value="Q">Q</option><option value="R">R</option><option value="S">S</option><option value="T">T</option><option value="U">U</option><option value="V">V</option><option value="W">W</option><option value="X">X</option><option value="Y">Y</option><option value="Z">Z</option></select> </div>
-        <div class="cell"> <label class="label-right-aligned" for="fl">FL</label> <input type="text" id="fl" maxlength="3"> </div>
+        <div class="cell"> <label class="label-right-aligned" for="fl">FL</label> <input type="text" id="fl" maxlength="3" pattern="[0-9]*" inputmode="numeric"> </div>
         <div class="cell"> <label class="label-right-aligned" for="dest">DEST</label> <input type="text" id="dest" maxlength="3"> </div>
         <div class="cell"> <label class="label-right-aligned" for="pob">POB</label> <input type="text" id="pob" readonly> </div>
       </div>
 
        <div class="row seamless-row format-row" id="india-format-row">
-            <div class="cell"> <label for="pdc">PDC</label> <input type="text" id="pdc" maxlength="3"> </div>
+            <div class="cell"> <label for="pdc">PDC</label> <input type="text" id="pdc" maxlength="3" pattern="[0-9]*" inputmode="numeric"> </div>
             <div class="cell"> <label class="label-right-aligned" for="gate">GATE</label> <input type="text" id="gate" maxlength="4"> </div>
             <div class="cell"> <label class="label-right-aligned" for="info">ATIS</label> <select id="info"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option><option value="G">G</option><option value="H">H</option><option value="I">I</option><option value="J">J</option><option value="K">K</option><option value="L">L</option><option value="M">M</option><option value="N">N</option><option value="O">O</option><option value="P">P</option><option value="Q">Q</option><option value="R">R</option><option value="S">S</option><option value="T">T</option><option value="U">U</option><option value="V">V</option><option value="W">W</option><option value="X">X</option><option value="Y">Y</option><option value="Z">Z</option></select> </div>
-             <div class="cell"> <label for="qnh">QNH</label> <input type="text" id="qnh" maxlength="4"> </div>
+             <div class="cell"> <label for="qnh">QNH</label> <input type="text" id="qnh" maxlength="4" pattern="[0-9]*" inputmode="numeric"> </div>
              <div class="cell"> <label for="india_pob">POB</label> <input type="text" id="india_pob" readonly> </div>
             <div class="cell filler-cell"></div>
        </div>
@@ -350,36 +392,36 @@
              <div class="cell"> <label class="label-right-aligned" for="gate">GATE</label> <input type="text" id="gate" maxlength="4"> </div>
              <div class="cell"> <label for="aus_cleared_sid">Cleared</label> <input type="text" id="aus_cleared_sid" placeholder="SID"> </div>
              <div class="cell"> <input type="text" id="aus_cleared_wpt" placeholder="WPT"> </div>
-             <div class="cell"> <label for="aus_climb_alt">Climb via SID to</label> <input type="text" id="aus_climb_alt" maxlength="5"> </div>
-            <div class="cell"> <label for="aus_sqwk">SQWK</label> <input type="text" id="aus_sqwk" maxlength="4"> </div>
+             <div class="cell"> <label for="aus_climb_alt">Climb via SID to</label> <input type="text" id="aus_climb_alt" maxlength="5" pattern="[0-9]*" inputmode="numeric"> </div>
+            <div class="cell"> <label for="aus_sqwk">SQWK</label> <input type="text" id="aus_sqwk" maxlength="4" pattern="[0-9]*" inputmode="numeric"> </div>
             <div class="cell filler-cell"></div>
         </div>
 
       <div class="row seamless-row data-row add-top-border"> 
-        <div class="cell first-data-cell"> <label class="label-fixed" for="bw">BW</label> <input type="text" id="bw" maxlength="6"> </div>
-        <div class="cell"> <label class="label-fixed label-reg" for="bi">BI</label> <input type="text" id="bi" maxlength="4"> </div>
+        <div class="cell first-data-cell"> <label class="label-fixed" for="bw">BW</label> <input type="text" id="bw" maxlength="6" pattern="[0-9]*" inputmode="numeric"> </div>
+        <div class="cell"> <label class="label-fixed label-reg" for="bi">BI</label> <input type="text" id="bi" maxlength="4" pattern="[0-9.]*"> </div>
          <div class="cell filler-cell"></div>
       </div>
       
       <div class="row seamless-row data-row add-top-border"> 
-        <div class="cell first-data-cell"> <label class="label-fixed" for="pzfw">PZFW</label> <input type="text" id="pzfw" maxlength="5"> </div>
-        <div class="cell"> <label class="label-fixed label-reg" for="ezfw">EZFW</label> <input type="text" id="ezfw" maxlength="5"> </div>
+        <div class="cell first-data-cell"> <label class="label-fixed" for="pzfw">PZFW</label> <input type="text" id="pzfw" maxlength="5" pattern="[0-9.]*"> </div>
+        <div class="cell"> <label class="label-fixed label-reg" for="ezfw">EZFW</label> <input type="text" id="ezfw" maxlength="5" pattern="[0-9.]*"> </div>
         <div class="cell"> <label class="label-fixed" for="ezfw_du">D/U</label> <input type="text" id="ezfw_du" readonly> </div>
           <div class="cell filler-cell"></div>
       </div>
 
       <div class="row seamless-row data-row add-top-border"> 
-         <div class="cell first-data-cell"> <label class="label-fixed" for="pfit">PFIT</label> <input type="text" id="pfit" maxlength="5"> </div>
-         <div class="cell"> <label class="label-fixed label-reg" for="exs">EXS</label> <input type="text" id="exs" maxlength="5"> </div>
-         <div class="cell"> <label class="label-fixed" for="bo">BO</label> <input type="text" id="bo" maxlength="5"> </div>
-         <div class="cell"> <label class="label-fixed" for="res">RES</label> <input type="text" id="res" maxlength="5"> </div>
+         <div class="cell first-data-cell"> <label class="label-fixed" for="pfit">PFIT</label> <input type="text" id="pfit" maxlength="5" pattern="[0-9.]*"> </div>
+         <div class="cell"> <label class="label-fixed label-reg" for="exs">EXS</label> <input type="text" id="exs" maxlength="5" pattern="[0-9.]*"> </div>
+         <div class="cell"> <label class="label-fixed" for="bo">BO</label> <input type="text" id="bo" maxlength="5" pattern="[0-9.]*"> </div>
+         <div class="cell"> <label class="label-fixed" for="res">RES</label> <input type="text" id="res" maxlength="5" pattern="[0-9.]*"> </div>
       </div>
 
       <div class="row seamless-row data-row add-top-border"> 
-        <div class="cell first-data-cell"> <label class="label-fixed" for="fzfw">FZFW</label> <input type="text" id="fzfw" maxlength="5"> </div>
+        <div class="cell first-data-cell"> <label class="label-fixed" for="fzfw">FZFW</label> <input type="text" id="fzfw" maxlength="5" pattern="[0-9.]*"> </div>
         <div class="cell"> <label class="label-fixed label-reg" for="fzfw_du">D/U</label> <input type="text" id="fzfw_du" readonly> </div>
-        <div class="cell"> <label class="label-fixed" for="percent_mac">MACTOW</label> <input type="text" id="percent_mac" maxlength="4"> </div>
-        <div class="cell"> <label class="label-fixed" for="v2">V2</label> <input type="text" id="v2" maxlength="3"> </div>
+        <div class="cell"> <label class="label-fixed" for="percent_mac">MACTOW</label> <input type="text" id="percent_mac" maxlength="4" pattern="[0-9.]*"> </div>
+        <div class="cell"> <label class="label-fixed" for="v2">V2</label> <input type="text" id="v2" maxlength="3" pattern="[0-9]*" inputmode="numeric"> </div>
          <div class="cell"> <label class="label-fixed" for="v2_plus_15">V2+15</label> <input type="text" id="v2_plus_15" readonly> </div>
       </div>
 
@@ -387,17 +429,17 @@
         <div class="cell"> <label class="label-fixed" for="sid">SID</label> <input type="text" id="sid"> </div>
         <div class="cell"> <label class="label-fixed label-reg" for="star">STAR</label> <input type="text" id="star"> </div>
          <div class="cell" style="gap: 2px; border-left: 1px solid black;">
-            <input type="text" id="opti_climb" maxlength="3"> 
+            <input type="text" id="opti_climb" maxlength="3" pattern="[0-9]*" inputmode="numeric"> 
             <span>/</span> 
             <div class="opti-mach-wrapper">
                 <span class="dot-text">.</span>
-                <input type="text" id="opti_mach" maxlength="2">
+                <input type="text" id="opti_mach" maxlength="2" pattern="[0-9]*" inputmode="numeric">
                 <span class="crz-text">CRZ</span>
                 <label class="crz-check-label"><input type="checkbox" id="crz_check">CRZ</label>
             </div>
         </div>
         <div class="cell" style="gap: 2px; border-left: 1px solid black;">
-            <input type="text" id="opti_desc1" maxlength="3"> <span>/</span> <input type="text" id="opti_desc2" maxlength="3">
+            <input type="text" id="opti_desc1" maxlength="3" pattern="[0-9]*" inputmode="numeric"> <span>/</span> <input type="text" id="opti_desc2" maxlength="3" pattern="[0-9]*" inputmode="numeric">
         </div>
          <div class="cell filler-cell"></div>
       </div>
@@ -539,7 +581,7 @@
     const savableInputIds = ['flightNo', 'capt', 'staffNo', 'crew', 'pax', 'm2000', 'p1000', 'm1000', 'std-hours', 'std-minutes', 'std-gmt', 'flt-t-hours', 'flt-t-minutes', 'sta-hours', 'sta-minutes', 'sta-gmt', 'plan', 'reg', 'gate', 'info', 'fl', 'dest', 'bw', 'bi', 'pzfw', 'ezfw', 'pfit', 'exs', 'bo', 'res', 'fzfw', 'percent_mac', 'sid', 'star', 'v2', 'remarks', 'formatSelector', 'pdc', 'qnh', 'aus_cleared_sid', 'aus_cleared_wpt', 'aus_climb_alt', 'aus_sqwk', 'opti_climb', 'opti_mach', 'opti_desc1', 'opti_desc2', 'crz_check'];
     const calculatedIds = ['pob', 'india_pob', 'ezfw_du', 'fzfw_du', 'v2_plus_15', 'std-lt-hours', 'std-lt-minutes', 'sta-lt-hours', 'sta-lt-minutes', 'blk-t-hours', 'blk-t-minutes'];
     
-    // Hardcoded Fallback DB
+    // Fallback DB
     const aircraftDataFallback = {
         "SCA": { bw: 129763, bi: 39.2 }, "SCB": { bw: 129510, bi: 39.0 },
         "SCD": { bw: 129200, bi: 39.6 }, "SCE": { bw: 129530, bi: 39.3 },
@@ -560,23 +602,41 @@
     document.addEventListener('DOMContentLoaded', function() {
         loadFromLocalStorage();
         setupEventListeners();
-        updateSyncStatus();
-        window.addEventListener('online', updateSyncStatus);
-        window.addEventListener('offline', updateSyncStatus);
+        checkConnection(); // Initial ping
+        setInterval(checkConnection, 60000); // Check every 60s
         if(navigator.onLine) fetchAircraftDB();
         
         // Initial state for CRZ
         toggleCrz(document.getElementById('crz_check').checked);
     });
 
-    function updateSyncStatus() {
+    async function checkConnection() {
         const ind = document.getElementById('sync-status');
-        if (navigator.onLine) {
-            ind.className = 'synced';
-            ind.innerHTML = '<i class="fas fa-check-circle"></i> <span>Online</span>';
-        } else {
+        if (!navigator.onLine) {
             ind.className = 'offline';
             ind.innerHTML = '<i class="fas fa-ban"></i> <span>Offline</span>';
+            return;
+        }
+
+        ind.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> <span>Checking...</span>';
+        
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            // Ping the backend. Even a 404/error html response means we hit the server vs network error
+            await fetch(`${WEB_APP_URL}?action=PING`, { 
+                method: 'GET', 
+                signal: controller.signal,
+                mode: 'no-cors' // We just need to know if it reaches the server, opaque response is fine
+            });
+            clearTimeout(timeoutId);
+            
+            ind.className = 'synced';
+            ind.innerHTML = '<i class="fas fa-check-circle"></i> <span>Connected</span>';
+        } catch (error) {
+            ind.className = 'error';
+            ind.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>Sync Err</span>';
         }
     }
 
@@ -596,10 +656,17 @@
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; btn.disabled = true;
 
         const data = getAllFormData();
+        
+        // Update aircraft DB if needed
         if(data.reg && data.bw && data.bi) {
             const existing = aircraftData[data.reg];
             if(!existing || existing.bw != data.bw || existing.bi != data.bi) {
-                updateAircraftDB(data.reg, data.bw, data.bi);
+                aircraftData[data.reg] = { bw: data.bw, bi: data.bi };
+                 // Fire and forget update
+                 fetch(WEB_APP_URL, { 
+                     method: 'POST', 
+                     body: new URLSearchParams({ action: 'UPDATE_AIRCRAFT', reg: data.reg, bw: data.bw, bi: data.bi }) 
+                 });
             }
         }
 
@@ -607,16 +674,12 @@
             const payload = new URLSearchParams({ action: 'SAVE_FLIGHT', data: JSON.stringify(data) });
             await fetch(WEB_APP_URL, { method: 'POST', body: payload });
             alert("Flight Log Saved to Cloud!");
-        } catch(e) { alert("Save Failed (Offline?)"); } 
+            checkConnection(); // Update status
+        } catch(e) { 
+            alert("Save Failed. Check internet connection."); 
+            checkConnection();
+        } 
         finally { btn.innerHTML = origText; btn.disabled = false; }
-    }
-
-    async function updateAircraftDB(reg, bw, bi) {
-        aircraftData[reg] = { bw, bi };
-        try {
-            const payload = new URLSearchParams({ action: 'UPDATE_AIRCRAFT', reg, bw, bi });
-            fetch(WEB_APP_URL, { method: 'POST', body: payload });
-        } catch(e) { console.error("Aircraft DB Update Failed"); }
     }
 
     async function loadFlightList() {
@@ -631,10 +694,36 @@
             json.data.forEach(row => {
                 const date = row[1]; const flight = row[2]; const rawData = row[4];
                 const jsonStr = JSON.stringify(JSON.parse(rawData)).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
-                html += `<div class="modal-list-item" onclick='loadSelectedFlight(${jsonStr})'><span><strong>SQ${flight}</strong> - ${date}</span><span><i class="fas fa-chevron-right"></i></span></div>`;
+                html += `
+                <div class="modal-list-item">
+                    <span class="flight-info" onclick='loadSelectedFlight(${jsonStr})'>
+                        <strong>SQ${flight}</strong> - ${date}
+                    </span>
+                    <span class="delete-btn" onclick="deleteFlight('${flight}', '${date}', this.parentNode)">
+                        <i class="fas fa-trash"></i>
+                    </span>
+                </div>`;
             });
             container.innerHTML = html;
-        } catch(e) { container.innerHTML = "Error fetching list. Check connection."; }
+        } catch(e) { container.innerHTML = "Error fetching list. Check connection."; checkConnection(); }
+    }
+
+    async function deleteFlight(flightNo, date, listElement) {
+        if(!confirm(`Delete log for SQ${flightNo} on ${date}?`)) return;
+        
+        listElement.style.opacity = '0.5';
+        try {
+            const payload = new URLSearchParams({ 
+                action: 'DELETE_FLIGHT', 
+                flightNo: flightNo, 
+                date: date 
+            });
+            await fetch(WEB_APP_URL, { method: 'POST', body: payload });
+            listElement.remove();
+        } catch(e) {
+            alert("Delete failed.");
+            listElement.style.opacity = '1';
+        }
     }
 
     function loadSelectedFlight(data) {
@@ -682,7 +771,7 @@
     async function fetchTimes() {
         const btn = document.getElementById('fetchTimesBtn');
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...'; btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
         const fNo = document.getElementById('flightNo').value;
         if (!fNo) { alert("Please enter a Flight Number (e.g., 600)"); btn.innerHTML = originalText; btn.disabled = false; return; }
         try {
@@ -803,6 +892,7 @@
 
     function addCrewRow(data = { type: 'FZ', name: '' }) {
         const div = document.createElement('div'); div.className = 'crew-row';
+        // Note: Classes crew-type-select and crew-name-input now have strict widths in CSS to match top row
         div.innerHTML = `<select class="crew-type-select"><option value="FZ">FZ</option><option value="SCO">SCO</option><option value="OBS">OBS</option><option value="IFM">IFM</option><option value="WIA">WIA</option><option value="CSS/CS">CSS/CS</option><option value="LSS/LS">LSS/LS</option><option value="FSS/FS">FSS/FS</option></select>
                          <input type="text" class="crew-name-input" placeholder="Name" value="${data.name}">
                          <button type="button" class="crew-control-btn remove-crew-btn" onclick="this.parentElement.remove()">-</button>
@@ -847,9 +937,10 @@
         document.getElementById('card-sta-lt-time').textContent = fmt(data['sta-lt-hours'], data['sta-lt-minutes']);
         document.getElementById('card-blk-t-time').textContent = fmt(data['blk-t-hours'], data['blk-t-minutes']);
 
-        // Opti Mach Logic
         const isCrz = document.getElementById('crz_check').checked;
         document.getElementById('card-opti_mach_full').textContent = isCrz ? '.CRZ' : (data.opti_mach ? `.${data.opti_mach}` : '');
+
+        document.getElementById('card-opti_desc2_prefix').textContent = (data.opti_desc1 && data.opti_desc2) ? '/' : '';
 
         document.querySelectorAll('#cardPage .format-row').forEach(r => r.classList.remove('active'));
         document.getElementById(`card-${data.formatSelector}-format-row`).classList.add('active');
@@ -863,25 +954,15 @@
         document.getElementById("cardPage").classList.add("active");
     }
 
-    // Toggle CRZ display
     function toggleCrz(isChecked) {
         const machInput = document.getElementById('opti_mach');
         const dotText = document.querySelector('.dot-text');
         const crzText = document.querySelector('.crz-text');
-        
-        if (isChecked) {
-            machInput.style.display = 'none';
-            dotText.style.display = 'none';
-            crzText.style.display = 'inline';
-        } else {
-            machInput.style.display = 'inline-block';
-            dotText.style.display = 'inline';
-            crzText.style.display = 'none';
-        }
+        if (isChecked) { machInput.style.display = 'none'; dotText.style.display = 'none'; crzText.style.display = 'inline'; } 
+        else { machInput.style.display = 'inline-block'; dotText.style.display = 'inline'; crzText.style.display = 'none'; }
     }
 
     function setupEventListeners() {
-        // Auto-Tab Helper
         function autoTab(currentElId, nextElId) {
           const currentEl = document.getElementById(currentElId);
           if(!currentEl) return;
@@ -893,19 +974,13 @@
           });
         }
         
-        // Auto-tab Links
         autoTab('plan', 'reg'); autoTab('reg', 'gate');
         autoTab('gate', 'info'); autoTab('fl', 'dest');
         autoTab('pdc', 'qnh');
         autoTab('aus_cleared_sid', 'aus_cleared_wpt'); autoTab('aus_cleared_wpt', 'aus_climb_alt'); autoTab('aus_climb_alt', 'aus_sqwk');
         autoTab('opti_climb', 'opti_mach'); autoTab('opti_desc1', 'opti_desc2');
-        // Time Chains
-        autoTab('std-hours', 'std-minutes'); 
-        // Note: std-minutes is 2 chars, gmt is select. We can focus select but usually distracting.
-        autoTab('flt-t-hours', 'flt-t-minutes');
-        autoTab('sta-hours', 'sta-minutes');
+        autoTab('std-hours', 'std-minutes'); autoTab('flt-t-hours', 'flt-t-minutes'); autoTab('sta-hours', 'sta-minutes');
 
-        // Validation & Transformations
         document.querySelectorAll('input').forEach(el => {
             if(el.id.includes('hours') || el.id.includes('minutes') || el.id === 'flightNo' || el.id === 'plan' || el.id === 'bw' || el.id === 'fl' || el.id === 'v2') {
                 el.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); });
@@ -915,7 +990,6 @@
             }
         });
 
-        // Dynamic Aircraft Data (Hardcoded + LocalStorage)
         document.getElementById('reg').addEventListener('input', function() {
             this.value = this.value.slice(0,3);
             if(aircraftData[this.value]) {
@@ -925,14 +999,8 @@
             saveAllToLocalStorage();
         });
 
-        // CRZ Check
-        document.getElementById('crz_check').addEventListener('change', function() {
-            toggleCrz(this.checked);
-            saveAllToLocalStorage();
-        });
-
+        document.getElementById('crz_check').addEventListener('change', function() { toggleCrz(this.checked); saveAllToLocalStorage(); });
         document.getElementById('bw').addEventListener('change', () => saveAllToLocalStorage());
-
         document.querySelectorAll('input, select, textarea').forEach(el => {
             el.addEventListener('input', () => {
                 if(el.id.startsWith('std') || el.id.startsWith('sta')) updateLocalTime(el.id.startsWith('std')?'std-hours':'sta-hours', el.id.startsWith('std')?'std-minutes':'sta-minutes', el.id.startsWith('std')?'std-gmt':'sta-gmt', el.id.startsWith('std')?'std-lt-hours':'sta-lt-hours', el.id.startsWith('std')?'std-lt-minutes':'sta-lt-minutes');
