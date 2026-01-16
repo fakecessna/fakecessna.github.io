@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flight Card Cloud v2</title>
+  <title>Flight Card v3</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-    /* --- CORE STYLES --- */
+    /* --- CSS STYLES --- */
     html, body {
       margin: 0; padding: 0; font-family: monospace; font-size: 10px;
       box-sizing: border-box; width: 100%; height: 100%;
@@ -30,16 +30,14 @@
     #cardPage .heading-controls { gap: 0; }
     .heading-container h3 { margin: 0; }
 
-    /* Sync Status Indicator */
     #sync-status {
         font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 5px;
         padding: 4px 8px; border-radius: 4px; background: #eee; cursor: default;
     }
     #sync-status.synced { color: #2e7d32; background: #e8f5e9; } 
-    #sync-status.pending { color: #c62828; background: #ffebee; } 
     #sync-status.offline { color: #555; background: #eee; }
 
-    /* Modal Styles */
+    /* Modal */
     .modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000;
@@ -56,21 +54,21 @@
     .modal-list-item:hover { background: #f0f8ff; }
     .modal-close { float: right; cursor: pointer; font-size: 14px; font-weight: bold; }
 
-    /* Format Selector Row */
+    /* Layout */
     .format-selector-row { padding: 5px; background-color: #eeeeee; border-bottom: 1px solid black; box-sizing: border-box; }
     .format-selector-row select { font-size: 10px; padding: 2px; }
 
-    /* Form & Table Styles */
-    .form-section { display: flex; flex-direction: column; flex-wrap: nowrap; width: 100%; border: 1px solid black; border-collapse: collapse; transition: border-color 0.3s; }
+    .form-section { display: flex; flex-direction: column; width: 100%; border: 1px solid black; border-collapse: collapse; transition: border-color 0.3s; }
     #cardPage .form-section { border: none; }
-    .row { display: flex; width: 100%; flex-wrap: nowrap; border-bottom: 1px solid black; transition: border-color 0.3s; }
-    .row:last-child { border-bottom: none; }
-    .row.no-bottom-border { border-bottom: none; }
+    
+    .row { display: flex; width: 100%; border-bottom: 1px solid black; transition: border-color 0.3s; }
+    .row:last-child, .row.no-bottom-border { border-bottom: none; }
     .row.add-top-border { border-top: 1px solid black; transition: border-color 0.3s; }
-    .cell { border-right: 1px solid black; padding: 5px; display: flex; align-items: center; gap: 5px; flex-shrink: 0; flex-grow: 0; box-sizing: border-box; white-space: nowrap; transition: border-color 0.3s; }
+    
+    .cell { border-right: 1px solid black; padding: 5px; display: flex; align-items: center; gap: 5px; flex-shrink: 0; box-sizing: border-box; white-space: nowrap; transition: border-color 0.3s; }
     .cell:last-child { border-right: none; min-width: 0; }
 
-    /* Seamless Row Styles */
+    /* Seamless Rows (Restored Logic) */
     .seamless-row .cell { border-right: none; padding: 5px 2px; gap: 2px; border-bottom: none; margin-right: 3px; }
     .seamless-row .cell:last-child { margin-right: 0; flex-grow: 0; }
     .seamless-row { border-bottom: none; }
@@ -81,47 +79,16 @@
     .reg-prefix { margin-right: 1px; }
     .label-right-aligned { text-align: right; width: auto; flex-shrink: 0; }
 
-    /* Input Widths & Styles */
-    .cell.label-small input { width: 45px; }
-    .cell.crew-cell { flex-direction: row; }
-    .cell.prefix-cell { flex-direction: column; align-items: flex-start; width: 75px !important; min-width: 75px !important; flex: 0 0 75px !important; padding: 5px; gap: 5px; }
-    
-    .cell input[type="text"], .cell select, .cell textarea { font-size: inherit; padding: 1px; box-sizing: border-box; height: auto; background-color: #ffffff; color: #000000; border: 1px solid #ccc; transition: all 0.3s; font-family: inherit; }
+    /* Inputs */
+    .cell input[type="text"], .cell select, .cell textarea { font-size: inherit; padding: 1px; height: auto; background-color: #ffffff; color: #000000; border: 1px solid #ccc; transition: all 0.3s; font-family: inherit; }
     .cell input[readonly] { background-color: #eeeeee; }
-    .cell textarea { width: 100%; max-width: 100%; resize: both; min-height: calc(3 * 1.2em + 4px); line-height: 1.2em; }
-    .remarks-cell { flex-basis: 280px; flex-grow: 0; flex-shrink: 0; border-right: none !important; align-items: stretch; padding: 5px 2px !important; margin-right: 3px; }
+    .cell textarea { width: 100%; max-width: 100%; resize: both; min-height: 40px; }
+    .remarks-cell { flex-basis: 280px; flex-grow: 0; flex-shrink: 0; border-right: none !important; padding: 5px 2px !important; margin-right: 3px; }
 
-    /* Data Display Styles (Card View) */
+    /* Data Display */
     .data-display { display: inline-block; min-height: 1em; padding: 1px; box-sizing: border-box; white-space: pre; }
-    #card-remarks { white-space: pre-wrap; display: block; text-align: left; min-height: calc(3 * 1.2em); line-height: 1.2em; width: 100%; }
+    #card-remarks { white-space: pre-wrap; display: block; text-align: left; min-height: 3.6em; width: 100%; }
     
-    /* Specific Data Widths */
-    #card-plan { min-width: 25px; }
-    #card-reg, #card-fl, #card-dest, #card-flightNo { min-width: 35px; }
-    #card-gate, #card-gate-india, #card-gate-aus, #card-bi, #card-v2, #card-v2_plus_15 { min-width: 45px; text-align: right; }
-    #card-pob, #card-india_pob { min-width: 40px; }
-    #card-info, #card-info-india { min-width: 35px; text-align: center; }
-    #card-pzfw, #card-ezfw, #card-pfit, #card-exs, #card-bo, #card-res, #card-fzfw, #card-ezfw_du, #card-fzfw_du, #card-percent_mac { min-width: 55px; text-align: right; }
-    #card-bw { min-width: 65px; text-align: right; }
-    #card-sid, #card-star { min-width: 100px; }
-    #card-crew, #card-pax { min-width: 40px; }
-    #card-m2000, #card-p1000, #card-m1000 { min-width: 45px; }
-    #card-capt, .card-crew-name { min-width: 140px; }
-    #card-staffNo { min-width: 90px; }
-    #card-std-time, #card-sta-time, #card-std-lt-time, #card-sta-lt-time, #card-flt-t-time, #card-blk-t-time { min-width: 45px; } 
-    #card-std-gmt, #card-sta-gmt { min-width: 60px; } 
-    #card-qnh, #card-aus_sqwk { min-width: 45px; } 
-    #card-aus_climb_alt { min-width: 55px; }
-
-    #card-flight-number-display { font-size: 20px; font-weight: bold; display: flex; align-items: baseline; gap: 5px; }
-    #card-flight-number-display label { font-size: inherit; font-weight: inherit; width: auto; }
-    #card-flight-number-display .data-display { font-size: inherit; font-weight: inherit; min-width: auto; }
-    .text-blue { color: #0066cc; }
-    .text-red { color: #cc3300; }
-    .format-row { display: none; }
-    .format-row.active { display: flex; }
-    .first-data-cell { flex-basis: 110px; flex-shrink: 0; flex-grow: 0; }
-
     /* Input Widths */
     input#plan { width: 25px !important; }
     input#reg, input#fl, input#dest, input#flightNo, input#pdc { width: 35px !important; }
@@ -137,10 +104,17 @@
     .name-input, .crew-name-input { width: 140px !important; }
     input#staffNo { width: 90px !important; }
     
+    /* Opti Section Specifics */
+    .opti-mach-wrapper { display: flex; align-items: center; gap: 2px; }
+    .crz-check-label { font-size: 8px; margin-left: 2px; display: flex; align-items: center; cursor: pointer; }
+    .crz-check-label input { margin: 0 2px 0 0; }
+    .crz-text { font-weight: bold; display: none; margin-left: 2px; }
+    
+    /* Other Components */
     .crew-pax-inputs { display: flex; align-items: center; gap: 3px; }
     #cardPage .crew-pax-inputs { gap: 1px; }
     .prefix-input { display: flex; align-items: center; gap: 2px; }
-    .capt-cell { display: flex; flex-direction: column; gap: 4px; min-width: 200px; box-sizing: border-box; align-items: flex-start; }
+    .capt-cell { display: flex; flex-direction: column; gap: 4px; min-width: 200px; }
     .capt-top { display: flex; gap: 5px; width: 100%; }
     .capt-top .field { flex: 1; display: flex; align-items: center; gap: 5px; }
     .crew-row { display: flex; gap: 5px; width: 100%; align-items: center; }
@@ -149,9 +123,7 @@
     .label-capt, .crew-type-select { width: 40px !important; flex-shrink: 0; display: inline-block; }
     .crew-type-select { height: auto; padding: 1px; }
     .crew-control-btn { width: 18px; height: 18px; font-size: 12px; line-height: 16px; text-align: center; padding: 0; margin-left: 4px; border-radius: 3px; border: 1px solid #888; cursor: pointer; background-color: #f0f0f0; }
-    .crew-control-btn:hover { background-color: #e0e0e0; }
     .remove-crew-btn { background-color: #f8d7da; border-color: #f5c6cb; }
-    .remove-crew-btn:hover { background-color: #f1c3c7; }
     .crew-row:only-child .remove-crew-btn { display: none !important; }
     .add-crew-btn { display: none; }
     .crew-row:last-child .add-crew-btn { display: inline-block; }
@@ -159,17 +131,6 @@
     .card-crew-row { display: flex; gap: 5px; align-items: center; }
     .card-crew-type { width: 40px; flex-shrink: 0; }
 
-    /* Buttons */
-    .button-container { margin-top: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .button { margin: 0; font-size: 12px; background-color: #0066cc; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; transition: background-color 0.3s; }
-    .button:hover { background-color: #0055aa; }
-    #purgeButton { background-color: #cc3300; }
-    #purgeButton:hover { background-color: #aa2b00; }
-    .btn-green { background-color: #2e7d32; }
-    .btn-green:hover { background-color: #1b5e20; }
-    .btn-grey { background-color: #757575; }
-    .btn-grey:hover { background-color: #616161; }
-    
     /* Time Inputs */
     .time-input-container { display: flex; align-items: center; gap: 2px; }
     .time-input { width: 40px !important; text-align: center; padding: 2px; }
@@ -178,7 +139,15 @@
     .time-separator { font-weight: bold; }
     .time-cell { border-right: none !important; flex-grow: 0 !important; flex-shrink: 0 !important; }
 
-    /* Switch */
+    /* Buttons */
+    .button-container { margin-top: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .button { margin: 0; font-size: 12px; background-color: #0066cc; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; transition: background-color 0.3s; }
+    .button:hover { background-color: #0055aa; }
+    #purgeButton { background-color: #cc3300; }
+    .btn-green { background-color: #2e7d32; }
+    .btn-grey { background-color: #757575; }
+    
+    /* Toggle */
     .switch { position: relative; display: inline-block; width: 40px; height: 20px; vertical-align: middle; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
@@ -188,6 +157,13 @@
 
     .footer-text { font-size: 8px; margin-top: 15px; text-align: left; color: #555555; }
     #fileInput { display: none; }
+
+    /* Display Alignment */
+    .text-blue { color: #0066cc; }
+    .text-red { color: #cc3300; }
+    .format-row { display: none; }
+    .format-row.active { display: flex; }
+    .first-data-cell { flex-basis: 110px; flex-shrink: 0; flex-grow: 0; }
 
     /* NIGHT MODE */
     body.night-mode { background-color: #1a1a1a; color: #e0e0e0; }
@@ -204,18 +180,17 @@
     .night-mode #card-flight-number-display { color: #ffffff; }
     .night-mode #sync-status { background: #333; color: #aaa; }
     .night-mode #sync-status.synced { color: #66bb6a; background: #1b5e20; }
-    .night-mode #sync-status.pending { color: #ef5350; background: #b71c1c; }
-    .night-mode .modal-list-item:hover { background: #333; }
     
     @media print {
         body { background: #fff !important; color: #000 !important; transform: none !important; padding: 0 !important; }
-        .heading-controls, .button-container, .footer-text, .format-selector-row, #formPage, .crew-controls, #sync-status { display: none !important; }
+        .heading-controls, .button-container, .footer-text, #fileInput, .format-selector-row, #formPage, .crew-controls, #sync-status { display: none !important; }
         .page { display: none !important; border: none !important; width: 100% !important; max-width: 100% !important; }
         #cardPage { display: block !important; }
         #cardPage .form-section { border: 1px solid black !important; }
         #cardPage .row, #cardPage .cell { border-color: black !important; color: black !important; }
         #cardPage .text-blue { color: #0000FF !important; }
         #cardPage .text-red { color: #FF0000 !important; }
+        #cardPage .crz-check-label { display: none !important; }
     }
   </style>
 </head>
@@ -235,9 +210,7 @@
     <div class="heading-container">
         <div style="display:flex; align-items:center; gap:10px;">
             <h3>Flight Card Entry</h3>
-            <div id="sync-status" class="offline" title="Sync Status">
-                <i class="fas fa-circle"></i> <span>Offline</span>
-            </div>
+            <div id="sync-status" class="offline" title="Sync Status"><i class="fas fa-circle"></i> <span>Offline</span></div>
         </div>
         <div class="heading-controls">
             <button id="purgeButton" class="button">Purge</button>
@@ -279,24 +252,15 @@
         </div>
         <div class="cell prefix-cell">
           <label for="m2000">(M/2000ft)</label>
-          <div class="prefix-input">
-            <span>+</span>
-            <input type="text" id="m2000">
-          </div>
+          <div class="prefix-input"> <span>+</span> <input type="text" id="m2000"> </div>
         </div>
         <div class="cell prefix-cell">
           <label for="p1000">(P/1000kg)</label>
-          <div class="prefix-input">
-            <span>+</span>
-            <input type="text" id="p1000">
-          </div>
+          <div class="prefix-input"> <span>+</span> <input type="text" id="p1000"> </div>
         </div>
         <div class="cell prefix-cell">
           <label for="m1000">(M/1000kg)</label>
-          <div class="prefix-input">
-            <span>-</span>
-            <input type="text" id="m1000">
-          </div>
+          <div class="prefix-input"> <span>-</span> <input type="text" id="m1000"> </div>
         </div>
       </div>
       
@@ -309,8 +273,7 @@
             <input type="text" id="std-minutes" class="time-input" maxlength="2" placeholder="MM">
             <span class="time-suffix">Z</span>
             <select id="std-gmt" class="gmt-select">
-               <option value="">GMT</option>
-               <option value="+14">+14</option><option value="+13">+13</option><option value="+12.75">+12.75</option><option value="+12">+12</option><option value="+11">+11</option><option value="+10.5">+10.5</option><option value="+10">+10</option><option value="+9.5">+9.5</option><option value="+9">+9</option><option value="+8.75">+8.75</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6.5">+6.5</option><option value="+6">+6</option><option value="+5.75">+5.75</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4.5">+4.5</option><option value="+4">+4</option><option value="+3.5">+3.5</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option><option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-3.5">-3.5</option><option value="-4">-4</option><option value="-4.5">-4.5</option><option value="-5">-5</option><option value="-6">-6</option><option value="-7">-7</option><option value="-8">-8</option><option value="-9">-9</option><option value="-9.5">-9.5</option><option value="-10">-10</option><option value="-11">-11</option><option value="-12">-12</option>
+               <option value="">GMT</option><option value="+14">+14</option><option value="+13">+13</option><option value="+12">+12</option><option value="+11">+11</option><option value="+10">+10</option><option value="+9">+9</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6">+6</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4">+4</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option><option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-4">-4</option><option value="-5">-5</option><option value="-6">-6</option><option value="-7">-7</option><option value="-8">-8</option><option value="-9">-9</option><option value="-10">-10</option><option value="-11">-11</option><option value="-12">-12</option>
             </select>
             <input type="text" id="std-lt-hours" class="time-input" maxlength="2" readonly>
             <span class="time-separator">:</span>
@@ -334,8 +297,7 @@
             <input type="text" id="sta-minutes" class="time-input" maxlength="2">
             <span class="time-suffix">Z</span>
             <select id="sta-gmt" class="gmt-select">
-              <option value="">GMT</option>
-              <option value="+14">+14</option><option value="+13">+13</option><option value="+12.75">+12.75</option><option value="+12">+12</option><option value="+11">+11</option><option value="+10.5">+10.5</option><option value="+10">+10</option><option value="+9.5">+9.5</option><option value="+9">+9</option><option value="+8.75">+8.75</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6.5">+6.5</option><option value="+6">+6</option><option value="+5.75">+5.75</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4.5">+4.5</option><option value="+4">+4</option><option value="+3.5">+3.5</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option><option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-3.5">-3.5</option><option value="-4">-4</option><option value="-4.5">-4.5</option><option value="-5">-5</option><option value="-6">-6</option><option value="-7">-7</option><option value="-8">-8</option><option value="-9">-9</option><option value="-9.5">-9.5</option><option value="-10">-10</option><option value="-11">-11</option><option value="-12">-12</option>
+              <option value="">GMT</option><option value="+14">+14</option><option value="+13">+13</option><option value="+12">+12</option><option value="+11">+11</option><option value="+10">+10</option><option value="+9">+9</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6">+6</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4">+4</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option><option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-4">-4</option><option value="-5">-5</option><option value="-6">-6</option><option value="-7">-7</option><option value="-8">-8</option><option value="-9">-9</option><option value="-10">-10</option><option value="-11">-11</option><option value="-12">-12</option>
             </select>
             <input type="text" id="sta-lt-hours" class="time-input" maxlength="2" readonly>
             <span class="time-separator">:</span>
@@ -421,7 +383,14 @@
         <div class="cell"> <label class="label-fixed" for="sid">SID</label> <input type="text" id="sid"> </div>
         <div class="cell"> <label class="label-fixed label-reg" for="star">STAR</label> <input type="text" id="star"> </div>
          <div class="cell" style="gap: 2px; border-left: 1px solid black;">
-            <input type="text" id="opti_climb" maxlength="3"> <span>/ .</span> <input type="text" id="opti_mach" maxlength="2">
+            <input type="text" id="opti_climb" maxlength="3"> 
+            <span>/</span> 
+            <div class="opti-mach-wrapper">
+                <span class="dot-text">.</span>
+                <input type="text" id="opti_mach" maxlength="2">
+                <span class="crz-text">CRZ</span>
+                <label class="crz-check-label"><input type="checkbox" id="crz_check">CRZ</label>
+            </div>
         </div>
         <div class="cell" style="gap: 2px; border-left: 1px solid black;">
             <input type="text" id="opti_desc1" maxlength="3"> <span>/</span> <input type="text" id="opti_desc2" maxlength="3">
@@ -541,7 +510,9 @@
         <div class="cell"> <label class="label-fixed">SID</label> <span class="data-display" id="card-sid"></span> </div>
         <div class="cell"> <label class="label-fixed label-reg">STAR</label> <span class="data-display" id="card-star"></span> </div>
         <div class="cell" style="gap: 2px; border-left: 1px solid black;">
-            <span class="data-display" id="card-opti_climb"></span> <span id="card-opti_mach_prefix"></span> <span class="data-display" id="card-opti_mach"></span>
+            <span class="data-display" id="card-opti_climb"></span> 
+            <span>/</span>
+            <span class="data-display" id="card-opti_mach_full"></span>
         </div>
         <div class="cell" style="gap: 2px; border-left: 1px solid black;">
             <span class="data-display" id="card-opti_desc1"></span> <span id="card-opti_desc2_prefix"></span> <span class="data-display" id="card-opti_desc2"></span>
@@ -558,30 +529,42 @@
 
   <script>
     // --- BACKEND CONFIG ---
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyI995l-5YqLNgX_yMo6o95dasKDKbQaEpSwjTDnrEQKQ_zDts_WHSd7GjhVbpSVXoa/exec'; 
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbymVVoJU0wZkPrXgFAE_McA_pf_ttj5GdvA_tklrolGEPkw0WB1rVg0xLDFgXGVH7zg/exec'; 
 
     // --- ID LISTS ---
-    const savableInputIds = ['flightNo', 'capt', 'staffNo', 'crew', 'pax', 'm2000', 'p1000', 'm1000', 'std-hours', 'std-minutes', 'std-gmt', 'flt-t-hours', 'flt-t-minutes', 'sta-hours', 'sta-minutes', 'sta-gmt', 'plan', 'reg', 'gate', 'info', 'fl', 'dest', 'bw', 'bi', 'pzfw', 'ezfw', 'pfit', 'exs', 'bo', 'res', 'fzfw', 'percent_mac', 'sid', 'star', 'v2', 'remarks', 'formatSelector', 'pdc', 'qnh', 'aus_cleared_sid', 'aus_cleared_wpt', 'aus_climb_alt', 'aus_sqwk', 'opti_climb', 'opti_mach', 'opti_desc1', 'opti_desc2'];
+    const savableInputIds = ['flightNo', 'capt', 'staffNo', 'crew', 'pax', 'm2000', 'p1000', 'm1000', 'std-hours', 'std-minutes', 'std-gmt', 'flt-t-hours', 'flt-t-minutes', 'sta-hours', 'sta-minutes', 'sta-gmt', 'plan', 'reg', 'gate', 'info', 'fl', 'dest', 'bw', 'bi', 'pzfw', 'ezfw', 'pfit', 'exs', 'bo', 'res', 'fzfw', 'percent_mac', 'sid', 'star', 'v2', 'remarks', 'formatSelector', 'pdc', 'qnh', 'aus_cleared_sid', 'aus_cleared_wpt', 'aus_climb_alt', 'aus_sqwk', 'opti_climb', 'opti_mach', 'opti_desc1', 'opti_desc2', 'crz_check'];
     const calculatedIds = ['pob', 'india_pob', 'ezfw_du', 'fzfw_du', 'v2_plus_15', 'std-lt-hours', 'std-lt-minutes', 'sta-lt-hours', 'sta-lt-minutes', 'blk-t-hours', 'blk-t-minutes'];
     
-    let aircraftData = {}; // Will be populated from Cloud
+    // Hardcoded Fallback DB
+    const aircraftDataFallback = {
+        "SCA": { bw: 129763, bi: 39.2 }, "SCB": { bw: 129510, bi: 39.0 },
+        "SCD": { bw: 129200, bi: 39.6 }, "SCE": { bw: 129530, bi: 39.3 },
+        "SCF": { bw: 129797, bi: 40.0 }, "SCG": { bw: 129573, bi: 39.9 },
+        "SCH": { bw: 130290, bi: 39.6 }, "SCI": { bw: 129326, bi: 38.9 },
+        "SCJ": { bw: 129120, bi: 39.4 }, "SCK": { bw: 129055, bi: 40.1 },
+        "SCL": { bw: 129320, bi: 39.6 }, "SCM": { bw: 129150, bi: 38.8 },
+        "SCN": { bw: 129240, bi: 39.3 }, "SCO": { bw: 129360, bi: 39.3 },
+        "SCP": { bw: 129283, bi: 39.4 }, "SCQ": { bw: 129154, bi: 39.4 },
+        "SCR": { bw: 129111, bi: 38.9 }, "SCS": { bw: 129425, bi: 39.3 },
+        "SCT": { bw: 129376, bi: 39.4 }, "SCU": { bw: 129501, bi: 39.3 },
+        "SCV": { bw: 129436, bi: 39.3 }, "SCW": { bw: 129417, bi: 39.5 },
+        "SCY": { bw: 129325, bi: 39.5 }, "SCZ": { bw: 129417, bi: 39.1 },
+        "SDA": { bw: 129340, bi: 39.8 }
+    };
+    let aircraftData = aircraftDataFallback;
 
-    // --- INITIALIZATION ---
     document.addEventListener('DOMContentLoaded', function() {
-        // Load Local Storage first (instant load)
         loadFromLocalStorage();
         setupEventListeners();
-        
-        // Setup Sync Status
         updateSyncStatus();
         window.addEventListener('online', updateSyncStatus);
         window.addEventListener('offline', updateSyncStatus);
-        
-        // Fetch Aircraft DB
         if(navigator.onLine) fetchAircraftDB();
+        
+        // Initial state for CRZ
+        toggleCrz(document.getElementById('crz_check').checked);
     });
 
-    // --- SYNC & API LOGIC ---
     function updateSyncStatus() {
         const ind = document.getElementById('sync-status');
         if (navigator.onLine) {
@@ -598,7 +581,7 @@
             const res = await fetch(`${WEB_APP_URL}?action=GET_AIRCRAFT_DB`);
             const json = await res.json();
             if(json.status === 'success') {
-                aircraftData = json.data;
+                aircraftData = { ...aircraftDataFallback, ...json.data };
             }
         } catch(e) { console.error("DB Fetch Error", e); }
     }
@@ -609,8 +592,6 @@
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; btn.disabled = true;
 
         const data = getAllFormData();
-        
-        // Check if BW/BI update needed
         if(data.reg && data.bw && data.bi) {
             const existing = aircraftData[data.reg];
             if(!existing || existing.bw != data.bw || existing.bi != data.bi) {
@@ -619,17 +600,11 @@
         }
 
         try {
-            const payload = new URLSearchParams({ 
-                action: 'SAVE_FLIGHT', 
-                data: JSON.stringify(data)
-            });
+            const payload = new URLSearchParams({ action: 'SAVE_FLIGHT', data: JSON.stringify(data) });
             await fetch(WEB_APP_URL, { method: 'POST', body: payload });
             alert("Flight Log Saved to Cloud!");
-        } catch(e) {
-            alert("Save Failed (Offline?)");
-        } finally {
-            btn.innerHTML = origText; btn.disabled = false;
-        }
+        } catch(e) { alert("Save Failed (Offline?)"); } 
+        finally { btn.innerHTML = origText; btn.disabled = false; }
     }
 
     async function updateAircraftDB(reg, bw, bi) {
@@ -644,113 +619,71 @@
         const container = document.getElementById('flight-list-container');
         document.getElementById('loadModal').style.display = 'flex';
         container.innerHTML = 'Fetching list...';
-        
         try {
             const res = await fetch(`${WEB_APP_URL}?action=GET_FLIGHT_LIST`);
             const json = await res.json();
-            
-            if(json.data.length === 0) {
-                container.innerHTML = "No flights found."; return;
-            }
-            
+            if(json.data.length === 0) { container.innerHTML = "No flights found."; return; }
             let html = '';
             json.data.forEach(row => {
-                const date = row[1];
-                const flight = row[2];
-                const rawData = row[4];
-                // We stringify the object back so it can be passed in the onClick handler
+                const date = row[1]; const flight = row[2]; const rawData = row[4];
                 const jsonStr = JSON.stringify(JSON.parse(rawData)).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
-                html += `<div class="modal-list-item" onclick='loadSelectedFlight(${jsonStr})'>
-                            <span><strong>SQ${flight}</strong> - ${date}</span>
-                            <span><i class="fas fa-chevron-right"></i></span>
-                         </div>`;
+                html += `<div class="modal-list-item" onclick='loadSelectedFlight(${jsonStr})'><span><strong>SQ${flight}</strong> - ${date}</span><span><i class="fas fa-chevron-right"></i></span></div>`;
             });
             container.innerHTML = html;
-        } catch(e) {
-            container.innerHTML = "Error fetching list. Check connection.";
-        }
+        } catch(e) { container.innerHTML = "Error fetching list. Check connection."; }
     }
 
     function loadSelectedFlight(data) {
         if(confirm("Load this flight? Current unsaved data will be overwritten.")) {
-            // Restore static fields
             savableInputIds.forEach(id => {
                 const el = document.getElementById(id);
-                if(el) el.value = data[id] || '';
+                if(el) {
+                    if (el.type === 'checkbox') el.checked = data[id];
+                    else el.value = data[id] || '';
+                }
             });
-            
-            // Restore Crew
             const crewContainer = document.getElementById('additional-crew-container');
             crewContainer.innerHTML = '';
-            if (data.crewMembers && data.crewMembers.length > 0) {
-                data.crewMembers.forEach(addCrewRow);
-            } else { addCrewRow(); }
-
-            // Restore LocalStorage
-            saveAllToLocalStorage();
+            if (data.crewMembers && data.crewMembers.length > 0) data.crewMembers.forEach(addCrewRow); else addCrewRow();
             
-            // Recalculate
+            toggleCrz(document.getElementById('crz_check').checked);
+            saveAllToLocalStorage();
             updateAllCalculatedFields();
             document.getElementById('formatSelector').dispatchEvent(new Event('change'));
             closeModal();
         }
     }
 
-    // --- LOCAL FILE SAVE/LOAD ---
     function saveDataToFile() {
         const data = getAllFormData();
         const flightNo = data.flightNo || '000';
-        
-        // Filename generation
         const now = new Date();
-        const day = now.getDate().toString().padStart(2, '0');
-        const month = (now.getMonth() + 1).toString().padStart(2, '0');
-        const year = now.getFullYear().toString().slice(-2);
-        const filename = `SQ${flightNo}_${day}${month}${year}.78x`;
-
-        const jsonString = JSON.stringify(data, null, 2);
-        const blob = new Blob([jsonString], { type: 'application/octet-stream' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        const filename = `SQ${flightNo}_${now.getDate()}${now.getMonth()+1}${now.getFullYear().toString().slice(-2)}.78x`;
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/octet-stream' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
 
     function loadDataFromFile(event) {
         const file = event.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = function(e) {
-            try {
-                const data = JSON.parse(e.target.result);
-                loadSelectedFlight(data); // Re-use the cloud loader logic!
-            } catch(error) {
-                alert("Error parsing file.");
-            }
+            try { loadSelectedFlight(JSON.parse(e.target.result)); } catch(error) { alert("Error parsing file."); }
         };
         reader.readAsText(file);
-        event.target.value = null; // Reset input
+        event.target.value = null;
     }
 
-    // --- FETCH TIMES ---
     async function fetchTimes() {
         const btn = document.getElementById('fetchTimesBtn');
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
-        btn.disabled = true;
-        
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...'; btn.disabled = true;
         const fNo = document.getElementById('flightNo').value;
         if (!fNo) { alert("Please enter a Flight Number (e.g., 600)"); btn.innerHTML = originalText; btn.disabled = false; return; }
-
         try {
             const res = await fetch(`${WEB_APP_URL}?action=FETCH_TIMES&flightNo=${fNo}`);
             const json = await res.json();
-            
             if(json.status === 'success') {
                 const d = json.data;
                 if(d.std_hours) document.getElementById('std-hours').value = d.std_hours;
@@ -759,29 +692,24 @@
                 if(d.sta_hours) document.getElementById('sta-hours').value = d.sta_hours;
                 if(d.sta_minutes) document.getElementById('sta-minutes').value = d.sta_minutes;
                 if(d.sta_gmt) document.getElementById('sta-gmt').value = d.sta_gmt;
-
                 document.getElementById('std-hours').dispatchEvent(new Event('input'));
                 document.getElementById('std-gmt').dispatchEvent(new Event('change'));
                 document.getElementById('sta-hours').dispatchEvent(new Event('input'));
                 document.getElementById('sta-gmt').dispatchEvent(new Event('change'));
-
                 alert(`Found SQ${fNo.replace('SQ','')}: Times updated.`);
-            } else {
-                alert("Flight not found or API error.");
-            }
-        } catch(e) { 
-            alert("Connection failed."); 
-        } finally { 
-            btn.innerHTML = originalText; btn.disabled = false; 
-        }
+            } else { alert("Flight not found or API error."); }
+        } catch(e) { alert("Connection failed."); } 
+        finally { btn.innerHTML = originalText; btn.disabled = false; }
     }
 
-    // --- CORE LOGIC ---
     function getAllFormData() {
         const data = {};
         savableInputIds.forEach(id => {
             const el = document.getElementById(id);
-            if (el) data[id] = el.value;
+            if (el) {
+                if(el.type === 'checkbox') data[id] = el.checked;
+                else data[id] = el.value;
+            }
         });
         const crewData = [];
         document.querySelectorAll('#additional-crew-container .crew-row').forEach(row => {
@@ -796,7 +724,7 @@
     function saveAllToLocalStorage() {
         const data = getAllFormData();
         savableInputIds.forEach(id => {
-            if(data[id]) localStorage.setItem(id, data[id]);
+            if(data[id] !== undefined) localStorage.setItem(id, data[id]);
         });
         localStorage.setItem('crewMembers', JSON.stringify(data.crewMembers));
     }
@@ -804,20 +732,21 @@
     function loadFromLocalStorage() {
         savableInputIds.forEach(id => {
             const val = localStorage.getItem(id);
-            if(val) document.getElementById(id).value = val;
+            const el = document.getElementById(id);
+            if(val !== null && el) {
+                if(el.type === 'checkbox') el.checked = (val === 'true');
+                else el.value = val;
+            }
         });
         const savedCrew = localStorage.getItem('crewMembers');
-        if(savedCrew) {
-            try { JSON.parse(savedCrew).forEach(addCrewRow); } catch(e) { addCrewRow(); }
-        } else { addCrewRow(); }
+        try { 
+            const parsed = JSON.parse(savedCrew);
+            if(parsed && parsed.length > 0) parsed.forEach(addCrewRow); else addCrewRow();
+        } catch(e) { addCrewRow(); }
     }
 
-    // --- CALCULATION FUNCTIONS ---
     function updateAllCalculatedFields() {
-        calculatePOB();
-        calculateEZFW_DU();
-        calculateFZFW_DU();
-        calculateV2Plus15();
+        calculatePOB(); calculateEZFW_DU(); calculateFZFW_DU(); calculateV2Plus15();
         updateLocalTime('std-hours', 'std-minutes', 'std-gmt', 'std-lt-hours', 'std-lt-minutes');
         updateLocalTime('sta-hours', 'sta-minutes', 'sta-gmt', 'sta-lt-hours', 'sta-lt-minutes');
         updateBlockTime();
@@ -830,8 +759,7 @@
       let offset = parseInt(parts[0]) * 60;
       if (parts.length > 1) offset += (parseInt(parts[0]) >= 0 ? 1 : -1) * Math.round(parseFloat('0.' + parts[1]) * 60);
       total += offset;
-      if (total < 0) total += 1440;
-      if (total >= 1440) total -= 1440;
+      if (total < 0) total += 1440; if (total >= 1440) total -= 1440;
       return { hours: Math.floor(total/60).toString().padStart(2,'0'), minutes: (total%60).toString().padStart(2,'0') };
     }
     function updateLocalTime(hId, mId, gmtId, thId, tmId) {
@@ -848,7 +776,6 @@
             document.getElementById('blk-t-minutes').value = (diff%60).toString().padStart(2,'0');
         }
     }
-
     function calculatePOB() {
         const pob = (parseInt(document.getElementById('crew').value)||0) + (parseInt(document.getElementById('pax').value)||0);
         const val = pob > 0 ? pob : '';
@@ -870,7 +797,6 @@
         document.getElementById('v2_plus_15').value = isNaN(v) ? '' : v+15;
     }
 
-    // --- DOM HELPERS ---
     function addCrewRow(data = { type: 'FZ', name: '' }) {
         const div = document.createElement('div'); div.className = 'crew-row';
         div.innerHTML = `<select class="crew-type-select"><option value="FZ">FZ</option><option value="SCO">SCO</option><option value="OBS">OBS</option><option value="IFM">IFM</option><option value="WIA">WIA</option><option value="CSS/CS">CSS/CS</option><option value="LSS/LS">LSS/LS</option><option value="FSS/FS">FSS/FS</option></select>
@@ -895,16 +821,11 @@
         document.getElementById('darkModeToggleCard').checked = isNight;
     }
     
-    // --- GENERATE CARD ---
     function generateCard() {
         const data = getAllFormData();
-        // Static Fills
         ['flightNo','capt','staffNo','crew','pax','m2000','p1000','m1000','bw','bi','pzfw','ezfw','ezfw_du','pfit','exs','bo','res','fzfw','fzfw_du','percent_mac','v2','v2_plus_15','sid','star','remarks','opti_climb','opti_mach','opti_desc1','opti_desc2','plan','reg','gate','info','fl','dest','pob','pdc','qnh','aus_cleared_sid','aus_cleared_wpt','aus_climb_alt','aus_sqwk'].forEach(id => {
             const el = document.getElementById('card-'+id);
-            if(el) {
-                const val = data[id.replace('india_','')] || data[id] || ''; 
-                el.textContent = val;
-            }
+            if(el) { const val = data[id.replace('india_','')] || data[id] || ''; el.textContent = val; }
         });
         
         const indiaGate = document.getElementById('card-gate-india'); if(indiaGate) indiaGate.textContent = data.gate;
@@ -922,6 +843,10 @@
         document.getElementById('card-sta-lt-time').textContent = fmt(data['sta-lt-hours'], data['sta-lt-minutes']);
         document.getElementById('card-blk-t-time').textContent = fmt(data['blk-t-hours'], data['blk-t-minutes']);
 
+        // Opti Mach Logic
+        const isCrz = document.getElementById('crz_check').checked;
+        document.getElementById('card-opti_mach_full').textContent = isCrz ? '.CRZ' : (data.opti_mach ? `.${data.opti_mach}` : '');
+
         document.querySelectorAll('#cardPage .format-row').forEach(r => r.classList.remove('active'));
         document.getElementById(`card-${data.formatSelector}-format-row`).classList.add('active');
 
@@ -934,15 +859,29 @@
         document.getElementById("cardPage").classList.add("active");
     }
 
-    // --- SETUP LISTENERS & AUTOTAB ---
-    function setupEventListeners() {
+    // Toggle CRZ display
+    function toggleCrz(isChecked) {
+        const machInput = document.getElementById('opti_mach');
+        const dotText = document.querySelector('.dot-text');
+        const crzText = document.querySelector('.crz-text');
         
+        if (isChecked) {
+            machInput.style.display = 'none';
+            dotText.style.display = 'none';
+            crzText.style.display = 'inline';
+        } else {
+            machInput.style.display = 'inline-block';
+            dotText.style.display = 'inline';
+            crzText.style.display = 'none';
+        }
+    }
+
+    function setupEventListeners() {
         // Auto-Tab Helper
         function autoTab(currentElId, nextElId) {
           const currentEl = document.getElementById(currentElId);
           if(!currentEl) return;
           currentEl.addEventListener('input', () => {
-              // Only auto-tab if max length reached
               if (currentEl.maxLength > 0 && currentEl.value.length >= currentEl.maxLength) {
                   const nextEl = document.getElementById(nextElId);
                   if(nextEl) nextEl.focus();
@@ -950,18 +889,31 @@
           });
         }
         
-        // Register Auto-Tabs
+        // Auto-tab Links
         autoTab('plan', 'reg'); autoTab('reg', 'gate');
         autoTab('gate', 'info'); autoTab('fl', 'dest');
         autoTab('pdc', 'qnh');
-        autoTab('aus_cleared_sid', 'aus_cleared_wpt');
-        autoTab('aus_cleared_wpt', 'aus_climb_alt');
-        autoTab('aus_climb_alt', 'aus_sqwk');
-        autoTab('opti_climb', 'opti_mach');
-        autoTab('opti_desc1', 'opti_desc2');
+        autoTab('aus_cleared_sid', 'aus_cleared_wpt'); autoTab('aus_cleared_wpt', 'aus_climb_alt'); autoTab('aus_climb_alt', 'aus_sqwk');
+        autoTab('opti_climb', 'opti_mach'); autoTab('opti_desc1', 'opti_desc2');
+        // Time Chains
+        autoTab('std-hours', 'std-minutes'); 
+        // Note: std-minutes is 2 chars, gmt is select. We can focus select but usually distracting.
+        autoTab('flt-t-hours', 'flt-t-minutes');
+        autoTab('sta-hours', 'sta-minutes');
 
+        // Validation & Transformations
+        document.querySelectorAll('input').forEach(el => {
+            if(el.id.includes('hours') || el.id.includes('minutes') || el.id === 'flightNo' || el.id === 'plan' || el.id === 'bw' || el.id === 'fl' || el.id === 'v2') {
+                el.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); });
+            }
+            if(el.id === 'reg' || el.id === 'sid' || el.id === 'star' || el.id === 'dest' || el.id.includes('aus_') || el.id === 'gate') {
+                el.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
+            }
+        });
+
+        // Dynamic Aircraft Data (Hardcoded + LocalStorage)
         document.getElementById('reg').addEventListener('input', function() {
-            this.value = this.value.toUpperCase().slice(0,3);
+            this.value = this.value.slice(0,3);
             if(aircraftData[this.value]) {
                 document.getElementById('bw').value = aircraftData[this.value].bw;
                 document.getElementById('bi').value = aircraftData[this.value].bi;
@@ -969,11 +921,14 @@
             saveAllToLocalStorage();
         });
 
-        document.getElementById('bw').addEventListener('change', () => { 
-             saveAllToLocalStorage(); 
+        // CRZ Check
+        document.getElementById('crz_check').addEventListener('change', function() {
+            toggleCrz(this.checked);
+            saveAllToLocalStorage();
         });
 
-        // Attach Autosave & Calc to all inputs
+        document.getElementById('bw').addEventListener('change', () => saveAllToLocalStorage());
+
         document.querySelectorAll('input, select, textarea').forEach(el => {
             el.addEventListener('input', () => {
                 if(el.id.startsWith('std') || el.id.startsWith('sta')) updateLocalTime(el.id.startsWith('std')?'std-hours':'sta-hours', el.id.startsWith('std')?'std-minutes':'sta-minutes', el.id.startsWith('std')?'std-gmt':'sta-gmt', el.id.startsWith('std')?'std-lt-hours':'sta-lt-hours', el.id.startsWith('std')?'std-lt-minutes':'sta-lt-minutes');
@@ -985,7 +940,6 @@
             });
         });
 
-        // Button Actions
         document.getElementById('cloudSaveBtn').addEventListener('click', saveToCloud);
         document.getElementById('cloudLoadBtn').addEventListener('click', loadFlightList);
         document.getElementById('saveFileBtn').addEventListener('click', saveDataToFile);
@@ -995,18 +949,21 @@
         
         document.getElementById('purgeButton').addEventListener('click', () => {
             if(confirm("Clear Data?")) {
-                savableInputIds.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ''; });
+                savableInputIds.forEach(id => { if(document.getElementById(id)) {
+                    const el = document.getElementById(id);
+                    if(el.type === 'checkbox') el.checked = false;
+                    else el.value = ''; 
+                }});
                 localStorage.clear();
                 document.getElementById('additional-crew-container').innerHTML = ''; addCrewRow();
+                toggleCrz(false);
                 updateAllCalculatedFields();
             }
         });
         
-        // Mode Toggles
         document.getElementById('darkModeToggle').addEventListener('change', e => toggleDarkMode(e.target.checked));
         document.getElementById('darkModeToggleCard').addEventListener('change', e => toggleDarkMode(e.target.checked));
         
-        // Format Selector
         document.getElementById('formatSelector').addEventListener('change', function() {
             document.querySelectorAll('#formPage .format-row').forEach(r => r.classList.remove('active'));
             document.getElementById(`${this.value}-format-row`).classList.add('active');
