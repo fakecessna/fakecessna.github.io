@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Arrival Announcement Tool - Singapore Airlines</title>
   <style>
-    /* General Styles - Adapted */
+    /* General Styles */
     html, body {
       margin: 0;
       padding: 0;
@@ -20,18 +20,18 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px;
+      padding: 15px;
       background-color: #f4f7f6;
       color: #333;
     }
     .container {
       width: 100%;
-      max-width: 750px;
+      max-width: 900px;
       background-color: #ffffff;
       color: #333;
       border-radius: 8px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      padding: 25px;
+      padding: 20px;
       transition: background-color 0.3s, color 0.3s;
     }
 
@@ -40,13 +40,13 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
         border-bottom: 1px solid #e0e0e0;
     }
     .heading-container h3 {
         margin: 0;
-        font-size: 22px;
+        font-size: 20px;
         color: #00529b;
     }
     .controls-group {
@@ -59,165 +59,192 @@
     .form-section {
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 16px; /* Consistent vertical spacing between rows */
     }
-    .form-row {
+    
+    /* Flex Grid System */
+    .row {
         display: flex;
         flex-wrap: wrap;
-        gap: 15px;
-        align-items: flex-end; 
+        gap: 20px; /* Consistent horizontal spacing */
+        align-items: flex-end; /* Align inputs and checkboxes to the bottom */
     }
-     /* Specific styling for the airport selection row */
-    #airportSelectionRow {
-        flex-wrap: nowrap; /* Prevent wrapping */
-        align-items: flex-start; /* Align items to the top of the row */
-    }
-    #airportSelectionRow > .airport-group {
-        flex-basis: 40%; /* Adjust basis to make more room */
-        flex-grow: 1;
-        min-width: 200px; /* Ensure they don't get too small */
-    }
-    #airportSelectionRow > .swap-button-container {
-        flex-grow: 0;
-        flex-shrink: 0;
-        align-self: center; /* Vertically center the swap button */
-        padding: 0 10px; /* Add some horizontal padding for spacing */
-        margin-top: 20px; /* Approximate alignment with search boxes */
-    }
-
-
-    .form-row .form-group, .airport-group .form-group { /* General form group styling */
+    
+    .col {
         flex: 1;
         min-width: 200px;
-    }
-     .form-row .form-group.fixed-width {
-        flex: 0 1 120px;
-        min-width: 100px;
-    }
-    .airport-group { 
-       display: flex;
-       flex-direction: column;
-       gap: 5px; 
-    }
-     .airport-group .search-and-select {
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 6px;
     }
-    .airport-group .home-base-check, .check-item {
+    
+    .col-small {
+        flex: 0 1 180px; /* Fixed width for smaller inputs */
+        min-width: 150px;
+    }
+    
+    .col-medium {
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .col-checkbox {
+        flex: 0 1 auto;
+        min-width: 150px;
+        padding-bottom: 8px; /* Fine-tune alignment with input boxes */
+    }
+
+    /* Airport Selection Specifics */
+    #airportSelectionRow {
+        align-items: flex-start;
+    }
+    .airport-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex: 1;
+    }
+    .swap-button-container {
         display: flex;
         align-items: center;
-        gap: 5px;
-        font-size: 0.85em;
-        margin-top: 2px;
+        justify-content: center;
+        padding-top: 25px;
     }
-     .airport-group .home-base-check label, .check-item label {
-        font-weight: normal; 
-        margin-bottom: 0; 
-     }
-     .airport-group .home-base-check input[type="checkbox"], .check-item input[type="checkbox"] {
-         width: auto; 
-     }
 
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-bottom: 5px;
-    }
-    .form-group label {
+    /* Form Elements */
+    label {
       font-weight: 600;
       color: #555;
       font-size: 0.85em;
+      margin-bottom: 0;
     }
-    .form-group input[type="text"],
-    .form-group input[type="number"],
-    .form-group input[type="time"],
-    .form-group select,
-    .form-group textarea {
+    
+    /* Sub-labels for checkboxes inside input groups */
+    .label-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+    .inline-checkbox-label {
+        font-weight: normal;
+        font-size: 0.8em;
+        color: #00529b;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="time"],
+    select,
+    textarea {
       font-family: inherit;
       font-size: 14px;
-      padding: 8px;
+      padding: 8px 10px;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 4px;
       box-sizing: border-box;
       width: 100%;
+      height: 38px; /* Fixed height for alignment */
       background-color: #fff;
       color: #333;
-      transition: border-color 0.3s, background-color 0.3s, color 0.3s;
     }
-     #announcementOutput {
-        background-color: #fff; 
-        border: 1px solid #ccc;
-     }
-     #announcementOutput:focus {
-        border-color: #00529b;
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(0, 82, 155, 0.2);
-     }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus { 
-      border-color: #00529b;
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(0, 82, 155, 0.2);
-    }
-     .form-group input.airport-search {
+    
+    /* Specific Inputs */
+    .airport-search {
         font-style: italic;
-        font-size: 0.9em;
-        padding: 6px 8px;
+        margin-bottom: 4px;
     }
-    .form-group textarea {
+    textarea {
         resize: vertical;
-        min-height: 150px; 
+        min-height: 120px;
+        line-height: 1.5;
+        height: auto; /* Override fixed height */
     }
+    
+    /* Time Input Group */
     .time-input-group {
         display: flex;
-        gap: 8px;
+        gap: 5px;
         align-items: center;
     }
     .time-input-group input {
         width: 60px;
         text-align: center;
     }
-    .time-input-group span {
-        font-weight: bold;
+
+    /* Checkboxes & Toggles */
+    .checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9em;
+        height: 38px; /* Match input height */
+    }
+    .checkbox-wrapper label {
+        margin-bottom: 0;
+        font-weight: normal;
+        cursor: pointer;
+        color: #333;
+    }
+    .checkbox-wrapper input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        margin: 0;
+    }
+    
+    /* Compact checkbox specific for home base under inputs */
+    .checkbox-compact {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8em;
+        margin-top: 2px;
+    }
+    .checkbox-compact input {
+        width: auto;
+        height: auto;
+    }
+
+    /* DST/GMT Manual Group */
+    .dst-row-container {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        width: 100%;
     }
     .dst-offset-group {
-        margin-top: 5px;
         padding: 8px;
         background-color: #f0f8ff;
         border: 1px solid #cce5ff;
         border-radius: 4px;
-        font-size: 0.85em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 200px;
     }
-    .dst-offset-group label {
-        font-size: 0.95em;
+    .dst-offset-group input {
+        width: 70px;
+        height: 30px;
     }
-    .dst-offset-group input[type="number"] {
-        width: 80px;
-        padding: 6px;
-        font-size: 0.95em;
-        margin-left: 5px;
-    }
-
 
     /* Buttons */
     .button-toolbar {
         margin-top: 25px;
         display: flex;
         gap: 10px;
-        justify-content: flex-start;
         flex-wrap: wrap;
     }
      .settings-toolbar {
-        margin-top: 10px;
+        margin-top: 15px;
         display: flex;
-        gap: 10px;
-        justify-content: flex-start;
-        padding-top: 10px;
+        gap: 8px;
+        padding-top: 15px;
         border-top: 1px solid #eee;
         flex-wrap: wrap;
     }
@@ -228,62 +255,35 @@
       background-color: #00529b;
       color: white;
       border: none;
-      padding: 10px 18px;
+      padding: 10px 20px;
       cursor: pointer;
-      border-radius: 5px;
+      border-radius: 4px;
       transition: background-color 0.2s;
-      text-align: center;
     }
-    .button:hover {
-      background-color: #003d73;
-    }
-    .button.secondary {
-        background-color: #6c757d;
-    }
-    .button.secondary:hover {
-        background-color: #545b62;
-    }
-     .button.utility {
-        background-color: #5cb85c;
-        font-size: 0.85em;
-        padding: 8px 12px;
-    }
-    .button.utility.load {
-        background-color: #f0ad4e;
-    }
-    .button.utility:hover {
-        opacity: 0.85;
-    }
-     #swapAirportsButton {
-        padding: 6px 10px;
-        font-size: 1.2em; 
-        line-height: 1;
+    .button:hover { background-color: #003d73; }
+    .button.secondary { background-color: #6c757d; }
+    .button.secondary:hover { background-color: #545b62; }
+    .button.utility { background-color: #5cb85c; font-size: 0.85em; padding: 8px 14px; }
+    .button.utility.load { background-color: #f0ad4e; }
+    
+    #swapAirportsButton {
+        padding: 5px 10px;
+        font-size: 1.2em;
         background-color: #e9ecef;
         border: 1px solid #ced4da;
         color: #495057;
         cursor: pointer;
-        border-radius: 5px;
-     }
-     #swapAirportsButton:hover {
-        background-color: #dee2e6;
-     }
-
-
-    #announcementOutput {
-      margin-top: 20px;
-      padding: 15px;
-      white-space: pre-wrap;
-      font-size: 14px;
-      line-height: 1.6;
-      transition: background-color 0.3s, color 0.3s, border-color 0.3s; 
+        border-radius: 4px;
+        height: 38px;
     }
+    #swapAirportsButton:hover { background-color: #dee2e6; }
 
+    /* Toggle Switch */
     .switch {
       position: relative;
       display: inline-block;
-      width: 40px;
-      height: 20px;
-      vertical-align: middle;
+      width: 36px;
+      height: 18px;
     }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider {
@@ -297,103 +297,32 @@
     .slider:before {
       position: absolute;
       content: "";
-      height: 16px; width: 16px;
+      height: 14px; width: 14px;
       left: 2px; bottom: 2px;
       background-color: white;
       transition: .4s;
       border-radius: 50%;
     }
     input:checked + .slider { background-color: #00529b; }
-    input:focus + .slider { box-shadow: 0 0 1px #00529b; }
-    input:checked + .slider:before { transform: translateX(20px); }
+    input:checked + .slider:before { transform: translateX(18px); }
 
-    /* Night Mode Styles */
-    body.night-mode {
-        background-color: #2c3e50;
-        color: #ecf0f1;
-    }
-    .night-mode .container {
-        background-color: #34495e;
-        color: #ecf0f1;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    }
-    .night-mode .heading-container {
-        border-bottom: 1px solid #4a6fa5;
-    }
-    .night-mode .heading-container h3 {
-        color: #5dade2;
-    }
-    .night-mode .form-group label, .night-mode .home-base-check label, .night-mode .check-item label { /* Added .check-item */
-        color: #bdc3c7;
-    }
-    .night-mode .form-group input[type="text"],
-    .night-mode .form-group input[type="number"],
-    .night-mode .form-group input[type="time"],
-    .night-mode .form-group select,
-    .night-mode .form-group textarea {
-        background-color: #2c3e50;
-        color: #ecf0f1;
-        border: 1px solid #566573;
-    }
-     .night-mode #announcementOutput {
-        background-color: #2c3e50;
-        color: #ecf0f1;
-        border: 1px solid #566573;
-     }
-     .night-mode #announcementOutput:focus {
-        border-color: #5dade2;
-        box-shadow: 0 0 0 2px rgba(93, 173, 226, 0.2);
-     }
-     .night-mode #swapAirportsButton {
-        background-color: #4a6278;
-        border-color: #566573;
-        color: #bdc3c7;
-     }
-      .night-mode #swapAirportsButton:hover {
-        background-color: #526f8c;
-     }
+    /* Utility Classes */
+    .hidden { display: none !important; }
 
-
-    .night-mode .form-group input:focus,
-    .night-mode .form-group select:focus,
-    .night-mode .form-group textarea:focus { 
-      border-color: #5dade2;
-      box-shadow: 0 0 0 2px rgba(93, 173, 226, 0.2);
+    /* Night Mode */
+    body.night-mode { background-color: #2c3e50; color: #ecf0f1; }
+    .night-mode .container { background-color: #34495e; color: #ecf0f1; border-color: #4a6fa5; }
+    .night-mode .heading-container { border-bottom-color: #4a6fa5; }
+    .night-mode h3 { color: #5dade2; }
+    .night-mode label, .night-mode .checkbox-wrapper label { color: #bdc3c7; }
+    .night-mode input, .night-mode select, .night-mode textarea {
+        background-color: #2c3e50; color: #ecf0f1; border-color: #566573;
     }
-
-    .night-mode .button {
-        background-color: #5dade2;
-        color: #2c3e50;
-    }
-    .night-mode .button:hover {
-        background-color: #85c1e9;
-    }
-    .night-mode .button.secondary {
-        background-color: #7f8c8d;
-        color: #ecf0f1;
-    }
-    .night-mode .button.secondary:hover {
-        background-color: #95a5a6;
-    }
-     .night-mode .button.utility {
-        background-color: #4CAF50;
-        color: white;
-    }
-    .night-mode .button.utility.load {
-        background-color: #FF9800;
-        color: white;
-    }
-    .night-mode .settings-toolbar {
-        border-top: 1px solid #4a6fa5;
-    }
-    .night-mode .dst-offset-group {
-        background-color: #2c3e50;
-        border: 1px solid #566573;
-    }
-
-    .hidden {
-        display: none !important;
-    }
+    .night-mode .dst-offset-group { background-color: #2c3e50; border-color: #566573; }
+    .night-mode #swapAirportsButton { background-color: #4a6278; border-color: #566573; color: #bdc3c7; }
+    .night-mode .button { background-color: #5dade2; color: #2c3e50; }
+    .night-mode .settings-toolbar { border-top-color: #4a6fa5; }
+    .night-mode .inline-checkbox-label { color: #5dade2; }
   </style>
 </head>
 <body>
@@ -410,61 +339,107 @@
     </div>
 
     <div class="form-section">
-        <div class="form-group">
-            <label for="speakerRole">Speaker Role</label>
-            <select id="speakerRole">
-                <option value="Captain" selected>Captain</option>
-                <option value="First Officer">First Officer</option>
-                <option value="Senior First Officer">Senior First Officer</option>
-                <option value="Pilot">Pilot</option>
-            </select>
+        <!-- Row 1: Speaker and Tone -->
+        <div class="row">
+            <div class="col col-small">
+                <label for="speakerRole">Speaker Role</label>
+                <select id="speakerRole">
+                    <option value="Captain">Captain</option>
+                    <option value="First Officer" selected>First Officer</option>
+                    <option value="Senior First Officer">Senior First Officer</option>
+                    <option value="Pilot">Pilot</option>
+                </select>
+            </div>
+            <div class="col-checkbox">
+                 <div class="checkbox-wrapper">
+                     <input type="checkbox" id="conversationalToneCheck" checked>
+                     <label for="conversationalToneCheck">Conversational Tone</label>
+                 </div>
+            </div>
         </div>
 
-      <div class="form-row" id="airportSelectionRow">
-          <div class="airport-group">
-            <div class="search-and-select form-group">
-                <label for="originAirportSearch">Search Origin (ICAO/IATA)</label>
-                <input type="text" id="originAirportSearch" class="airport-search">
-                <label for="originAirport" class="hidden">Origin Airport</label>
-                <select id="originAirport"></select>
-            </div>
-            <div class="home-base-check">
+      <!-- Row 2: Airports -->
+      <div class="row" id="airportSelectionRow">
+          <div class="col col-medium">
+            <label for="originAirportSearch">Origin (ICAO/IATA)</label>
+            <input type="text" id="originAirportSearch" class="airport-search" placeholder="Search Origin...">
+            <select id="originAirport"></select>
+            <div class="checkbox-compact">
                  <input type="checkbox" id="originHomeBaseCheck">
-                 <label for="originHomeBaseCheck">Set Origin to Home Base (WSSS)</label>
+                 <label for="originHomeBaseCheck">Home Base (WSSS)</label>
             </div>
           </div>
           
           <div class="swap-button-container">
-             <button id="swapAirportsButton" title="Swap Origin and Arrival Airports">⇆</button>
+             <button id="swapAirportsButton" title="Swap Airports">⇆</button>
           </div>
 
-          <div class="airport-group">
-             <div class="search-and-select form-group">
-                <label for="arrivalAirportSearch">Search Arrival (ICAO/IATA)</label>
-                <input type="text" id="arrivalAirportSearch" class="airport-search">
-                <label for="arrivalAirport" class="hidden">Arrival Airport</label>
-                <select id="arrivalAirport"></select>
-             </div>
-             <div class="home-base-check">
+          <div class="col col-medium">
+             <label for="arrivalAirportSearch">Arrival (ICAO/IATA)</label>
+             <input type="text" id="arrivalAirportSearch" class="airport-search" placeholder="Search Arrival...">
+             <select id="arrivalAirport"></select>
+             <div class="checkbox-compact">
                  <input type="checkbox" id="arrivalHomeBaseCheck">
-                 <label for="arrivalHomeBaseCheck">Set Arrival to Home Base (WSSS)</label>
+                 <label for="arrivalHomeBaseCheck">Home Base (WSSS)</label>
              </div>
           </div>
       </div>
       
-      <div id="arrivalGmtOffsetManualGroup" class="form-group dst-offset-group hidden">
-        <label for="arrivalGmtOffsetManualInput">Effective Arrival GMT Offset (adjust for DST):</label>
-        <input type="number" id="arrivalGmtOffsetManualInput" step="0.25">
+      <!-- Row 3: GMT Offset Config -->
+      <div class="row">
+          <div class="col">
+              <div class="checkbox-compact">
+                  <input type="checkbox" id="manualGmtToggle">
+                  <label for="manualGmtToggle" style="font-weight: 600;">Manual GMT/DST Adjustment</label>
+              </div>
+              <div id="manualGmtContainer" class="dst-row-container hidden" style="margin-top: 5px;">
+                  <div id="originGmtOffsetManualGroup" class="dst-offset-group">
+                    <label for="originGmtOffsetManualInput">Origin GMT Offset:</label>
+                    <input type="number" id="originGmtOffsetManualInput" step="0.25" placeholder="e.g. 8">
+                  </div>
+                  <div id="arrivalGmtOffsetManualGroup" class="dst-offset-group">
+                    <label for="arrivalGmtOffsetManualInput">Arrival GMT Offset:</label>
+                    <input type="number" id="arrivalGmtOffsetManualInput" step="0.25" placeholder="e.g. 10.5">
+                  </div>
+              </div>
+          </div>
       </div>
 
-
-      <div class="form-row">
-          <div class="form-group fixed-width">
-            <label for="todMinutes">Descent In (mins)</label>
-            <input type="number" id="todMinutes" value="10" min="1" max="60">
+      <!-- Row 4: Descent & Taxi -->
+      <div class="row">
+          <div class="col col-small">
+              <div class="label-row">
+                  <label for="todMinutes">Descent In (mins)</label>
+                  <label class="inline-checkbox-label" title="Toggle if descent has already started">
+                      <input type="checkbox" id="alreadyDescendingCheck"> Already Descending
+                  </label>
+              </div>
+              <div id="todInputGroup">
+                  <input type="number" id="todMinutes" value="10" min="1" max="60" placeholder="e.g. 20">
+              </div>
           </div>
-          <div class="form-group">
-            <label for="arrivalTimeZuluHH">Est. Arrival Time (Zulu)</label>
+          <div class="col col-small">
+              <label for="taxiTime">Taxi Time</label>
+              <select id="taxiTime">
+                <option value="5 to 10">5-10 mins</option>
+                <option value="10 to 15" selected>10-15 mins</option>
+                <option value="15 to 20">15-20 mins</option>
+                <option value="20 to 25">20-25 mins</option>
+                <option value="approximately 30">approx. 30 mins</option>
+              </select>
+          </div>
+           <div class="col-checkbox">
+              <div class="checkbox-wrapper">
+                  <input type="checkbox" id="subjectToAtcCheck">
+                  <label for="subjectToAtcCheck">Subject to ATC instructions</label>
+              </div>
+          </div>
+      </div>
+
+      <!-- Row 5: Arrival Time & Weather -->
+      <div class="row">
+          <div class="col col-small">
+            <label>Est. Arrival (Zulu)</label>
             <div class="time-input-group">
               <input type="number" id="arrivalTimeZuluHH" placeholder="HH" min="0" max="23">
               <span>:</span>
@@ -472,50 +447,33 @@
               <span>Z</span>
             </div>
           </div>
-      </div>
-
-      <div class="form-row">
-          <div class="form-group">
-            <label for="weatherPhenomena">Weather at Destination</label>
+          <div class="col col-medium">
+            <label for="weatherPhenomena">Weather</label>
             <select id="weatherPhenomena"></select>
           </div>
-          <div class="form-group fixed-width">
+          <div class="col col-small" style="flex: 0 0 100px; min-width: 100px;">
             <label for="temperature">Temp (°C)</label>
             <input type="number" id="temperature" value="28" min="-50" max="60">
           </div>
       </div>
 
-       <div class="form-group">
-        <label for="taxiTime">Estimated Taxi Time to Gate</label>
-        <select id="taxiTime">
-            <option value="5 to 10">5-10 mins</option>
-            <option value="10 to 15" selected>10-15 mins</option>
-            <option value="15 to 20">15-20 mins</option>
-            <option value="20 to 25">20-25 mins</option>
-            <option value="approximately 30">approx. 30 mins</option>
-        </select>
-      </div>
-
-      <div class="check-item form-group"> <input type="checkbox" id="conversationalToneCheck" checked>
-          <label for="conversationalToneCheck">Conversational Tone</label>
-      </div>
-
     </div>
 
+    <!-- Actions -->
     <div class="button-toolbar">
       <button id="generateButton" class="button">Generate Announcement</button>
       <button id="copyButton" class="button secondary">Copy to Clipboard</button>
     </div>
-     <div class="settings-toolbar">
-        <button id="saveAnnouncementButton" class="button utility">Save Announcement</button>
-        <button id="loadAnnouncementButton" class="button utility load">Load Announcement</button>
-        <input type="file" id="fileInput" accept=".sqaa" style="display: none;">
+    
+    <div class="form-section" style="margin-top: 20px;">
+        <label for="announcementOutput">Generated Announcement (Editable)</label>
+        <textarea id="announcementOutput"></textarea> 
     </div>
 
-
-    <div class="form-group" style="margin-top: 20px;">
-        <label for="announcementOutput">Generated Announcement (Editable)</label>
-        <textarea id="announcementOutput" rows="10"></textarea> 
+     <div class="settings-toolbar">
+        <button id="saveAnnouncementButton" class="button utility">Save Settings</button>
+        <button id="loadAnnouncementButton" class="button utility load">Load Settings</button>
+        <input type="file" id="fileInput" accept=".sqaa" style="display: none;">
     </div>
 
   </div>
@@ -661,8 +619,8 @@
         (airportData[a].announcementName || airportData[a].name).localeCompare(airportData[b].announcementName || airportData[b].name)
       );
 
-      originSelect.innerHTML = '<option value="">Select Origin Airport</option>';
-      arrivalSelect.innerHTML = '<option value="">Select Arrival Airport</option>';
+      originSelect.innerHTML = '<option value="">Select Origin</option>';
+      arrivalSelect.innerHTML = '<option value="">Select Arrival</option>';
 
       sortedAirportCodes.forEach(code => {
         const airport = airportData[code];
@@ -734,9 +692,7 @@
              if (this.value === 'WSSS' && otherCheckbox.checked) {
                  otherCheckbox.checked = false;
              }
-             if (selectDropdownId === 'arrivalAirport') {
-                handleArrivalAirportChange();
-             }
+             handleAirportChange(selectDropdownId);
         });
 
         homeBaseCheckbox.addEventListener('change', function() {
@@ -752,39 +708,41 @@
         });
     }
 
-    function handleArrivalAirportChange() {
-        const arrivalCode = document.getElementById('arrivalAirport').value;
-        const manualGmtGroup = document.getElementById('arrivalGmtOffsetManualGroup');
-        const manualGmtInput = document.getElementById('arrivalGmtOffsetManualInput');
+    function handleAirportChange(dropdownId) {
+        const airportCode = document.getElementById(dropdownId).value;
+        let manualGmtInput;
+        
+        if (dropdownId === 'originAirport') {
+            manualGmtInput = document.getElementById('originGmtOffsetManualInput');
+        } else if (dropdownId === 'arrivalAirport') {
+             manualGmtInput = document.getElementById('arrivalGmtOffsetManualInput');
+        }
 
-        if (arrivalCode && airportData[arrivalCode]) {
-            const airport = airportData[arrivalCode];
-            if (airport.hasDST) {
-                if(!manualGmtInput.value || isNaN(parseFloat(manualGmtInput.value))) {
-                     manualGmtInput.value = airport.standardGmtOffset;
-                }
-                manualGmtGroup.classList.remove('hidden');
-            } else {
-                manualGmtGroup.classList.add('hidden');
-                manualGmtInput.value = '';
+        if (manualGmtInput && airportCode && airportData[airportCode]) {
+            const airport = airportData[airportCode];
+            // If manual input is empty, preset it with standard
+            if (!manualGmtInput.value) {
+                manualGmtInput.value = airport.standardGmtOffset;
             }
-        } else {
-            manualGmtGroup.classList.add('hidden');
-            manualGmtInput.value = '';
         }
     }
     
-    function getEffectiveArrivalGmtOffset(arrivalCode) {
-        if (!arrivalCode || !airportData[arrivalCode]) return null;
-        const airport = airportData[arrivalCode];
-        const manualGmtGroup = document.getElementById('arrivalGmtOffsetManualGroup');
-        const manualGmtInput = document.getElementById('arrivalGmtOffsetManualInput');
+    function getEffectiveGmtOffset(airportCode, manualInputId) {
+        if (!airportCode || !airportData[airportCode]) return null;
+        
+        const manualToggle = document.getElementById('manualGmtToggle');
+        const manualGmtContainer = document.getElementById('manualGmtContainer');
 
-        if (airport.hasDST && !manualGmtGroup.classList.contains('hidden')) {
-            const manualOffset = parseFloat(manualGmtInput.value);
-            if (!isNaN(manualOffset)) return manualOffset;
+        if (manualToggle.checked && !manualGmtContainer.classList.contains('hidden')) {
+             const manualInput = document.getElementById(manualInputId);
+             if (manualInput) {
+                const manualOffset = parseFloat(manualInput.value);
+                if (!isNaN(manualOffset)) return manualOffset;
+             }
         }
-        return airport.standardGmtOffset;
+
+        // Fallback to standard
+        return airportData[airportCode].standardGmtOffset;
     }
 
     function calculateLocalTime(zuluHH, zuluMM, gmtOffset) {
@@ -862,6 +820,8 @@
       const selectedWeatherPhenomenon = document.getElementById('weatherPhenomena').value;
       const temperature = document.getElementById('temperature').value;
       const taxiTimeValue = document.getElementById('taxiTime').value;
+      const alreadyDescending = document.getElementById('alreadyDescendingCheck').checked;
+      const subjectToAtc = document.getElementById('subjectToAtcCheck').checked;
 
       if (!originCode || !arrivalCode) { alert("Please select both origin and arrival airports."); return; }
       if (originCode === arrivalCode) { alert("Origin and Arrival airports cannot be the same."); return; } 
@@ -872,8 +832,10 @@
       const arrivalAirportDetails = airportData[arrivalCode];
       if (!originAirportDetails || !arrivalAirportDetails) { alert("Selected airport data not found."); return; }
       
-      const effectiveArrivalGmt = getEffectiveArrivalGmtOffset(arrivalCode);
-      if (effectiveArrivalGmt === null) { alert("Could not determine effective GMT offset for arrival airport."); return; }
+      const effectiveArrivalGmt = getEffectiveGmtOffset(arrivalCode, 'arrivalGmtOffsetManualInput');
+      const effectiveOriginGmt = getEffectiveGmtOffset(originCode, 'originGmtOffsetManualInput');
+
+      if (effectiveArrivalGmt === null || effectiveOriginGmt === null) { alert("Could not determine effective GMT offset."); return; }
 
       const localArrivalTime = calculateLocalTime(arrivalZuluHH, arrivalZuluMM, effectiveArrivalGmt);
       const conversationalLocalTime = formatLocalTimeConversational(localArrivalTime.hours, localArrivalTime.minutes);
@@ -883,12 +845,13 @@
       const displayOriginShortName = originAirportDetails.shortName || (originAirportDetails.announcementName || originAirportDetails.name).split(" ")[0];
 
       let timeAndLandingStatement;
-      const originGmt = originAirportDetails.standardGmtOffset;
+      
+      const atcPhrase = subjectToAtc ? ", subject to ATC instructions," : "";
 
-      if (originGmt === effectiveArrivalGmt) {
-        timeAndLandingStatement = `There is no time difference between ${displayOriginShortName} and ${displayArrivalShortName}. We expect to land at approximately ${conversationalLocalTime}`;
+      if (effectiveOriginGmt === effectiveArrivalGmt) {
+        timeAndLandingStatement = `There is no time difference between ${displayOriginShortName} and ${displayArrivalShortName}. We expect to land at approximately ${conversationalLocalTime}${atcPhrase}`;
       } else {
-        const diff = effectiveArrivalGmt - originGmt;
+        const diff = effectiveArrivalGmt - effectiveOriginGmt;
         const totalAbsDiffInMinutes = Math.round(Math.abs(diff * 60));
         const diffHours = Math.floor(totalAbsDiffInMinutes / 60);
         const diffMinutes = totalAbsDiffInMinutes % 60;
@@ -896,7 +859,7 @@
         let diffStr = `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
         if (diffMinutes > 0) diffStr += ` and ${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
         const relation = diff > 0 ? 'ahead of' : 'behind';
-        timeAndLandingStatement = `${displayArrivalShortName} is ${diffStr} ${relation} ${displayOriginShortName}, and we expect to land at approximately ${conversationalLocalTime}`;
+        timeAndLandingStatement = `${displayArrivalShortName} is ${diffStr} ${relation} ${displayOriginShortName}, and we expect to land at approximately ${conversationalLocalTime}${atcPhrase}`;
       }
       
       const weatherPhrase = weatherPresentation[selectedWeatherPhenomenon] || `is ${selectedWeatherPhenomenon}`;
@@ -906,7 +869,14 @@
       const speakerIdentifier = speakerRole === "Pilot" ? "your pilot speaking" : `your ${speakerRole}`; 
       const greeting = useConversationalTone ? "Ladies and Gentlemen, boys and girls," : "Ladies and Gentlemen,";
 
-      const announcement = `${greeting} this is ${speakerIdentifier}. We will be commencing our descent into ${displayArrivalFullName} in about ${todMinutes} minutes time.
+      let descentPhrase;
+      if (alreadyDescending) {
+          descentPhrase = `keeping you updated on the status of the arrival as we have commenced our descent into ${displayArrivalFullName}.`;
+      } else {
+          descentPhrase = `. We will be commencing our descent into ${displayArrivalFullName} in about ${todMinutes} minutes time.`;
+      }
+
+      const announcement = `${greeting} this is ${speakerIdentifier}${descentPhrase}
 Current Weather at ${displayArrivalShortName} ${weatherFull}.
 ${timeAndLandingStatement}, and another ${taxiTimeValue} minutes thereafter to the gate.
 On behalf of the crew, we would like to thank you once again for flying with ${airlineName}. Cabin crew, please prepare for arrival.`; 
@@ -955,10 +925,45 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
 
     function toggleDarkMode(isNight) {
         document.body.classList.toggle('night-mode', isNight);
-        localStorage.setItem('darkModePrefArrivalToolV20', isNight ? 'true' : 'false'); // Updated key
+        localStorage.setItem('darkModePrefArrivalToolV20', isNight ? 'true' : 'false');
         document.getElementById('darkModeToggle').checked = isNight; 
     }
     
+    function toggleManualGmt() {
+        const isChecked = document.getElementById('manualGmtToggle').checked;
+        const container = document.getElementById('manualGmtContainer');
+        const originInput = document.getElementById('originGmtOffsetManualInput');
+        const arrivalInput = document.getElementById('arrivalGmtOffsetManualInput');
+        
+        if (isChecked) {
+            container.classList.remove('hidden');
+            // Pre-fill if necessary
+             if (document.getElementById('originAirport').value) {
+                 handleAirportChange('originAirport');
+             }
+             if (document.getElementById('arrivalAirport').value) {
+                 handleAirportChange('arrivalAirport');
+             }
+        } else {
+            container.classList.add('hidden');
+        }
+    }
+    
+    function toggleDescentInput() {
+        const isAlreadyDescending = document.getElementById('alreadyDescendingCheck').checked;
+        const inputGroup = document.getElementById('todInputGroup');
+        // Visual toggle only - logic handled in generation
+        if(isAlreadyDescending) {
+            document.getElementById('todMinutes').disabled = true;
+            document.getElementById('todMinutes').style.opacity = 0.5;
+            document.getElementById('todMinutes').style.backgroundColor = "#eee";
+        } else {
+            document.getElementById('todMinutes').disabled = false;
+            document.getElementById('todMinutes').style.opacity = 1;
+            document.getElementById('todMinutes').style.backgroundColor = "#fff";
+        }
+    }
+
     function validateTimeInput(el, max) { if (el.value) { let v = parseInt(el.value); if (isNaN(v) || v < 0) el.value = ''; else if (v > max) el.value = max; else if (el.value.length > 2 && el.value.startsWith('0')) el.value=el.value.slice(1,3); else if (el.value.length > 2) el.value=el.value.slice(0,2);}}
     function padTimeInput(el) { if (el.value && el.value.length === 1 && !isNaN(parseInt(el.value))) el.value = "0" + el.value; }
 
@@ -966,9 +971,9 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
         'speakerRole', 'originAirport', 'arrivalAirport', 'todMinutes', 
         'arrivalTimeZuluHH', 'arrivalTimeZuluMM', 
         'weatherPhenomena', 'temperature', 'taxiTime',
-        'arrivalGmtOffsetManualInput',
+        'arrivalGmtOffsetManualInput', 'originGmtOffsetManualInput',
         'originHomeBaseCheck', 'arrivalHomeBaseCheck',
-        'conversationalToneCheck' // Consolidated checkbox
+        'conversationalToneCheck', 'manualGmtToggle', 'alreadyDescendingCheck', 'subjectToAtcCheck'
     ];
 
     function saveAnnouncementToFile() {
@@ -978,7 +983,7 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
             if (element) {
                 if (element.type === 'checkbox') {
                      announcementData[id] = element.checked;
-                } else if (id === 'arrivalGmtOffsetManualInput' && document.getElementById('arrivalGmtOffsetManualGroup').classList.contains('hidden')) {
+                } else if ((id === 'arrivalGmtOffsetManualInput' || id === 'originGmtOffsetManualInput') && document.getElementById('manualGmtContainer').classList.contains('hidden')) {
                     announcementData[id] = ""; 
                 } else {
                     announcementData[id] = element.value;
@@ -1020,7 +1025,11 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
                      document.getElementById('arrivalHomeBaseCheck').checked = false;
                 }
 
-                handleArrivalAirportChange(); 
+                handleAirportChange('originAirport');
+                handleAirportChange('arrivalAirport'); 
+                toggleManualGmt(); // Ensure manual GMT visibility state is restored
+                toggleDescentInput(); // Ensure descent input visibility is restored
+
                 const arrChangeEvent = new Event('change', { bubbles: true });
                 document.getElementById('arrivalAirport').dispatchEvent(arrChangeEvent);
                 if (loadedData['originHomeBaseCheck']){
@@ -1049,6 +1058,9 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
       document.getElementById('loadAnnouncementButton').addEventListener('click', () => document.getElementById('fileInput').click());
       document.getElementById('fileInput').addEventListener('change', loadAnnouncementFromFile);
       
+      document.getElementById('manualGmtToggle').addEventListener('change', toggleManualGmt);
+      document.getElementById('alreadyDescendingCheck').addEventListener('change', toggleDescentInput);
+
       ['arrivalTimeZuluHH', 'arrivalTimeZuluMM'].forEach(id => {
           const el = document.getElementById(id);
           const max = id === 'arrivalTimeZuluHH' ? 23 : 59;
@@ -1059,7 +1071,10 @@ On behalf of the crew, we would like to thank you once again for flying with ${a
       const darkModeToggle = document.getElementById('darkModeToggle');
       darkModeToggle.addEventListener('change', () => toggleDarkMode(darkModeToggle.checked));
       toggleDarkMode(localStorage.getItem('darkModePrefArrivalToolV20') === 'true'); 
-      handleArrivalAirportChange(); 
+      handleAirportChange('originAirport');
+      handleAirportChange('arrivalAirport');
+      toggleManualGmt(); // Init state
+      toggleDescentInput(); // Init state
     });
   </script>
 </body>
