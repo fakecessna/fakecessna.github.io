@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flight Card v2.1</title>
+  <title>Flight Card v2.2</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     /* --- CORE STYLES --- */
@@ -99,9 +99,7 @@
 
     /* --- ALIGNMENT & WIDTHS (Adjusted for 750px Fit) --- */
     
-    /* Reduced slightly from 140px to 135px to prevent table overflow */
     .name-input, .crew-name-input { width: 135px !important; } 
-    /* Reduced slightly from 90px to 85px */
     input#staffNo { width: 85px !important; }
     
     /* Capt/Crew Structure */
@@ -199,7 +197,23 @@
     .first-data-cell { flex-basis: 110px; flex-shrink: 0; flex-grow: 0; }
     #cardPage .crew-pax-inputs { gap: 1px; }
     #card-additional-crew { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+    
+    /* Card Crew Alignment Fix */
     .card-crew-row { display: flex; gap: 5px; align-items: center; }
+    .card-crew-type { 
+        width: 40px !important; 
+        flex-shrink: 0; 
+        display: inline-block; 
+        text-align: left;
+    }
+    
+    /* Australia Format Fields */
+    #australia-format-row .cell input, #card-australia-format-row .cell .data-display {
+        text-align: center;
+    }
+    #aus_cleared_fpr, #aus_departure { width: 50px !important; }
+    #aus_cvs_ft { width: 45px !important; }
+    #aus_sqwk { width: 40px !important; }
 
     /* NIGHT MODE */
     body.night-mode { background-color: #1a1a1a; color: #e0e0e0; }
@@ -268,7 +282,6 @@
           <input type="text" id="flightNo" maxlength="3" pattern="[0-9]*" inputmode="numeric">
         </div>
         
-        <!-- CAPT CELL: Layout Strict Enforcement -->
         <div class="cell capt-cell">
           <div class="capt-top">
             <div class="field">
@@ -280,11 +293,8 @@
               <input type="text" id="staffNo" maxlength="8" pattern="[0-9]*" inputmode="numeric">
             </div>
           </div>
-          <!-- Dynamic Crew Wrapper for vertical alignment -->
           <div class="dynamic-crew-wrapper">
-              <div id="additional-crew-container">
-                <!-- Rows injected by JS -->
-              </div>
+              <div id="additional-crew-container"></div>
           </div>
         </div>
 
@@ -319,7 +329,15 @@
             <input type="text" id="std-minutes" class="time-input" maxlength="2" placeholder="MM" pattern="[0-9]*" inputmode="numeric">
             <span class="time-suffix">Z</span>
             <select id="std-gmt" class="gmt-select">
-               <option value="">GMT</option><option value="+14">+14</option><option value="+13">+13</option><option value="+12">+12</option><option value="+11">+11</option><option value="+10">+10</option><option value="+9">+9</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6">+6</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4">+4</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option><option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-4">-4</option><option value="-5">-5</option><option value="-6">-6</option><option value="-7">-7</option><option value="-8">-8</option><option value="-9">-9</option><option value="-10">-10</option><option value="-11">-11</option><option value="-12">-12</option>
+               <option value="">GMT</option>
+               <option value="+14">+14</option><option value="+13.75">+13.75</option><option value="+13">+13</option><option value="+12.75">+12.75</option><option value="+12">+12</option>
+               <option value="+11">+11</option><option value="+10.5">+10.5</option><option value="+10">+10</option><option value="+9.5">+9.5</option><option value="+9">+9</option>
+               <option value="+8.75">+8.75</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6.5">+6.5</option><option value="+6">+6</option>
+               <option value="+5.75">+5.75</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4.5">+4.5</option><option value="+4">+4</option>
+               <option value="+3.5">+3.5</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option>
+               <option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-3.5">-3.5</option><option value="-4">-4</option>
+               <option value="-5">-5</option><option value="-6">-6</option><option value="-7">-7</option><option value="-8">-8</option><option value="-9">-9</option>
+               <option value="-9.5">-9.5</option><option value="-10">-10</option><option value="-11">-11</option><option value="-12">-12</option>
             </select>
             <input type="text" id="std-lt-hours" class="time-input" maxlength="2" placeholder="HH" readonly>
             <span class="time-separator">:</span>
@@ -343,7 +361,15 @@
             <input type="text" id="sta-minutes" class="time-input" maxlength="2" placeholder="MM" pattern="[0-9]*" inputmode="numeric">
             <span class="time-suffix">Z</span>
             <select id="sta-gmt" class="gmt-select">
-              <option value="">GMT</option><option value="+14">+14</option><option value="+13">+13</option><option value="+12">+12</option><option value="+11">+11</option><option value="+10">+10</option><option value="+9">+9</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6">+6</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4">+4</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option><option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-4">-4</option><option value="-5">-5</option><option value="-6">-6</option><option value="-7">-7</option><option value="-8">-8</option><option value="-9">-9</option><option value="-10">-10</option><option value="-11">-11</option><option value="-12">-12</option>
+              <option value="">GMT</option>
+               <option value="+14">+14</option><option value="+13.75">+13.75</option><option value="+13">+13</option><option value="+12.75">+12.75</option><option value="+12">+12</option>
+               <option value="+11">+11</option><option value="+10.5">+10.5</option><option value="+10">+10</option><option value="+9.5">+9.5</option><option value="+9">+9</option>
+               <option value="+8.75">+8.75</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6.5">+6.5</option><option value="+6">+6</option>
+               <option value="+5.75">+5.75</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4.5">+4.5</option><option value="+4">+4</option>
+               <option value="+3.5">+3.5</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option>
+               <option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-3.5">-3.5</option><option value="-4">-4</option>
+               <option value="-5">-5</option><option value="-6">-6</option><option value="-7">-7</option><option value="-8">-8</option><option value="-9">-9</option>
+               <option value="-9.5">-9.5</option><option value="-10">-10</option><option value="-11">-11</option><option value="-12">-12</option>
             </select>
             <input type="text" id="sta-lt-hours" class="time-input" maxlength="2" placeholder="HH" readonly>
             <span class="time-separator">:</span>
@@ -388,12 +414,26 @@
             <div class="cell filler-cell"></div>
        </div>
 
+        <!-- UPDATED AUSTRALIA ROW -->
         <div class="row seamless-row format-row" id="australia-format-row">
-             <div class="cell"> <label class="label-right-aligned" for="gate">GATE</label> <input type="text" id="gate" maxlength="4"> </div>
-             <div class="cell"> <label for="aus_cleared_sid">Cleared</label> <input type="text" id="aus_cleared_sid" placeholder="SID"> </div>
-             <div class="cell"> <input type="text" id="aus_cleared_wpt" placeholder="WPT"> </div>
-             <div class="cell"> <label for="aus_climb_alt">Climb via SID to</label> <input type="text" id="aus_climb_alt" maxlength="5" pattern="[0-9]*" inputmode="numeric"> </div>
-            <div class="cell"> <label for="aus_sqwk">SQWK</label> <input type="text" id="aus_sqwk" maxlength="4" pattern="[0-9]*" inputmode="numeric"> </div>
+             <div class="cell"> 
+                 <label>Cleared</label> 
+                 <input type="text" id="aus_cleared_fpr" id="aus_cleared_fpr"> 
+                 <label>FPR</label> 
+             </div>
+             <div class="cell"> 
+                 <input type="text" id="aus_departure"> 
+                 <label>departure</label> 
+             </div>
+             <div class="cell"> 
+                 <label>CVS to</label> 
+                 <input type="text" id="aus_cvs_ft" maxlength="5" pattern="[0-9]*" inputmode="numeric"> 
+                 <label>ft</label> 
+             </div>
+            <div class="cell"> 
+                <label>SQWK</label> 
+                <input type="text" id="aus_sqwk" maxlength="4" pattern="[0-9]*" inputmode="numeric"> 
+            </div>
             <div class="cell filler-cell"></div>
         </div>
 
@@ -519,11 +559,11 @@
             <div class="cell filler-cell"></div>
        </div>
 
+        <!-- CARD VIEW AUSTRALIA -->
         <div class="row seamless-row format-row" id="card-australia-format-row">
-             <div class="cell"> <label class="label-right-aligned">GATE</label> <span class="data-display text-blue" id="card-gate-aus"></span> </div>
-             <div class="cell"> <label>Cleared</label> <span class="data-display" id="card-aus_cleared_sid"></span> </div>
-             <div class="cell"> <span class="data-display" id="card-aus_cleared_wpt"></span> </div>
-             <div class="cell"> <label>Climb via SID to</label> <span class="data-display" id="card-aus_climb_alt"></span> </div>
+             <div class="cell"> <label>Cleared</label> <span class="data-display text-blue" id="card-aus_cleared_fpr"></span> <label>FPR</label> </div>
+             <div class="cell"> <span class="data-display text-blue" id="card-aus_departure"></span> <label>departure</label> </div>
+             <div class="cell"> <label>CVS to</label> <span class="data-display" id="card-aus_cvs_ft"></span> <label>ft</label> </div>
             <div class="cell"> <label>SQWK</label> <span class="data-display" id="card-aus_sqwk"></span> </div>
             <div class="cell filler-cell"></div>
         </div>
@@ -578,7 +618,9 @@
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbymVVoJU0wZkPrXgFAE_McA_pf_ttj5GdvA_tklrolGEPkw0WB1rVg0xLDFgXGVH7zg/exec'; 
 
     // --- ID LISTS ---
-    const savableInputIds = ['flightNo', 'capt', 'staffNo', 'crew', 'pax', 'm2000', 'p1000', 'm1000', 'std-hours', 'std-minutes', 'std-gmt', 'flt-t-hours', 'flt-t-minutes', 'sta-hours', 'sta-minutes', 'sta-gmt', 'plan', 'reg', 'gate', 'info', 'fl', 'dest', 'bw', 'bi', 'pzfw', 'ezfw', 'pfit', 'exs', 'bo', 'res', 'fzfw', 'percent_mac', 'sid', 'star', 'v2', 'remarks', 'formatSelector', 'pdc', 'qnh', 'aus_cleared_sid', 'aus_cleared_wpt', 'aus_climb_alt', 'aus_sqwk', 'opti_climb', 'opti_mach', 'opti_desc1', 'opti_desc2', 'crz_check'];
+    const savableInputIds = ['flightNo', 'capt', 'staffNo', 'crew', 'pax', 'm2000', 'p1000', 'm1000', 'std-hours', 'std-minutes', 'std-gmt', 'flt-t-hours', 'flt-t-minutes', 'sta-hours', 'sta-minutes', 'sta-gmt', 'plan', 'reg', 'gate', 'info', 'fl', 'dest', 'bw', 'bi', 'pzfw', 'ezfw', 'pfit', 'exs', 'bo', 'res', 'fzfw', 'percent_mac', 'sid', 'star', 'v2', 'remarks', 'formatSelector', 'pdc', 'qnh', 
+    'aus_cleared_fpr', 'aus_departure', 'aus_cvs_ft', 'aus_sqwk', 
+    'opti_climb', 'opti_mach', 'opti_desc1', 'opti_desc2', 'crz_check'];
     const calculatedIds = ['pob', 'india_pob', 'ezfw_du', 'fzfw_du', 'v2_plus_15', 'std-lt-hours', 'std-lt-minutes', 'sta-lt-hours', 'sta-lt-minutes', 'blk-t-hours', 'blk-t-minutes'];
     
     // Fallback DB
@@ -917,7 +959,8 @@
     
     function generateCard() {
         const data = getAllFormData();
-        ['flightNo','capt','staffNo','crew','pax','m2000','p1000','m1000','bw','bi','pzfw','ezfw','ezfw_du','pfit','exs','bo','res','fzfw','fzfw_du','percent_mac','v2','v2_plus_15','sid','star','remarks','opti_climb','opti_mach','opti_desc1','opti_desc2','plan','reg','gate','info','fl','dest','pob','pdc','qnh','aus_cleared_sid','aus_cleared_wpt','aus_climb_alt','aus_sqwk'].forEach(id => {
+        ['flightNo','capt','staffNo','crew','pax','m2000','p1000','m1000','bw','bi','pzfw','ezfw','ezfw_du','pfit','exs','bo','res','fzfw','fzfw_du','percent_mac','v2','v2_plus_15','sid','star','remarks','opti_climb','opti_mach','opti_desc1','opti_desc2','plan','reg','gate','info','fl','dest','pob','pdc','qnh',
+        'aus_cleared_fpr', 'aus_departure', 'aus_cvs_ft', 'aus_sqwk'].forEach(id => {
             const el = document.getElementById('card-'+id);
             if(el) { const val = data[id.replace('india_','')] || data[id] || ''; el.textContent = val; }
         });
@@ -925,7 +968,6 @@
         const indiaGate = document.getElementById('card-gate-india'); if(indiaGate) indiaGate.textContent = data.gate;
         const indiaInfo = document.getElementById('card-info-india'); if(indiaInfo) indiaInfo.textContent = data.info;
         const indiaPob = document.getElementById('card-india_pob'); if(indiaPob) indiaPob.textContent = data.pob;
-        const ausGate = document.getElementById('card-gate-aus'); if(ausGate) ausGate.textContent = data.gate;
 
         const fmt = (h, m) => (h && m) ? `${h}:${m}` : '';
         document.getElementById('card-std-time').textContent = fmt(data['std-hours'], data['std-minutes']);
@@ -977,7 +1019,9 @@
         autoTab('plan', 'reg'); autoTab('reg', 'gate');
         autoTab('gate', 'info'); autoTab('fl', 'dest');
         autoTab('pdc', 'qnh');
-        autoTab('aus_cleared_sid', 'aus_cleared_wpt'); autoTab('aus_cleared_wpt', 'aus_climb_alt'); autoTab('aus_climb_alt', 'aus_sqwk');
+        autoTab('aus_sqwk', 'aus_cleared_fpr'); // Note: SQWK is last in row but first in mental tab order? Or loop back?
+        // Tab order for Aus: Cleared -> Departure -> CVS -> SQWK
+        autoTab('aus_cleared_fpr', 'aus_departure');
         autoTab('opti_climb', 'opti_mach'); autoTab('opti_desc1', 'opti_desc2');
         autoTab('std-hours', 'std-minutes'); autoTab('flt-t-hours', 'flt-t-minutes'); autoTab('sta-hours', 'sta-minutes');
 
@@ -985,7 +1029,7 @@
             if(el.id.includes('hours') || el.id.includes('minutes') || el.id === 'flightNo' || el.id === 'plan' || el.id === 'bw' || el.id === 'fl' || el.id === 'v2') {
                 el.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); });
             }
-            if(el.id === 'reg' || el.id === 'sid' || el.id === 'star' || el.id === 'dest' || el.id.includes('aus_') || el.id === 'gate') {
+            if(el.id === 'reg' || el.id === 'sid' || el.id === 'star' || el.id === 'dest' || el.id.includes('aus_cleared') || el.id === 'aus_departure' || el.id === 'gate') {
                 el.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
             }
         });
