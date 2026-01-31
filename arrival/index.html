@@ -17,6 +17,9 @@
         --input-border: #ccc;
         --tab-inactive: #e9ecef;
         --tab-active-text: #00529b;
+        --live-clock-bg: #e3f2fd;
+        --live-clock-text: #0d47a1;
+        --live-clock-border: #bbdefb;
     }
 
     body.night-mode {
@@ -30,6 +33,9 @@
         --input-border: #566573;
         --tab-inactive: #4a6278;
         --tab-active-text: #2c3e50;
+        --live-clock-bg: #1c2833;
+        --live-clock-text: #5dade2;
+        --live-clock-border: #34495e;
     }
 
     html, body {
@@ -242,6 +248,20 @@
         color: var(--primary-color);
     }
     
+    /* Live Clock Panel */
+    .live-clock-panel {
+        background-color: var(--live-clock-bg);
+        border: 1px solid var(--live-clock-border);
+        color: var(--live-clock-text);
+        padding: 10px 15px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        animation: fadeIn 0.5s;
+    }
+
     /* Speaker Config Panel (Shared) */
     .speaker-config {
         background-color: rgba(0,82,155,0.05);
@@ -746,6 +766,21 @@
 
     <!-- OUTPUT AREA (Shared) -->
     <div class="output-section">
+        <!-- Live Clock Indicator -->
+        <div id="liveClockPanel" class="live-clock-panel hidden">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span style="font-weight:600;">Current Time in <span id="liveClockCity">Destination</span>:</span>
+                <span id="liveClockTime" style="font-family:'Courier New', monospace; font-weight:bold; font-size:1.1em;">--:--</span>
+            </div>
+            <div style="font-size:0.8em; opacity:0.8; text-align:right; max-width: 150px; line-height: 1.2;">
+                Announcement text updates automatically
+            </div>
+        </div>
+
         <label for="mainOutput" style="display:block; margin-bottom:10px;">Generated Announcement (Editable)</label>
         <textarea id="mainOutput" readonly></textarea>
         <div class="button-toolbar">
@@ -757,30 +792,118 @@
 
   <script>
     // --- AIRPORT DATA ---
-    const airportData = { 
-      "WSSS": { iata: "SIN", name: "Singapore Changi Airport", standardGmtOffset: 8, shortName: "Singapore" },
-      "WADD": { iata: "DPS", name: "Denpasar Ngurah Rai", standardGmtOffset: 8, shortName: "Denpasar" },
-      "WMKJ": { iata: "PEN", name: "Penang", standardGmtOffset: 8, shortName: "Penang" },
-      "VTBS": { iata: "BKK", name: "Bangkok Suvarnabhumi", standardGmtOffset: 7, shortName: "Bangkok" },
-      "EGLL": { iata: "LHR", name: "London Heathrow", standardGmtOffset: 0, hasDST: true, shortName: "London" },
-      "KJFK": { iata: "JFK", name: "New York JFK", standardGmtOffset: -5, hasDST: true, shortName: "New York" },
-      "KLAX": { iata: "LAX", name: "Los Angeles", standardGmtOffset: -8, hasDST: true, shortName: "Los Angeles" },
-      "YSSY": { iata: "SYD", name: "Sydney Kingsford Smith", standardGmtOffset: 10, hasDST: true, shortName: "Sydney" },
-      "YMML": { iata: "MEL", name: "Melbourne", standardGmtOffset: 10, hasDST: true, shortName: "Melbourne" },
-      "RJAA": { iata: "NRT", name: "Tokyo Narita", standardGmtOffset: 9, shortName: "Tokyo" },
-      "LFPG": { iata: "CDG", name: "Paris Charles de Gaulle", standardGmtOffset: 1, hasDST: true, shortName: "Paris" },
-      "EDDF": { iata: "FRA", name: "Frankfurt", standardGmtOffset: 1, hasDST: true, shortName: "Frankfurt" },
-      "OMDB": { iata: "DXB", name: "Dubai International", standardGmtOffset: 4, shortName: "Dubai" },
-      "VABB": { iata: "BOM", name: "Mumbai CSIA", standardGmtOffset: 5.5, shortName: "Mumbai" },
-      "VIDP": { iata: "DEL", name: "Delhi Indira Gandhi", standardGmtOffset: 5.5, shortName: "Delhi" },
-      "HKG": { iata: "HKG", name: "Hong Kong", standardGmtOffset: 8, shortName: "Hong Kong" },
-      "NZAA": { iata: "AKL", name: "Auckland", standardGmtOffset: 12, hasDST: true, shortName: "Auckland" }
+    // Full SIA Network + Key Destinations
+    const airportData = {
+        // South East Asia
+        "WSSS": { iata: "SIN", name: "Singapore Changi Airport", standardGmtOffset: 8, shortName: "Singapore" },
+        "WADD": { iata: "DPS", name: "Denpasar Ngurah Rai", standardGmtOffset: 8, shortName: "Denpasar" },
+        "WIDD": { iata: "KNO", name: "Medan Kualanamu", standardGmtOffset: 7, shortName: "Medan" },
+        "WMKJ": { iata: "PEN", name: "Penang", standardGmtOffset: 8, shortName: "Penang" },
+        "WMKK": { iata: "KUL", name: "Kuala Lumpur Intl", standardGmtOffset: 8, shortName: "Kuala Lumpur" },
+        "WBKK": { iata: "BKI", name: "Kota Kinabalu", standardGmtOffset: 8, shortName: "Kota Kinabalu" },
+        "WBGR": { iata: "KCH", name: "Kuching", standardGmtOffset: 8, shortName: "Kuching" },
+        "WMKL": { iata: "LGK", name: "Langkawi", standardGmtOffset: 8, shortName: "Langkawi" },
+        "WBSB": { iata: "BWN", name: "Brunei", standardGmtOffset: 8, shortName: "Bandar Seri Begawan" },
+        "VVTS": { iata: "SGN", name: "Ho Chi Minh City Tan Son Nhat", standardGmtOffset: 7, shortName: "Ho Chi Minh City" },
+        "VVNB": { iata: "HAN", name: "Hanoi Noi Bai", standardGmtOffset: 7, shortName: "Hanoi" },
+        "VTBS": { iata: "BKK", name: "Bangkok Suvarnabhumi", standardGmtOffset: 7, shortName: "Bangkok" },
+        "VTSG": { iata: "HKT", name: "Phuket", standardGmtOffset: 7, shortName: "Phuket" },
+        "RPLL": { iata: "MNL", name: "Manila Ninoy Aquino", standardGmtOffset: 8, shortName: "Manila" },
+        "RPVM": { iata: "CEB", name: "Cebu Mactan-Cebu", standardGmtOffset: 8, shortName: "Cebu" },
+        "VYYY": { iata: "RGN", name: "Yangon", standardGmtOffset: 6.5, shortName: "Yangon" },
+        "VDPP": { iata: "PNH", name: "Phnom Penh", standardGmtOffset: 7, shortName: "Phnom Penh" },
+        "VDSR": { iata: "REP", name: "Siem Reap Angkor (SAI/REP)", standardGmtOffset: 7, shortName: "Siem Reap" },
+        "WARR": { iata: "SUB", name: "Surabaya Juanda", standardGmtOffset: 7, shortName: "Surabaya" },
+        "WIII": { iata: "CGK", name: "Jakarta Soekarno-Hatta", standardGmtOffset: 7, shortName: "Jakarta" },
+        
+        // North East Asia
+        "RJAA": { iata: "NRT", name: "Tokyo Narita", standardGmtOffset: 9, shortName: "Tokyo" },
+        "RJTT": { iata: "HND", name: "Tokyo Haneda", standardGmtOffset: 9, shortName: "Tokyo" },
+        "RJBB": { iata: "KIX", name: "Osaka Kansai", standardGmtOffset: 9, shortName: "Osaka" },
+        "RJFF": { iata: "FUK", name: "Fukuoka", standardGmtOffset: 9, shortName: "Fukuoka" },
+        "RJGG": { iata: "NGO", name: "Nagoya Chubu Centrair", standardGmtOffset: 9, shortName: "Nagoya" },
+        "ROAH": { iata: "OKA", name: "Naha (Okinawa)", standardGmtOffset: 9, shortName: "Naha" },
+        "RKSI": { iata: "ICN", name: "Seoul Incheon", standardGmtOffset: 9, shortName: "Seoul" },
+        "ZBAA": { iata: "PEK", name: "Beijing Capital", standardGmtOffset: 8, shortName: "Beijing" },
+        "ZBAD": { iata: "PKX", name: "Beijing Daxing", standardGmtOffset: 8, shortName: "Beijing" },
+        "ZSPD": { iata: "PVG", name: "Shanghai Pudong", standardGmtOffset: 8, shortName: "Shanghai" },
+        "ZGGG": { iata: "CAN", name: "Guangzhou Baiyun", standardGmtOffset: 8, shortName: "Guangzhou" },
+        "ZGSZ": { iata: "SZX", name: "Shenzhen Bao'an", standardGmtOffset: 8, shortName: "Shenzhen" },
+        "ZUCK": { iata: "CKG", name: "Chongqing Jiangbei", standardGmtOffset: 8, shortName: "Chongqing" },
+        "ZUTF": { iata: "TFU", name: "Chengdu Tianfu", standardGmtOffset: 8, shortName: "Chengdu" },
+        "ZSAM": { iata: "XMN", name: "Xiamen Gaoqi", standardGmtOffset: 8, shortName: "Xiamen" },
+        "ZGHA": { iata: "CSX", name: "Changsha Huanghua", standardGmtOffset: 8, shortName: "Changsha" },
+        "RCKH": { iata: "KHH", name: "Kaohsiung", standardGmtOffset: 8, shortName: "Kaohsiung" },
+        "RCTP": { iata: "TPE", name: "Taipei Taoyuan", standardGmtOffset: 8, shortName: "Taipei" },
+        "VHHH": { iata: "HKG", name: "Hong Kong", standardGmtOffset: 8, shortName: "Hong Kong" },
+        "VMMC": { iata: "MFM", name: "Macau", standardGmtOffset: 8, shortName: "Macau" },
+
+        // South West Pacific
+        "YSSY": { iata: "SYD", name: "Sydney Kingsford Smith", standardGmtOffset: 10, hasDST: true, shortName: "Sydney" },
+        "YMML": { iata: "MEL", name: "Melbourne", standardGmtOffset: 10, hasDST: true, shortName: "Melbourne" },
+        "YBBN": { iata: "BNE", name: "Brisbane", standardGmtOffset: 10, shortName: "Brisbane" }, // QLD no DST
+        "YPPH": { iata: "PER", name: "Perth", standardGmtOffset: 8, shortName: "Perth" },
+        "YPAD": { iata: "ADL", name: "Adelaide", standardGmtOffset: 9.5, hasDST: true, shortName: "Adelaide" },
+        "YPDN": { iata: "DRW", name: "Darwin", standardGmtOffset: 9.5, shortName: "Darwin" },
+        "YBCS": { iata: "CNS", name: "Cairns", standardGmtOffset: 10, shortName: "Cairns" },
+        "NZAA": { iata: "AKL", name: "Auckland", standardGmtOffset: 12, hasDST: true, shortName: "Auckland" },
+        "NZCH": { iata: "CHC", name: "Christchurch", standardGmtOffset: 12, hasDST: true, shortName: "Christchurch" },
+
+        // West Asia & Africa
+        "VIDP": { iata: "DEL", name: "Delhi Indira Gandhi", standardGmtOffset: 5.5, shortName: "Delhi" },
+        "VABB": { iata: "BOM", name: "Mumbai CSIA", standardGmtOffset: 5.5, shortName: "Mumbai" },
+        "VOBL": { iata: "BLR", name: "Bengaluru Kempegowda", standardGmtOffset: 5.5, shortName: "Bengaluru" },
+        "VOMM": { iata: "MAA", name: "Chennai", standardGmtOffset: 5.5, shortName: "Chennai" },
+        "VOHS": { iata: "HYD", name: "Hyderabad Rajiv Gandhi", standardGmtOffset: 5.5, shortName: "Hyderabad" },
+        "VAAH": { iata: "AMD", name: "Ahmedabad", standardGmtOffset: 5.5, shortName: "Ahmedabad" },
+        "VOCI": { iata: "COK", name: "Kochi", standardGmtOffset: 5.5, shortName: "Kochi" },
+        "VECC": { iata: "CCU", name: "Kolkata", standardGmtOffset: 5.5, shortName: "Kolkata" },
+        "VOGO": { iata: "GOI", name: "Goa Dabolim", standardGmtOffset: 5.5, shortName: "Goa" },
+        "VOTV": { iata: "TRV", name: "Thiruvananthapuram", standardGmtOffset: 5.5, shortName: "Thiruvananthapuram" },
+        "VGHS": { iata: "DAC", name: "Dhaka Shahjalal", standardGmtOffset: 6, shortName: "Dhaka" },
+        "VCBI": { iata: "CMB", name: "Colombo Bandaranaike", standardGmtOffset: 5.5, shortName: "Colombo" },
+        "VRMM": { iata: "MLE", name: "Malé Velana", standardGmtOffset: 5, shortName: "Malé" },
+        "VNKT": { iata: "KTM", name: "Kathmandu Tribhuvan", standardGmtOffset: 5.75, shortName: "Kathmandu" },
+        "OMDB": { iata: "DXB", name: "Dubai International", standardGmtOffset: 4, shortName: "Dubai" },
+        "OTHH": { iata: "DOH", name: "Doha Hamad", standardGmtOffset: 3, shortName: "Doha" },
+        "FACT": { iata: "CPT", name: "Cape Town", standardGmtOffset: 2, shortName: "Cape Town" },
+        "FAOR": { iata: "JNB", name: "Johannesburg O.R. Tambo", standardGmtOffset: 2, shortName: "Johannesburg" },
+
+        // Europe
+        "EGLL": { iata: "LHR", name: "London Heathrow", standardGmtOffset: 0, hasDST: true, shortName: "London" },
+        "EGKK": { iata: "LGK", name: "London Gatwick", standardGmtOffset: 0, hasDST: true, shortName: "London" },
+        "EGCC": { iata: "MAN", name: "Manchester", standardGmtOffset: 0, hasDST: true, shortName: "Manchester" },
+        "LFPG": { iata: "CDG", name: "Paris Charles de Gaulle", standardGmtOffset: 1, hasDST: true, shortName: "Paris" },
+        "EDDF": { iata: "FRA", name: "Frankfurt", standardGmtOffset: 1, hasDST: true, shortName: "Frankfurt" },
+        "EDDM": { iata: "MUC", name: "Munich", standardGmtOffset: 1, hasDST: true, shortName: "Munich" },
+        "EHAM": { iata: "AMS", name: "Amsterdam Schiphol", standardGmtOffset: 1, hasDST: true, shortName: "Amsterdam" },
+        "LSZH": { iata: "ZRH", name: "Zurich", standardGmtOffset: 1, hasDST: true, shortName: "Zurich" },
+        "EBBR": { iata: "BRU", name: "Brussels", standardGmtOffset: 1, hasDST: true, shortName: "Brussels" },
+        "LIMC": { iata: "MXP", name: "Milan Malpensa", standardGmtOffset: 1, hasDST: true, shortName: "Milan" },
+        "LIRF": { iata: "FCO", name: "Rome Fiumicino", standardGmtOffset: 1, hasDST: true, shortName: "Rome" },
+        "LEMD": { iata: "MAD", name: "Madrid Barajas", standardGmtOffset: 1, hasDST: true, shortName: "Madrid" },
+        "LEBL": { iata: "BCN", name: "Barcelona El Prat", standardGmtOffset: 1, hasDST: true, shortName: "Barcelona" },
+        "EKCH": { iata: "CPH", name: "Copenhagen", standardGmtOffset: 1, hasDST: true, shortName: "Copenhagen" },
+        "LTFM": { iata: "IST", name: "Istanbul", standardGmtOffset: 3, shortName: "Istanbul" },
+
+        // Americas
+        "KJFK": { iata: "JFK", name: "New York JFK", standardGmtOffset: -5, hasDST: true, shortName: "New York" },
+        "KEWR": { iata: "EWR", name: "Newark Liberty", standardGmtOffset: -5, hasDST: true, shortName: "New York" },
+        "KLAX": { iata: "LAX", name: "Los Angeles", standardGmtOffset: -8, hasDST: true, shortName: "Los Angeles" },
+        "KSFO": { iata: "SFO", name: "San Francisco", standardGmtOffset: -8, hasDST: true, shortName: "San Francisco" },
+        "KSEA": { iata: "SEA", name: "Seattle-Tacoma", standardGmtOffset: -8, hasDST: true, shortName: "Seattle" },
+        "KIAH": { iata: "IAH", name: "Houston George Bush", standardGmtOffset: -6, hasDST: true, shortName: "Houston" },
+        "KORD": { iata: "ORD", name: "Chicago O'Hare", standardGmtOffset: -6, hasDST: true, shortName: "Chicago" },
+        "CYYZ": { iata: "YYZ", name: "Toronto Pearson", standardGmtOffset: -5, hasDST: true, shortName: "Toronto" },
+        "CYVR": { iata: "YVR", name: "Vancouver", standardGmtOffset: -8, hasDST: true, shortName: "Vancouver" }
     };
 
     const weatherList = [
         "Partly Cloudy", "Clear Sky", "Overcast", "Mist", "Fog", "Rain", "Heavy Rain", 
         "Showers", "Thunderstorms", "Snow", "Heavy Snow"
     ];
+
+    let arrivalClockInterval = null;
 
     // --- TABS LOGIC ---
     function openTab(tabName) {
@@ -821,6 +944,78 @@
         if (num !== 1) u += "s"; // Pluralize
         return `${val} ${u}`;
     }
+
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
+    }
+    
+    // --- LIVE CLOCK LOGIC ---
+    function startLiveDestinationClock(cityName, gmtOffset) {
+        const displayPanel = document.getElementById('liveClockPanel');
+        const displayCity = document.getElementById('liveClockCity');
+        const displayTime = document.getElementById('liveClockTime');
+        const textArea = document.getElementById('mainOutput');
+
+        // Show panel
+        displayPanel.classList.remove('hidden');
+        displayCity.textContent = cityName;
+
+        // Clear existing interval
+        if (arrivalClockInterval) clearInterval(arrivalClockInterval);
+
+        // Define Update Function
+        const updateTick = () => {
+            // 1. Calculate Destination Time from Device Time
+            const now = new Date();
+            // Get UTC time in ms
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            // Add Offset
+            const destTime = new Date(utc + (3600000 * gmtOffset));
+            
+            // 2. Format Time
+            let hh = destTime.getHours();
+            let mm = destTime.getMinutes();
+            let p = hh < 12 ? "AM" : "PM";
+            let h12 = hh % 12; 
+            if (h12 === 0) h12 = 12;
+            const timeStr = `${h12}:${mm.toString().padStart(2, '0')} ${p}`;
+
+            // 3. Update Visual Badge
+            displayTime.textContent = timeStr;
+
+            // 4. Smart Update Textarea
+            // We search for the pattern "The current time in [City] is [Time]."
+            // We only replace if it exists, preserving cursor position.
+            const content = textArea.value;
+            const citySafe = escapeRegExp(cityName);
+            
+            // Regex: Looks for "The current time in City is" followed by a time pattern
+            // Capture group 1: Prefix "The current time in City is "
+            // Capture group 2: The old time "10:45 AM"
+            const regex = new RegExp(`(The current time in ${citySafe} is )(\\d{1,2}:\\d{2} [AP]M)`);
+            
+            const match = content.match(regex);
+            
+            if (match && match[2] !== timeStr) {
+                // Time has changed and pattern exists in text
+                const startPos = textArea.selectionStart;
+                const endPos = textArea.selectionEnd;
+                const oldScroll = textArea.scrollTop;
+
+                // Replace only the time part
+                const newContent = content.replace(regex, `$1${timeStr}`);
+                textArea.value = newContent;
+
+                // Restore cursor/scroll so user can keep typing elsewhere
+                textArea.setSelectionRange(startPos, endPos);
+                textArea.scrollTop = oldScroll;
+            }
+        };
+
+        // Run immediately then every second
+        updateTick();
+        arrivalClockInterval = setInterval(updateTick, 1000);
+    }
     
     // --- UI HELPER FOR SPEAKER TOGGLE ---
     function setupSpeakerToggle(roleSelectId, nameGroupContainerId, nameLabelId = null) {
@@ -859,6 +1054,8 @@
     }
 
     function generateWelcome() {
+        if(arrivalClockInterval) { clearInterval(arrivalClockInterval); document.getElementById('liveClockPanel').classList.add('hidden'); }
+
         const role = document.getElementById('welc_speakerRole').value;
         const captain = document.getElementById('welc_captainName').value.trim() || "(Name)";
         const assist = document.getElementById('welc_assistPilot').value.trim() || "(Names)";
@@ -887,7 +1084,7 @@
             assistText = `Assisting me on the flight deck is/are ${assist}.`;
         } else {
             intro = `Good ${getTimeOfDay()}, Ladies and Gentlemen. This is First Officer ${assist}, welcoming you on behalf of Captain ${captain}.`;
-            assistText = `Our flight time today will be ${timeStr}.`; // Slight variation as intro covered hierarchy
+            assistText = `Our flight time today will be ${timeStr}.`; 
         }
 
         let txt = `${intro}\n\n`;
@@ -923,7 +1120,7 @@
         const ws = document.getElementById('arr_weather');
         
         let html = '<option value="">Select Airport</option>';
-        Object.keys(airportData).sort().forEach(code => {
+        Object.keys(airportData).sort((a,b) => airportData[a].name.localeCompare(airportData[b].name)).forEach(code => {
             html += `<option value="${code}">${airportData[code].name} (${code})</option>`;
         });
         os.innerHTML = html;
@@ -934,7 +1131,7 @@
         ws.innerHTML = wHtml;
     }
 
-    // Time Calc
+    // Time Calc for initial generation
     function calculateLocalTime(zuluHH, zuluMM, offset) {
         if (zuluHH === "" || zuluMM === "") return null;
         let utcMins = parseInt(zuluHH) * 60 + parseInt(zuluMM);
@@ -994,16 +1191,18 @@
 
         const etaStr = calculateLocalTime(zHH, zMM, arrivalOffset) || "(Time)";
         
-        // Time Diff Logic
+        // Time Diff Logic & Start Live Clock
         const diff = arrivalOffset - originOffset;
         let timeDiffText = "";
+        
         if (diff === 0) {
             timeDiffText = "There is no time difference between the two cities.";
+            // Even if no difference, we start the clock for reference
+            startLiveDestinationClock(arrivalData.shortName, arrivalOffset);
         } else {
+            // Initial calculation for text generation (will be auto-updated by interval)
             let now = new Date();
-            // Calculate destination time for context "Current time is..."
-            let d = new Date();
-            let utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+            let utc = now.getTime() + (now.getTimezoneOffset() * 60000);
             let nd = new Date(utc + (3600000 * arrivalOffset));
             let destHH = nd.getHours();
             let destMM = nd.getMinutes();
@@ -1012,6 +1211,9 @@
             let curTimeStr = `${h12}:${destMM.toString().padStart(2,'0')} ${p}`;
             
             timeDiffText = `There is a time difference between the two cities. The current time in ${arrivalData.shortName} is ${curTimeStr}.`;
+            
+            // Start the live clock updater
+            startLiveDestinationClock(arrivalData.shortName, arrivalOffset);
         }
 
         // Temp Logic
@@ -1058,6 +1260,7 @@
 
     // --- IRROPS TAB ---
     function updateIrropsFields() {
+        if(arrivalClockInterval) { clearInterval(arrivalClockInterval); document.getElementById('liveClockPanel').classList.add('hidden'); }
         const s = document.getElementById('irr_scenario').value;
         const reasonField = document.getElementById('irr_reasonText');
         const actionField = document.getElementById('irr_action');
@@ -1110,6 +1313,7 @@
     }
 
     function generateIrrops() {
+        if(arrivalClockInterval) { clearInterval(arrivalClockInterval); document.getElementById('liveClockPanel').classList.add('hidden'); }
         const intro = getStandardIntro('irr', 'irr_speakerRole', 'irr_speakerName');
         const reason = document.getElementById('irr_reasonText').value;
         const action = document.getElementById('irr_action').value;
@@ -1145,6 +1349,7 @@
 
     // --- CREEPING DELAY TAB ---
     function generateCreep() {
+        if(arrivalClockInterval) { clearInterval(arrivalClockInterval); document.getElementById('liveClockPanel').classList.add('hidden'); }
         const intro = getStandardIntro('crp', 'crp_speakerRole', 'crp_speakerName');
         const stage = document.querySelector('input[name="creepStage"]:checked').value;
         const depTime = document.getElementById('creep_depTime').value;
@@ -1160,7 +1365,7 @@
         } else if (stage === '30') {
             txt = `${intro} We regret the extended delay caused by the technical issue. Please accept our sincere apologies for the inconvenience caused. We are in regular contact with the ground staff and the engineers who are working to rectify the issue. Thank you for your patience.`;
         } else if (stage === '60') {
-            txt = `${intro} Thank you for your patience. We have been advised that more time is required to resolve the technical issue and we sincerely apologise for the delay.\n\nTo facilitate a quicker departure once the issue is fixed, all passengers will continue to remain on board the aircraft. Our Cabin Crew will continue to serve refreshments and ensure that you are comfortable on board the aircraft. Please reach out to your Cabin Crew if you require assistance. Thank you, once again, for your understanding.`;
+            txt = `${intro} Thank you for your patience. We have been advised that more time is required to resolve the technical issue and we sincerely apologise for the delay.\n\nTo facilitate a quicker departure once the issue is fixed, all passengers will continue to remain on board the aircraft. Our Cabin Crew will continue to serve refreshments and ensure that you are comfortable on board the aircraft. Please reach out to our Cabin Crew if you require assistance. Thank you, once again, for your understanding.`;
         } else if (stage === '180') {
             txt = `${intro} Thank you for your continued patience. Based on the latest update from our engineers, we understand that more time is required to rectify the technical issue.\n\nAs a result, we would like to inform you that all passengers have the option to disembark or voluntarily offload themselves.\n\nPlease reach out to our Cabin Crew if you require any assistance. We will provide updates as soon as we can. Thank you, once again, for your patience and understanding.`;
         } else if (stage === 'cancel') {
@@ -1174,6 +1379,7 @@
 
     // --- TURBULENCE TAB ---
     function generateTurbulence(type) {
+        if(arrivalClockInterval) { clearInterval(arrivalClockInterval); document.getElementById('liveClockPanel').classList.add('hidden'); }
         const intro = getStandardIntro('trb', 'trb_speakerRole', 'trb_speakerName');
         let txt = "";
         if (type === 'pa1') {
@@ -1190,6 +1396,7 @@
 
     // --- MISC TAB ---
     function generateMisc(type) {
+        if(arrivalClockInterval) { clearInterval(arrivalClockInterval); document.getElementById('liveClockPanel').classList.add('hidden'); }
         const intro = getStandardIntro('msc', 'msc_speakerRole', 'msc_speakerName');
         let txt = "";
         if (type === 'goaround') {
