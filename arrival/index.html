@@ -171,14 +171,27 @@
     
     textarea {
         resize: vertical;
-        min-height: 120px;
+        min-height: 400px; /* Increased height for full visibility */
         line-height: 1.5;
+        font-size: 15px;
     }
     
     input:focus, select:focus, textarea:focus {
         border-color: var(--primary-color);
         outline: none;
         box-shadow: 0 0 0 2px rgba(0, 82, 155, 0.2);
+    }
+
+    /* Duration Input Group */
+    .duration-input-group {
+        display: flex;
+        gap: 5px;
+    }
+    .duration-input-group input {
+        flex: 1;
+    }
+    .duration-input-group select {
+        flex: 1;
     }
 
     /* Special Groups */
@@ -366,9 +379,13 @@
                     <label>Destination</label>
                     <input type="text" id="welc_destination" placeholder="City Name">
                 </div>
-                <div class="form-group small">
+                <div class="form-group medium">
                     <label>Flight Time</label>
-                    <input type="text" id="welc_flightTime" placeholder="e.g. 12 hours 30 mins">
+                    <div class="duration-input-group">
+                        <input type="number" id="welc_flightHours" placeholder="HR" min="0">
+                        <span style="align-self:center;">:</span>
+                        <input type="number" id="welc_flightMinutes" placeholder="MIN" min="0" max="59">
+                    </div>
                 </div>
             </div>
             <div class="form-group">
@@ -475,6 +492,10 @@
                 <div class="form-group small">
                     <label>Temp (°C)</label>
                     <input type="number" id="arr_temp" value="25">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="arr_showFahrenheit">
+                        <label for="arr_showFahrenheit" style="font-weight:normal; font-size:0.9em;">Show Fahrenheit</label>
+                    </div>
                 </div>
             </div>
 
@@ -554,9 +575,19 @@
                 </select>
             </div>
 
+            <!-- Dynamic Duration Group: Location OR Time -->
             <div class="form-group" id="irr_durationGroup">
-                <label>Duration / Location</label>
-                <input type="text" id="irr_duration" placeholder="e.g. 20 minutes OR the gate">
+                <label id="irr_durationLabel">Duration / Location</label>
+                <!-- Location Input (Text) -->
+                <input type="text" id="irr_durationLocation" placeholder="e.g. the gate" class="hidden">
+                <!-- Time Input (Number + Unit) -->
+                <div class="duration-input-group" id="irr_durationTimeGroup">
+                    <input type="number" id="irr_durationVal" placeholder="Value">
+                    <select id="irr_durationUnit">
+                        <option value="minute">Minute(s)</option>
+                        <option value="hour">Hour(s)</option>
+                    </select>
+                </div>
             </div>
 
             <div class="form-group">
@@ -648,7 +679,13 @@
             </div>
              <div class="form-group">
                 <label>Expected improvement in</label>
-                <input type="text" id="turb_duration" placeholder="e.g. 10 minutes">
+                <div class="duration-input-group">
+                    <input type="number" id="turb_durationVal" placeholder="Value">
+                    <select id="turb_durationUnit">
+                        <option value="minute">Minute(s)</option>
+                        <option value="hour">Hour(s)</option>
+                    </select>
+                </div>
             </div>
             <button class="button outline" onclick="generateTurbulence('reassure')">Generate Reassurance PA</button>
         </div>
@@ -679,7 +716,13 @@
                 </div>
                 <div class="form-group">
                     <label>Landing in</label>
-                    <input type="text" id="misc_goAroundTime" placeholder="e.g. 15 minutes">
+                    <div class="duration-input-group">
+                        <input type="number" id="misc_goAroundVal" placeholder="Value">
+                        <select id="misc_goAroundUnit">
+                            <option value="minute">Minute(s)</option>
+                            <option value="hour">Hour(s)</option>
+                        </select>
+                    </div>
                 </div>
                 <button class="button" onclick="generateMisc('goaround')">Generate Go Around PA</button>
             </div>
@@ -688,7 +731,13 @@
                 <div class="panel-title">Warm Cabin</div>
                 <div class="form-group">
                     <label>Engines start in</label>
-                    <input type="text" id="misc_warmTime" placeholder="e.g. 5 to 10 minutes">
+                    <div class="duration-input-group">
+                        <input type="number" id="misc_warmVal" placeholder="Value">
+                        <select id="misc_warmUnit">
+                            <option value="minute">Minute(s)</option>
+                            <option value="hour">Hour(s)</option>
+                        </select>
+                    </div>
                 </div>
                 <button class="button" onclick="generateMisc('warm')">Generate Warm Cabin PA</button>
             </div>
@@ -743,8 +792,9 @@
 
     // --- SHARED FUNCTIONS ---
     function setOutput(text) {
-        document.getElementById('mainOutput').value = text;
-        document.getElementById('mainOutput').removeAttribute('readonly'); 
+        const output = document.getElementById('mainOutput');
+        output.value = text;
+        output.removeAttribute('readonly'); 
     }
 
     function getTimeOfDay() {
@@ -760,6 +810,16 @@
         } else {
             return `Ladies and Gentlemen, this is First Officer${name ? " " + name : ""}.`;
         }
+    }
+
+    function formatDuration(valId, unitId) {
+        const val = document.getElementById(valId).value.trim();
+        const unit = document.getElementById(unitId).value;
+        if (!val) return "(Time)";
+        const num = parseInt(val);
+        let u = unit;
+        if (num !== 1) u += "s"; // Pluralize
+        return `${val} ${u}`;
     }
     
     // --- UI HELPER FOR SPEAKER TOGGLE ---
@@ -804,7 +864,17 @@
         const assist = document.getElementById('welc_assistPilot').value.trim() || "(Names)";
         const flight = document.getElementById('welc_flightNo').value.trim() || "(Flight No)";
         const dest = document.getElementById('welc_destination').value.trim() || "(Destination)";
-        const time = document.getElementById('welc_flightTime').value.trim() || "(Time)";
+        
+        const hr = document.getElementById('welc_flightHours').value;
+        const min = document.getElementById('welc_flightMinutes').value;
+        let timeStr = "";
+        if(hr) timeStr += `${hr} hour${hr != 1 ? 's' : ''}`;
+        if(min) {
+            if(timeStr) timeStr += " and ";
+            timeStr += `${min} minute${min != 1 ? 's' : ''}`;
+        }
+        if(!timeStr) timeStr = "(Time)";
+
         const cic = document.getElementById('welc_cicName').value.trim() || "(Name)";
         const hasIFE = document.getElementById('welc_hasIFE').checked;
         const isUS = document.getElementById('welc_isUS').checked;
@@ -817,13 +887,13 @@
             assistText = `Assisting me on the flight deck is/are ${assist}.`;
         } else {
             intro = `Good ${getTimeOfDay()}, Ladies and Gentlemen. This is First Officer ${assist}, welcoming you on behalf of Captain ${captain}.`;
-            assistText = `Our flight time today will be ${time}.`; // Slight variation as intro covered hierarchy
+            assistText = `Our flight time today will be ${timeStr}.`; // Slight variation as intro covered hierarchy
         }
 
         let txt = `${intro}\n\n`;
         if (role === 'Captain') {
             txt += `On behalf of my crew, I would like to welcome all of you on board flight SQ ${flight} to ${dest}.\n`;
-            txt += `${assistText} Our flight time today will be ${time}.\n\n`;
+            txt += `${assistText} Our flight time today will be ${timeStr}.\n\n`;
         } else {
             txt += `On behalf of the Captain and crew, I would like to welcome all of you on board flight SQ ${flight} to ${dest}.\n`;
             txt += `${assistText}\n\n`;
@@ -900,6 +970,7 @@
         const zMM = document.getElementById('arr_zuluMM').value;
         const weather = document.getElementById('arr_weather').value.toLowerCase();
         const temp = document.getElementById('arr_temp').value;
+        const showFahrenheit = document.getElementById('arr_showFahrenheit').checked;
         const isSCP = document.getElementById('arr_scp').checked;
 
         if (!originCode || !arrivalCode) { alert("Please select origin and arrival airports."); return; }
@@ -943,6 +1014,13 @@
             timeDiffText = `There is a time difference between the two cities. The current time in ${arrivalData.shortName} is ${curTimeStr}.`;
         }
 
+        // Temp Logic
+        let tempStr = `${temp} degrees Celsius`;
+        if (showFahrenheit && temp) {
+            const f = Math.round((parseInt(temp) * 9/5) + 32);
+            tempStr += `, which is ${f} degrees Fahrenheit`;
+        }
+
         // Intro Logic
         let intro = "";
         if (role === 'Captain') {
@@ -970,7 +1048,7 @@
         let txt = `${intro}\n\n`;
         txt += `We hope you have enjoyed your flight with us. We will be commencing our descent in approximately ${tod} minutes. Our estimated time of arrival is ${etaStr} local time.\n\n`;
         txt += `${timeDiffText}\n\n`;
-        txt += `The current weather in ${arrivalData.shortName} is ${weather} with a ground temperature of ${temp} degrees Celsius.\n`;
+        txt += `The current weather in ${arrivalData.shortName} is ${weather} with a ground temperature of ${tempStr}.\n`;
         txt += scpText;
         txt += `\n${closing}\n\n`;
         txt += `${cabPrep}`;
@@ -1016,13 +1094,18 @@
 
     function checkIrrAction() {
         const act = document.getElementById('irr_action').value;
-        const durGroup = document.getElementById('irr_durationGroup');
-        const lbl = durGroup.querySelector('label');
+        const durLabel = document.getElementById('irr_durationLabel');
+        const locInput = document.getElementById('irr_durationLocation');
+        const timeGroup = document.getElementById('irr_durationTimeGroup');
         
         if (act === 'delayed') {
-            lbl.textContent = "Duration (e.g. 20 minutes)";
+            durLabel.textContent = "Duration";
+            locInput.classList.add('hidden');
+            timeGroup.classList.remove('hidden');
         } else {
-            lbl.textContent = "Airport/Location";
+            durLabel.textContent = "Airport/Location";
+            locInput.classList.remove('hidden');
+            timeGroup.classList.add('hidden');
         }
     }
 
@@ -1030,13 +1113,19 @@
         const intro = getStandardIntro('irr', 'irr_speakerRole', 'irr_speakerName');
         const reason = document.getElementById('irr_reasonText').value;
         const action = document.getElementById('irr_action').value;
-        const dur = document.getElementById('irr_duration').value;
         const closing = document.getElementById('irr_closing').value;
         
         let actText = "";
-        if (action === 'delayed') actText = `will be delayed for approximately ${dur}`;
-        else if (action === 'return') actText = `had to return to ${dur}`;
-        else actText = `had to divert to ${dur}`;
+        let val = "";
+        
+        if (action === 'delayed') {
+             val = formatDuration('irr_durationVal', 'irr_durationUnit');
+             actText = `will be delayed for approximately ${val}`;
+        } else {
+             val = document.getElementById('irr_durationLocation').value;
+             if (action === 'return') actText = `had to return to ${val || "(Location)"}`;
+             else actText = `had to divert to ${val || "(Location)"}`;
+        }
 
         let closeText = "";
         if (closing === 'gate') closeText = "I shall come back to you on the situation once we are at the gate.";
@@ -1093,7 +1182,7 @@
             txt = `(Internal to Crew) Cabin Crew, please suspend service and be seated.\n\n${intro} For your safety, please fasten your seat belts.`;
         } else if (type === 'reassure') {
             const nature = document.getElementById('turb_nature').value || "(Nature)";
-            const dur = document.getElementById('turb_duration').value || "(Time)";
+            const dur = formatDuration('turb_durationVal', 'turb_durationUnit');
             txt = `${intro} We are currently experiencing unforecasted turbulence associated with ${nature}. We expect the situation to improve in ${dur}. For your safety, please remain seated with your seat belt fastened.`;
         }
         setOutput(txt);
@@ -1105,10 +1194,10 @@
         let txt = "";
         if (type === 'goaround') {
             const r = document.getElementById('misc_goAroundReason').value || "(Reason)";
-            const t = document.getElementById('misc_goAroundTime').value || "(Time)";
+            const t = formatDuration('misc_goAroundVal', 'misc_goAroundUnit');
             txt = `${intro}\n\nDue to ${r}, we have discontinued our approach and landing and will be making another approach shortly.\n\nPlease remain seated with your seat belts fastened. We expect to land in ${t}.\n\nRest assured that there is no cause for concern. Thank you for your patience and understanding.`;
         } else if (type === 'warm') {
-            const t = document.getElementById('misc_warmTime').value || "(Time)";
+            const t = formatDuration('misc_warmVal', 'misc_warmUnit');
             txt = `${intro} speaking.\n\nYou may have noticed that the cabin temperature is warmer than usual at the moment. This is due to the temporary unavailability of our ground cooling system.\n\nOnce we start our engines in approximately ${t}, the aircraft's main air conditioning will become fully operational, and the cabin will cool down quickly.\n\nWe appreciate your patience and understanding. Thank you.`;
         }
         setOutput(txt);
@@ -1180,6 +1269,8 @@
                 }
             });
         });
+        
+        checkIrrAction();
     });
   </script>
 </body>
