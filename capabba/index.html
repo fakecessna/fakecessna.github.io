@@ -1,1024 +1,1186 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Captain Database</title>
-    <!-- Font Awesome for Icons (Optional, using CDN) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        /* --- CSS VARIABLES & THEMES --- */
-        :root {
-            /* SCI-FI THEME (Default/Night) */
-            --bg-grad-start-night: #05070a;
-            --bg-grad-mid-night: #0b1021;
-            --bg-grad-end-night: #05070a;
-            --glass-bg-night: rgba(10, 15, 30, 0.75);
-            --glass-border-night: rgba(0, 229, 255, 0.15); /* Faint Cyan border */
-            --text-main-night: #cdd6f4;
-            --text-heading-night: #00e5ff; /* Neon Cyan */
-            --accent-night: #00bcd4; /* Cyan */
-            --card-bg-night: rgba(0, 0, 0, 0.5);
-            --card-shadow-night: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-            --btn-text-night: #000;
-            --input-bg-night: rgba(255, 255, 255, 0.05);
-            --input-border-night: rgba(0, 229, 255, 0.2);
-            
-            /* SOPHISTICATED DAY THEME */
-            --bg-grad-start-day: #e0eafc;
-            --bg-grad-end-day: #cfdef3; /* Cool Grey-Blue */
-            --glass-bg-day: rgba(255, 255, 255, 0.95);
-            --glass-border-day: rgba(44, 62, 80, 0.1);
-            --text-main-day: #34495e;
-            --text-heading-day: #2c3e50; /* Dark Slate Blue */
-            --accent-day: #2c3e50; /* Deep Navy/Slate - Serious */
-            --card-bg-day: #ffffff;
-            --card-shadow-day: 0 4px 15px rgba(0, 0, 0, 0.05);
-            --btn-text-day: #ffffff;
-            --input-bg-day: #f8f9fa;
-            --input-border-day: #b0bec5;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flight Crew Announcement Tool - Singapore Airlines</title>
+  <style>
+    /* General Styles */
+    :root {
+        --primary-color: #00529b;
+        --primary-hover: #003d73;
+        --bg-color: #f4f7f6;
+        --container-bg: #ffffff;
+        --text-color: #333;
+        --border-color: #e0e0e0;
+        --input-bg: #fff;
+        --input-border: #ccc;
+        --tab-inactive: #e9ecef;
+        --tab-active-text: #00529b;
+    }
 
-            /* Current active variables (Default to Night) */
-            --bg-grad-start: var(--bg-grad-start-night);
-            --bg-grad-end: var(--bg-grad-end-night);
-            --glass-bg: var(--glass-bg-night);
-            --glass-border: var(--glass-border-night);
-            --text-main: var(--text-main-night);
-            --text-heading: var(--text-heading-night);
-            --accent: var(--accent-night);
-            --card-bg: var(--card-bg-night);
-            --card-shadow: var(--card-shadow-night);
-            --input-bg: var(--input-bg-night);
-            --input-border: var(--input-border-night);
-            --btn-text: var(--btn-text-night);
-            
-            /* Planet Opacity Control */
-            --planet-opacity: 0.6;
-        }
+    body.night-mode {
+        --primary-color: #5dade2;
+        --primary-hover: #85c1e9;
+        --bg-color: #2c3e50;
+        --container-bg: #34495e;
+        --text-color: #ecf0f1;
+        --border-color: #4a6fa5;
+        --input-bg: #2c3e50;
+        --input-border: #566573;
+        --tab-inactive: #4a6278;
+        --tab-active-text: #2c3e50;
+    }
 
-        body.day-mode {
-            --bg-grad-start: var(--bg-grad-start-day);
-            --bg-grad-end: var(--bg-grad-end-day);
-            --glass-bg: var(--glass-bg-day);
-            --glass-border: var(--glass-border-day);
-            --text-main: var(--text-main-day);
-            --text-heading: var(--text-heading-day);
-            --accent: var(--accent-day);
-            --card-bg: var(--card-bg-day);
-            --card-shadow: var(--card-shadow-day);
-            --input-bg: var(--input-bg-day);
-            --input-border: var(--input-border-day);
-            --btn-text: var(--btn-text-day);
-            --planet-opacity: 0; /* Hide space planets in day mode */
-        }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 14px;
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 100%;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
+    }
 
-        /* --- GLOBAL STYLES --- */
-        html, body {
-            margin: 0; padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            width: 100%; min-height: 100vh;
-            color: var(--text-main);
-            overflow-x: hidden;
-            background-color: #05070a; /* Fallback */
-            transition: all 0.5s ease;
-        }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 10px;
+    }
 
-        /* --- BACKGROUND LAYERS --- */
-        .bg-layer {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
-        }
+    .container {
+      width: 100%;
+      max-width: 850px;
+      background-color: var(--container-bg);
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      padding: 0;
+      overflow: hidden;
+      transition: background-color 0.3s;
+    }
 
-        /* Layer 1: The Gradient */
-        #bg-gradient {
-            z-index: -10;
-            background: radial-gradient(circle at center, var(--bg-grad-mid-night, #0b1021) 0%, var(--bg-grad-start) 100%);
-            transition: background 0.5s ease;
-        }
-        body.day-mode #bg-gradient {
-            background: linear-gradient(135deg, var(--bg-grad-start-day), var(--bg-grad-end-day));
-        }
+    /* Heading Area */
+    .heading-container {
+        padding: 20px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .heading-container h3 {
+        margin: 0;
+        font-size: 20px;
+        color: var(--primary-color);
+    }
+    
+    /* Tabs */
+    .tabs {
+        display: flex;
+        background-color: var(--tab-inactive);
+        overflow-x: auto;
+        border-bottom: 1px solid var(--border-color);
+        -webkit-overflow-scrolling: touch;
+    }
+    .tab-button {
+        flex: 1;
+        padding: 12px 15px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-weight: 600;
+        color: #666;
+        white-space: nowrap;
+        transition: all 0.2s;
+        border-bottom: 3px solid transparent;
+        min-width: 100px;
+        text-align: center;
+    }
+    body.night-mode .tab-button { color: #ccc; }
+    
+    .tab-button:hover {
+        background-color: rgba(0,0,0,0.05);
+    }
+    .tab-button.active {
+        color: var(--tab-active-text);
+        border-bottom-color: var(--primary-color);
+        background-color: var(--container-bg);
+    }
+    body.night-mode .tab-button.active {
+        color: var(--primary-color);
+        background-color: var(--container-bg);
+    }
 
-        /* Layer 2: The Planets & Stars (Visible in Night Mode) */
-        #space-elements {
-            z-index: -5;
-            transition: opacity 0.5s ease;
-        }
-        
-        .star {
-            position: absolute; background: white; border-radius: 50%;
-            animation: twinkle linear infinite; opacity: 0;
-        }
-        @keyframes twinkle { 0% { opacity: 0; } 50% { opacity: 0.8; } 100% { opacity: 0; } }
+    /* Content Sections */
+    .tab-content {
+        display: none;
+        padding: 25px;
+        animation: fadeIn 0.3s;
+    }
+    .tab-content.active {
+        display: block;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
 
-        .planet {
-            position: absolute; border-radius: 50%;
-            box-shadow: inset -10px -10px 40px rgba(0,0,0,0.5);
-            animation: floatPlanet linear infinite;
-            opacity: var(--planet-opacity);
-            transition: opacity 0.5s ease;
-        }
-        
-        /* Planet 1: Large Gas Giant (Purple/Blue) */
-        .planet-1 {
-            width: 400px; height: 400px; top: -100px; left: -100px;
-            background: radial-gradient(circle at 30% 30%, rgba(79, 172, 254, 0.4), rgba(0, 242, 254, 0.1));
-            animation-duration: 200s;
-        }
-        /* Planet 2: Rocky World (Red/Grey) */
-        .planet-2 {
-            width: 150px; height: 150px; bottom: 15%; right: -50px;
-            background: radial-gradient(circle at 30% 30%, rgba(142, 142, 142, 0.5), rgba(43, 43, 43, 0.8));
-            animation-duration: 150s; animation-direction: reverse;
-        }
-        /* Planet 3: Distant Moon */
-        .planet-3 {
-            width: 60px; height: 60px; top: 30%; right: 20%;
-            background: rgba(200, 200, 200, 0.3);
-            animation-duration: 100s;
-        }
+    /* Form Elements */
+    .form-section {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: flex-end;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex: 1;
+        min-width: 180px;
+    }
+    .form-group.small { flex: 0 1 120px; min-width: 100px; }
+    .form-group.medium { flex: 2; }
+    
+    label {
+        font-weight: 600;
+        font-size: 0.85em;
+        color: var(--text-color);
+        opacity: 0.9;
+    }
+    
+    input[type="text"], input[type="number"], input[type="time"], select, textarea {
+        font-family: inherit;
+        font-size: 14px;
+        padding: 8px;
+        border: 1px solid var(--input-border);
+        border-radius: 5px;
+        width: 100%;
+        box-sizing: border-box;
+        background-color: var(--input-bg);
+        color: var(--text-color);
+    }
+    
+    textarea {
+        resize: vertical;
+        min-height: 120px;
+        line-height: 1.5;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 82, 155, 0.2);
+    }
 
-        @keyframes floatPlanet {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            50% { transform: translate(30px, 40px) rotate(5deg); }
-            100% { transform: translate(0, 0) rotate(0deg); }
-        }
+    /* Special Groups */
+    .airport-selection-row {
+        align-items: flex-start;
+    }
+    .swap-btn-container {
+        display: flex;
+        align-items: center;
+        padding-top: 25px;
+    }
+    #swapAirportsButton {
+        background: none;
+        border: 1px solid var(--input-border);
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #swapAirportsButton:hover { background-color: rgba(0,0,0,0.05); }
 
-        /* --- LAYOUT & CONTAINER --- */
-        .container {
-            width: 90%; max-width: 900px;
-            margin: 80px auto 40px auto;
-            padding: 30px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-radius: 2px;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--card-shadow);
-            clip-path: polygon(0 0, 100% 0, 100% 98%, 98% 100%, 0 100%); /* Tech corner cut */
-            transition: all 0.3s ease;
-            position: relative;
-            z-index: 1;
-        }
-        body.day-mode .container { 
-            border-radius: 12px; 
-            clip-path: none; 
-            border: 1px solid rgba(0,0,0,0.05);
-        }
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 5px;
+        font-size: 0.9em;
+    }
+    .checkbox-group input { width: auto; }
+    
+    .panel {
+        background-color: rgba(0,0,0,0.03);
+        border: 1px solid var(--border-color);
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+    .panel-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--primary-color);
+    }
+    
+    /* Speaker Config Panel (Shared) */
+    .speaker-config {
+        background-color: rgba(0,82,155,0.05);
+        border: 1px solid rgba(0,82,155,0.2);
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+    body.night-mode .speaker-config {
+        background-color: rgba(93, 173, 226, 0.1);
+        border-color: rgba(93, 173, 226, 0.3);
+    }
 
-        .header-controls { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; align-items: center; gap: 10px; }
-        
-        h2, h3, h4 { color: var(--text-heading); margin-top: 0; text-transform: uppercase; letter-spacing: 1.5px; }
-        h2 { border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 25px; font-weight: 700; }
-        body.day-mode h2, body.day-mode h3 { text-transform: none; letter-spacing: 0.5px; }
+    /* Output Area */
+    .output-section {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+    }
 
-        /* --- BUTTONS --- */
-        .button {
-            padding: 12px 24px; font-size: 15px; cursor: pointer; border: none; border-radius: 2px;
-            background: var(--accent); color: var(--btn-text); font-weight: bold;
-            box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
-            transition: all 0.2s;
-            margin: 5px; text-transform: uppercase; letter-spacing: 1px;
-            box-sizing: border-box; /* Ensure padding doesn't increase width beyond 100% */
-        }
-        body.day-mode .button { 
-            border-radius: 6px; 
-            box-shadow: none; 
-            text-transform: none; 
-            letter-spacing: normal;
-        }
-        
-        .button:hover { 
-            filter: brightness(1.2);
-            box-shadow: 0 0 20px rgba(0, 229, 255, 0.4); 
-        }
-        body.day-mode .button:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-            filter: brightness(1.1);
-        }
-        
-        .button-secondary, .button-back { background: #37474f; color: #eceff1; }
-        body.day-mode .button-secondary, body.day-mode .button-back { background: #78909c; color: #fff; }
+    /* Buttons */
+    .button-toolbar {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+    }
+    .button {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: opacity 0.2s;
+    }
+    .button:hover { opacity: 0.9; }
+    .button.secondary { background-color: #6c757d; }
+    .button.danger { background-color: #dc3545; }
+    .button.success { background-color: #28a745; }
+    .button.outline { background-color: transparent; border: 1px solid var(--input-border); color: var(--text-color); }
+    
+    /* Toggle Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 20px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px; width: 16px;
+      left: 2px; bottom: 2px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--primary-color); }
+    input:checked + .slider:before { transform: translateX(20px); }
 
-        .button-delete { padding: 4px 10px; font-size: 12px; background: #c62828; border-radius: 2px; margin-left: auto; color: white; }
-        .menu-buttons button { display: block; width: 100%; margin-bottom: 15px; text-align: center; font-size: 1.1em; }
-
-        /* --- FORMS & INPUTS --- */
-        .form-section { margin-bottom: 25px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-heading); letter-spacing: 0.5px; }
-        
-        input[type="text"], select, textarea, input[type="password"] {
-            width: 100%; padding: 12px; border-radius: 2px;
-            border: 1px solid var(--input-border);
-            background: var(--input-bg);
-            color: var(--text-main);
-            font-size: 15px; box-sizing: border-box;
-            transition: all 0.3s; font-family: 'Consolas', 'Courier New', monospace; /* Tech font for inputs */
-        }
-        body.day-mode input[type="text"], body.day-mode select, body.day-mode textarea { 
-            font-family: 'Segoe UI', sans-serif; 
-            border-radius: 6px; 
-            background: #fff;
-            color: #333;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none; border-color: var(--accent);
-            box-shadow: 0 0 10px var(--accent);
-            background: rgba(0, 229, 255, 0.05);
-        }
-        body.day-mode input:focus, body.day-mode textarea:focus { 
-            background: #fff; 
-            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
-        }
-
-        /* Select Options */
-        select option { background-color: #0b1021; color: #e0e0e0; }
-        body.day-mode select option { background-color: #ffffff; color: #2c3e50; }
-
-        /* --- RICH TEXT TOOLBAR --- */
-        .rich-text-container { border: 1px solid var(--input-border); border-radius: 2px; overflow: hidden; background: var(--input-bg); }
-        body.day-mode .rich-text-container { background: #fff; border-radius: 6px; }
-        
-        .toolbar { padding: 5px 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--input-border); display: flex; gap: 5px; }
-        body.day-mode .toolbar { background: #eceff1; }
-        
-        .toolbar button { background: none; border: none; color: var(--text-main); cursor: pointer; padding: 5px; border-radius: 4px; font-weight: bold; }
-        .toolbar button:hover { background: rgba(0,229,255,0.2); color: var(--accent); }
-        body.day-mode .toolbar button:hover { background: #cfd8dc; color: #333; }
-        
-        .rich-input { 
-            width: 100%; min-height: 100px; padding: 12px; 
-            background: transparent; color: var(--text-main); 
-            border: none; outline: none; resize: vertical; overflow-y: auto; font-family: inherit;
-        }
-        body.day-mode .rich-input { color: #333; font-family: sans-serif; }
-
-        /* --- DATA LISTS & CARDS --- */
-        .data-list ul { list-style: none; padding: 0; }
-        .data-list li {
-            padding: 15px; margin-bottom: 10px;
-            background: var(--card-bg); border-radius: 2px;
-            border: 1px solid rgba(255,255,255,0.05);
-            display: flex; justify-content: space-between; align-items: center;
-            cursor: pointer; transition: all 0.2s;
-        }
-        body.day-mode .data-list li {
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-        }
-        .data-list li:hover { transform: translateX(5px); border-color: var(--accent); box-shadow: 0 0 10px rgba(0,229,255,0.1); }
-        body.day-mode .data-list li:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.05); border-color: #2c3e50; }
-        
-        .entry-card {
-            background: var(--card-bg);
-            padding: 20px; border-radius: 4px;
-            margin-bottom: 20px; border-left: 4px solid var(--accent);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        }
-        body.day-mode .entry-card { border: 1px solid #eee; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border-radius: 8px; }
-        .entry-meta { font-size: 0.85em; color: #888; margin-bottom: 10px; font-style: italic; display: flex; justify-content: space-between; font-family: monospace; }
-        body.day-mode .entry-meta { font-family: sans-serif; color: #607d8b; }
-        
-        /* --- STATS BARS --- */
-        .stats-container { margin-bottom: 30px; }
-        .stat-bar-row { display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; }
-        .stat-label { width: 120px; font-weight: bold; text-align: right; margin-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .stat-track { flex-grow: 1; background: rgba(255,255,255,0.1); height: 20px; border-radius: 2px; overflow: hidden; position: relative; }
-        body.day-mode .stat-track { background: #eceff1; border-radius: 4px; }
-        .stat-fill { height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 5px; font-size: 12px; color: white; font-weight: bold; transition: width 1s ease-in-out; }
-        .fill-good { background: linear-gradient(90deg, #00695c, #00bfa5); }
-        .fill-bad { background: linear-gradient(90deg, #c62828, #ff5252); }
-
-        /* --- VIEWS --- */
-        .view { display: none; opacity: 0; transition: opacity 0.4s ease; }
-        .view.active { display: block; opacity: 1; }
-        
-        /* --- PASSWORD PAGE --- */
-        #password-view { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-            display: flex; align-items: center; justify-content: center; z-index: 2000;
-        }
-        #password-card {
-            background: var(--glass-bg);
-            padding: 40px; border-radius: 2px; text-align: center;
-            box-shadow: 0 0 30px rgba(0, 229, 255, 0.1);
-            backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
-            width: 90%; max-width: 400px;
-        }
-        body.day-mode #password-card {
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 1px solid #eee;
-        }
-
-        /* --- TOGGLE SWITCH --- */
-        .switch { position: relative; display: inline-block; width: 60px; height: 30px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid #555; }
-        .slider:before { position: absolute; content: "🌙"; display:flex; align-items: center; justify-content: center; height: 24px; width: 24px; left: 3px; bottom: 2px; background-color: #1a1a1a; transition: .4s; border-radius: 50%; font-size: 14px; }
-        
-        input:checked + .slider { background-color: #cfd8dc; border-color: #b0bec5; }
-        input:checked + .slider:before { transform: translateX(28px); content: "☀️"; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-
-        /* --- RESPONSIVE --- */
-        @media (max-width: 600px) {
-            .container { margin-top: 60px; padding: 15px; width: 95%; }
-            .header-controls { top: 10px; right: 10px; }
-            .menu-buttons button { font-size: 1em; padding: 12px; }
-        }
-    </style>
+    .hidden { display: none !important; }
+    
+    /* Helper classes for text */
+    .note { font-size: 0.8em; font-style: italic; opacity: 0.7; margin-top: 4px; }
+  </style>
 </head>
 <body>
 
-    <!-- Background Layers -->
-    <div id="bg-gradient" class="bg-layer"></div>
-    
-    <div id="space-elements" class="bg-layer">
-        <div id="stars-container"></div>
-        <div class="planet planet-1"></div>
-        <div class="planet planet-2"></div>
-        <div class="planet planet-3"></div>
-    </div>
-
-    <!-- Header / Mode Toggle -->
-    <div class="header-controls">
+  <div class="container">
+    <!-- Header -->
+    <div class="heading-container">
+      <h3>Flight Crew Announcement Tool</h3>
+      <div style="display: flex; gap: 15px; align-items: center;">
+        <span style="font-size: 0.85em; opacity: 0.8;">Night Mode</span>
         <label class="switch" title="Toggle Day/Night Mode">
-            <input type="checkbox" id="darkModeToggle">
-            <span class="slider round"></span>
+          <input type="checkbox" id="darkModeToggle">
+          <span class="slider round"></span>
         </label>
+      </div>
     </div>
 
-    <!-- Password Page (Overlay) -->
-    <div id="password-view" style="display: flex;">
-        <div id="password-card">
-            <h2><i class="fas fa-user-shield"></i> Free Abba</h2>
-            <p style="margin-bottom: 20px;">Restricted Access. Identity Confirmation Required.</p>
-            <form id="password-form">
-                <input type="password" id="password-input" placeholder="Enter Access Code" style="margin-bottom: 15px; text-align: center;">
-                <button type="submit" class="button" style="width: 100%; margin: 0;">Authenticate</button>
-            </form>
-            <p id="password-error" style="color: #ff5252; display: none; margin-top: 10px;">Access Denied.</p>
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+        <button class="tab-button active" onclick="openTab('welcome')">Welcome</button>
+        <button class="tab-button" onclick="openTab('arrival')">Arrival</button>
+        <button class="tab-button" onclick="openTab('irrops')">Irregularities</button>
+        <button class="tab-button" onclick="openTab('creeping')">Creeping Delay</button>
+        <button class="tab-button" onclick="openTab('turbulence')">Turbulence</button>
+        <button class="tab-button" onclick="openTab('misc')">Misc</button>
+    </div>
+
+    <!-- TAB: WELCOME -->
+    <div id="welcome" class="tab-content active">
+        <div class="form-section">
+            <div class="form-group">
+                <label>Announcing Pilot</label>
+                <select id="welc_speakerRole">
+                    <option value="Captain">Captain</option>
+                    <option value="First Officer">First Officer</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Captain Name</label>
+                    <input type="text" id="welc_captainName" placeholder="e.g. Captain Tan">
+                </div>
+                <div class="form-group">
+                    <label>First Officer / Assisting Pilot(s)</label>
+                    <input type="text" id="welc_assistPilot" placeholder="e.g. First Officer Lee">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group small">
+                    <label>Flight No.</label>
+                    <input type="text" id="welc_flightNo" placeholder="SQ...">
+                </div>
+                <div class="form-group">
+                    <label>Destination</label>
+                    <input type="text" id="welc_destination" placeholder="City Name">
+                </div>
+                <div class="form-group small">
+                    <label>Flight Time</label>
+                    <input type="text" id="welc_flightTime" placeholder="e.g. 12 hours 30 mins">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Cabin Crew In-Charge</label>
+                <input type="text" id="welc_cicName" placeholder="e.g. Inflight Manager Smith">
+            </div>
+            
+            <div class="panel">
+                <div class="panel-title">Configuration</div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="welc_hasIFE" checked>
+                    <label for="welc_hasIFE">Aircraft has IFE System</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="welc_isUS" onchange="toggleUSWelcome()">
+                    <label for="welc_isUS">US Sector (Security Announcement)</label>
+                </div>
+            </div>
+
+            <div class="button-toolbar">
+                <button class="button" onclick="generateWelcome()">Generate Welcome PA</button>
+            </div>
         </div>
     </div>
 
-    <!-- Main App Container -->
-    <div class="container" id="main-container" style="display: none;">
+    <!-- TAB: ARRIVAL -->
+    <div id="arrival" class="tab-content">
+        <div class="form-section">
+            <!-- Speaker Role -->
+            <div class="speaker-config">
+                <div class="form-group" style="flex: 1;">
+                    <label for="arr_speakerRole">Speaker</label>
+                    <select id="arr_speakerRole">
+                        <option value="Captain" selected>Captain</option>
+                        <option value="First Officer">First Officer</option>
+                    </select>
+                </div>
+                <div class="form-group hidden" id="arr_pilotNameGroup" style="flex: 2;">
+                    <label id="arr_pilotNameLabel">Pilot Name</label>
+                    <input type="text" id="arr_pilotName" placeholder="Name">
+                </div>
+                <!-- Captain name field specifically for when FO is speaking (for closing statement) -->
+                <div class="form-group hidden" id="arr_captainNameGroup" style="flex: 2;">
+                    <label>Captain's Name (for Closing)</label>
+                    <input type="text" id="arr_captainName" placeholder="Captain's Name">
+                </div>
+            </div>
+
+            <!-- Airports -->
+            <div class="form-row airport-selection-row">
+                <div class="form-group">
+                    <label>Origin</label>
+                    <input type="text" id="arr_originSearch" placeholder="Search (e.g. SIN, WSSS)">
+                    <select id="arr_originAirport" style="margin-top:5px;"></select>
+                    
+                    <div class="checkbox-group" style="margin-top: 8px;">
+                         <input type="checkbox" id="arr_originManualOffsetToggle">
+                         <label for="arr_originManualOffsetToggle">Manual GMT Offset Override</label>
+                    </div>
+                    <div id="arr_originManualOffsetGroup" class="hidden" style="margin-top: 5px;">
+                        <input type="number" id="arr_originManualOffset" placeholder="Offset (e.g. 8 or -5)" step="0.25">
+                    </div>
+                </div>
+                <div class="swap-btn-container">
+                    <button id="swapAirportsButton" title="Swap">⇆</button>
+                </div>
+                <div class="form-group">
+                    <label>Arrival</label>
+                    <input type="text" id="arr_arrivalSearch" placeholder="Search (e.g. LHR, EGLL)">
+                    <select id="arr_arrivalAirport" style="margin-top:5px;"></select>
+                    
+                    <div class="checkbox-group" style="margin-top: 8px;">
+                         <input type="checkbox" id="arr_manualOffsetToggle">
+                         <label for="arr_manualOffsetToggle">Manual GMT Offset Override</label>
+                    </div>
+                    <div id="arr_manualOffsetGroup" class="hidden" style="margin-top: 5px;">
+                        <input type="number" id="arr_manualOffset" placeholder="Offset (e.g. 5.5 or -8)" step="0.25">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time & Weather -->
+            <div class="form-row">
+                <div class="form-group small">
+                    <label>Descent In (mins)</label>
+                    <input type="number" id="arr_todMinutes" value="20">
+                </div>
+                <div class="form-group">
+                    <label>Est. Arrival (Zulu)</label>
+                    <div style="display:flex; gap:5px; align-items:center;">
+                        <input type="number" id="arr_zuluHH" placeholder="HH" min="0" max="23">
+                        <span>:</span>
+                        <input type="number" id="arr_zuluMM" placeholder="MM" min="0" max="59">
+                        <span>Z</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Weather</label>
+                    <select id="arr_weather"></select>
+                </div>
+                <div class="form-group small">
+                    <label>Temp (°C)</label>
+                    <input type="number" id="arr_temp" value="25">
+                </div>
+            </div>
+
+            <!-- SCP Toggle -->
+            <div class="panel" style="margin-top: 10px;">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="arr_scp">
+                    <label for="arr_scp"><strong>Secure Cabin Procedure (SCP)</strong> - Expect turbulence/Seat belt sign ON early</label>
+                </div>
+            </div>
+
+            <div class="button-toolbar">
+                <button class="button" onclick="generateArrival()">Generate Arrival PA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: IRREGULARITIES -->
+    <div id="irrops" class="tab-content">
+        <div class="form-section">
+            <div class="panel">
+                <div class="note">Provides factual reasons and apologies for delays/disruptions.</div>
+            </div>
+            
+            <div class="speaker-config">
+                <div class="form-group" style="flex: 1;">
+                    <label>Speaker</label>
+                    <select id="irr_speakerRole">
+                        <option value="Captain">Captain</option>
+                        <option value="First Officer">First Officer</option>
+                    </select>
+                </div>
+                <div class="form-group hidden" id="irr_speakerNameGroup" style="flex: 2;">
+                    <label>Name</label>
+                    <input type="text" id="irr_speakerName" placeholder="Name">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Scenario / Reason</label>
+                <select id="irr_scenario" onchange="updateIrropsFields()">
+                    <option value="">-- Select Scenario --</option>
+                    <optgroup label="Delays">
+                        <option value="late_inbound">Late arrival of inbound aircraft</option>
+                        <option value="late_boarding">Late boarding (Pax not seated)</option>
+                        <option value="congestion">Airport Congestion</option>
+                        <option value="weather_dest">Destination Weather</option>
+                        <option value="atc">ATC (Traffic/Enroute)</option>
+                        <option value="crew">Crew Requirements</option>
+                        <option value="tech_simple">Technical (Simple/Obvious)</option>
+                        <option value="tech_complex">Technical (Complex/Not obvious)</option>
+                        <option value="baggage">Offloading Bags</option>
+                    </optgroup>
+                    <optgroup label="Return to Bay (RTB) / Diversion">
+                        <option value="medical">Medical Emergency</option>
+                        <option value="lithium">Lithium Battery in Cargo</option>
+                        <option value="security">Security</option>
+                        <option value="tech_rtb">Technical (Engine/Major)</option>
+                        <option value="unruly">Unruly Passenger</option>
+                        <option value="weather_div">Deteriorating Weather (Diversion)</option>
+                        <option value="atc_closure">Airspace Closure</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Reason Text (Editable)</label>
+                <input type="text" id="irr_reasonText" placeholder="Auto-filled based on selection">
+            </div>
+
+            <div class="form-group">
+                <label>Action Taken</label>
+                <select id="irr_action" onchange="checkIrrAction()">
+                    <option value="delayed">Will be delayed for approximately...</option>
+                    <option value="return">Had to return to...</option>
+                    <option value="divert">Had to divert to...</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="irr_durationGroup">
+                <label>Duration / Location</label>
+                <input type="text" id="irr_duration" placeholder="e.g. 20 minutes OR the gate">
+            </div>
+
+            <div class="form-group">
+                <label>Closing/Update</label>
+                <select id="irr_closing">
+                    <option value="gate">Update once we are at the gate</option>
+                    <option value="further">Update once we have further info</option>
+                    <option value="none">Standard apology only</option>
+                </select>
+            </div>
+
+            <div class="button-toolbar">
+                <button class="button" onclick="generateIrrops()">Generate IRROPS PA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: CREEPING DELAY -->
+    <div id="creeping" class="tab-content">
+        <div class="speaker-config">
+            <div class="form-group" style="flex: 1;">
+                <label>Speaker</label>
+                <select id="crp_speakerRole">
+                    <option value="Captain">Captain</option>
+                    <option value="First Officer">First Officer</option>
+                </select>
+            </div>
+            <div class="form-group hidden" id="crp_speakerNameGroup" style="flex: 2;">
+                <label>Name</label>
+                <input type="text" id="crp_speakerName" placeholder="Name">
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Creeping Delay Timeline</div>
+            <p class="note">Select the current stage of the delay.</p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <label><input type="radio" name="creepStage" value="initial" checked onchange="generateCreep()"> Initial Delay (Technical)</label>
+                <label><input type="radio" name="creepStage" value="30" onchange="generateCreep()"> T + 30 Mins (Extended delay)</label>
+                <label><input type="radio" name="creepStage" value="60" onchange="generateCreep()"> T + 60/90/120 Mins (Remain on board)</label>
+                <label><input type="radio" name="creepStage" value="180" onchange="generateCreep()"> T + 180 Mins (US Tarmac / Disembark)</label>
+                <label><input type="radio" name="creepStage" value="cancel" onchange="generateCreep()"> Flight Cancellation</label>
+                <label><input type="radio" name="creepStage" value="resolved" onchange="generateCreep()"> Issue Resolved</label>
+            </div>
+        </div>
+
+        <div id="creep_resolvedTimeGroup" class="form-group hidden">
+            <label>Estimated Departure Time</label>
+            <input type="text" id="creep_depTime" placeholder="e.g. 10:30 AM">
+        </div>
+
+        <div class="button-toolbar">
+            <button class="button" onclick="generateCreep()">Generate Creeping Delay PA</button>
+        </div>
+    </div>
+
+    <!-- TAB: TURBULENCE -->
+    <div id="turbulence" class="tab-content">
+        <div class="speaker-config">
+            <div class="form-group" style="flex: 1;">
+                <label>Speaker</label>
+                <select id="trb_speakerRole">
+                    <option value="Captain">Captain</option>
+                    <option value="First Officer">First Officer</option>
+                </select>
+            </div>
+            <div class="form-group hidden" id="trb_speakerNameGroup" style="flex: 2;">
+                <label>Name</label>
+                <input type="text" id="trb_speakerName" placeholder="Name">
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Control Announcements</div>
+            <div class="button-toolbar" style="flex-direction: column;">
+                <button class="button" onclick="generateTurbulence('pa1')">PA 1: Light Turbulence (Service Continues)</button>
+                <div class="note">Use when Seat Belt sign ON but service safe to continue.</div>
+                
+                <button class="button secondary" onclick="generateTurbulence('pa2')">PA 2: Moderate Turbulence (Suspend Service)</button>
+                <div class="note">Mandatory if service unsafe. Crew to be seated.</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Unanticipated Turbulence (Reassurance)</div>
+            <div class="form-group">
+                <label>Nature of Turbulence</label>
+                <input type="text" id="turb_nature" placeholder="e.g. jet stream / storm clouds">
+            </div>
+             <div class="form-group">
+                <label>Expected improvement in</label>
+                <input type="text" id="turb_duration" placeholder="e.g. 10 minutes">
+            </div>
+            <button class="button outline" onclick="generateTurbulence('reassure')">Generate Reassurance PA</button>
+        </div>
+    </div>
+
+    <!-- TAB: MISC -->
+    <div id="misc" class="tab-content">
+        <div class="speaker-config">
+            <div class="form-group" style="flex: 1;">
+                <label>Speaker</label>
+                <select id="msc_speakerRole">
+                    <option value="Captain">Captain</option>
+                    <option value="First Officer">First Officer</option>
+                </select>
+            </div>
+            <div class="form-group hidden" id="msc_speakerNameGroup" style="flex: 2;">
+                <label>Name</label>
+                <input type="text" id="msc_speakerName" placeholder="Name">
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="panel">
+                <div class="panel-title">Go Around</div>
+                <div class="form-group">
+                    <label>Reason</label>
+                    <input type="text" id="misc_goAroundReason" placeholder="e.g. aircraft on runway / weather">
+                </div>
+                <div class="form-group">
+                    <label>Landing in</label>
+                    <input type="text" id="misc_goAroundTime" placeholder="e.g. 15 minutes">
+                </div>
+                <button class="button" onclick="generateMisc('goaround')">Generate Go Around PA</button>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Warm Cabin</div>
+                <div class="form-group">
+                    <label>Engines start in</label>
+                    <input type="text" id="misc_warmTime" placeholder="e.g. 5 to 10 minutes">
+                </div>
+                <button class="button" onclick="generateMisc('warm')">Generate Warm Cabin PA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OUTPUT AREA (Shared) -->
+    <div class="output-section">
+        <label for="mainOutput" style="display:block; margin-bottom:10px;">Generated Announcement (Editable)</label>
+        <textarea id="mainOutput" readonly></textarea>
+        <div class="button-toolbar">
+            <button class="button secondary" id="copyButton">Copy to Clipboard</button>
+        </div>
+    </div>
+
+  </div>
+
+  <script>
+    // --- AIRPORT DATA ---
+    const airportData = { 
+      "WSSS": { iata: "SIN", name: "Singapore Changi Airport", standardGmtOffset: 8, shortName: "Singapore" },
+      "WADD": { iata: "DPS", name: "Denpasar Ngurah Rai", standardGmtOffset: 8, shortName: "Denpasar" },
+      "WMKJ": { iata: "PEN", name: "Penang", standardGmtOffset: 8, shortName: "Penang" },
+      "VTBS": { iata: "BKK", name: "Bangkok Suvarnabhumi", standardGmtOffset: 7, shortName: "Bangkok" },
+      "EGLL": { iata: "LHR", name: "London Heathrow", standardGmtOffset: 0, hasDST: true, shortName: "London" },
+      "KJFK": { iata: "JFK", name: "New York JFK", standardGmtOffset: -5, hasDST: true, shortName: "New York" },
+      "KLAX": { iata: "LAX", name: "Los Angeles", standardGmtOffset: -8, hasDST: true, shortName: "Los Angeles" },
+      "YSSY": { iata: "SYD", name: "Sydney Kingsford Smith", standardGmtOffset: 10, hasDST: true, shortName: "Sydney" },
+      "YMML": { iata: "MEL", name: "Melbourne", standardGmtOffset: 10, hasDST: true, shortName: "Melbourne" },
+      "RJAA": { iata: "NRT", name: "Tokyo Narita", standardGmtOffset: 9, shortName: "Tokyo" },
+      "LFPG": { iata: "CDG", name: "Paris Charles de Gaulle", standardGmtOffset: 1, hasDST: true, shortName: "Paris" },
+      "EDDF": { iata: "FRA", name: "Frankfurt", standardGmtOffset: 1, hasDST: true, shortName: "Frankfurt" },
+      "OMDB": { iata: "DXB", name: "Dubai International", standardGmtOffset: 4, shortName: "Dubai" },
+      "VABB": { iata: "BOM", name: "Mumbai CSIA", standardGmtOffset: 5.5, shortName: "Mumbai" },
+      "VIDP": { iata: "DEL", name: "Delhi Indira Gandhi", standardGmtOffset: 5.5, shortName: "Delhi" },
+      "HKG": { iata: "HKG", name: "Hong Kong", standardGmtOffset: 8, shortName: "Hong Kong" },
+      "NZAA": { iata: "AKL", name: "Auckland", standardGmtOffset: 12, hasDST: true, shortName: "Auckland" }
+    };
+
+    const weatherList = [
+        "Partly Cloudy", "Clear Sky", "Overcast", "Mist", "Fog", "Rain", "Heavy Rain", 
+        "Showers", "Thunderstorms", "Snow", "Heavy Snow"
+    ];
+
+    // --- TABS LOGIC ---
+    function openTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+        document.querySelectorAll('.tab-button').forEach(tb => tb.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+        document.querySelector(`button[onclick="openTab('${tabName}')"]`).classList.add('active');
+    }
+
+    // --- SHARED FUNCTIONS ---
+    function setOutput(text) {
+        document.getElementById('mainOutput').value = text;
+        document.getElementById('mainOutput').removeAttribute('readonly'); 
+    }
+
+    function getTimeOfDay() {
+        const hr = new Date().getHours();
+        return hr < 12 ? "morning" : (hr < 18 ? "afternoon" : "evening");
+    }
+
+    function getStandardIntro(prefix, roleId, nameId) {
+        const role = document.getElementById(roleId).value;
+        const name = document.getElementById(nameId).value.trim();
+        if (role === 'Captain') {
+            return `Ladies and Gentlemen, this is your Captain.`;
+        } else {
+            return `Ladies and Gentlemen, this is First Officer${name ? " " + name : ""}.`;
+        }
+    }
+    
+    // --- UI HELPER FOR SPEAKER TOGGLE ---
+    function setupSpeakerToggle(roleSelectId, nameGroupContainerId, nameLabelId = null) {
+        const roleSel = document.getElementById(roleSelectId);
+        if(!roleSel) return;
         
-        <!-- Menu View -->
-        <div id="menu-view" class="view">
-             <h2><i class="fas fa-rocket"></i> Command Center</h2>
-             <div class="menu-buttons">
-                 <button class="button" onclick="navigateTo('submit-view')"><i class="fas fa-plus-circle"></i> Submit New Entry</button>
-                 <button class="button" onclick="navigateTo('stats-view')"><i class="fas fa-chart-bar"></i> Hall of Fame / Stats</button>
-                 <button class="button" onclick="navigateTo('good-guys-view')"><i class="fas fa-user-astronaut"></i> View Good Guys</button>
-                 <button class="button" onclick="navigateTo('mid-guys-view')"><i class="fas fa-user-tie"></i> View Mid Guys</button>
-                 <button class="button" onclick="navigateTo('bad-guys-view')"><i class="fas fa-user-ninja"></i> View Bad Guys</button>
-                 <button class="button" onclick="navigateTo('search-view')"><i class="fas fa-search"></i> Search Captains</button>
-                 <button class="button" onclick="navigateTo('abba-view')"><i class="fas fa-question-circle"></i> ABBA Q&A Compilation</button>
-             </div>
-        </div>
-
-        <!-- Submit View -->
-        <div id="submit-view" class="view">
-             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>New Log Entry</h2>
-                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
-             </div>
-             
-             <form id="entry-form">
-                 <div class="form-section"> 
-                     <label for="captain-name-select">Captain Identity</label> 
-                     <div style="display: flex; gap: 10px;"> 
-                        <select id="captain-name-select" name="captainNameSelect" required> <option value="" selected disabled>-- Select or Add New --</option> <option value="__add_new__">+ Add New Captain</option> </select> 
-                     </div> 
-                     <div id="add-captain-field" style="display:none; margin-top: 10px;"> 
-                        <input type="text" id="captain-name-new" name="captainNameNew" placeholder="Enter New Captain's Name"> 
-                     </div> 
-                 </div>
-                 
-                 <div class="form-section"> 
-                    <label for="appointment">Appointment</label> 
-                    <select id="appointment" name="appointment" required> <option value="" selected disabled>-- Select Appointment --</option> <option value="Line">Line</option> <option value="SUC">SUC</option> <option value="LIP">LIP</option> <option value="MGMT">MGMT</option> </select> 
-                 </div>
-
-                 <!-- Rich Text Field -->
-                 <div class="form-section"> 
-                    <label>Experience / Remarks</label> 
-                    <div class="rich-text-container">
-                        <div class="toolbar">
-                            <button type="button" onclick="formatText('experience', 'bold')" title="Bold">B</button>
-                            <button type="button" onclick="formatText('experience', 'italic')" title="Italic">I</button>
-                            <button type="button" onclick="formatText('experience', 'underline')" title="Underline">U</button>
-                            <button type="button" onclick="formatText('experience', 'insertUnorderedList')" title="Bullet List"><i class="fas fa-list-ul"></i></button>
-                        </div>
-                        <div id="experience" class="rich-input" contenteditable="true"></div>
-                    </div>
-                 </div>
-
-                 <!-- Plain Text Fields -->
-                 <div class="form-section"> 
-                    <label>Do's</label> 
-                    <textarea id="dos" name="dos" rows="4" placeholder=""></textarea>
-                 </div>
-
-                 <div class="form-section"> 
-                    <label>Don'ts</label> 
-                    <textarea id="donts" name="donts" rows="4" placeholder=""></textarea>
-                 </div>
-
-                 <div class="form-section"> 
-                    <h3>Specific Q&A</h3> 
-                    <div id="qa-container"></div> 
-                    <button type="button" class="button button-secondary" onclick="addQaPair()">+ Add Question</button> 
-                 </div>
-
-                 <div class="form-section">
-                    <label>Assessment:</label>
-                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                        <label><input type="radio" name="rating" value="good" required> Good Guy</label>
-                        <label><input type="radio" name="rating" value="mid"> Mid Guy</label>
-                        <label><input type="radio" name="rating" value="bad"> Bad Guy</label>
-                    </div>
-                 </div>
-
-                 <div class="form-section"> 
-                    <button type="submit" class="button">Submit</button> 
-                    <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back to Menu</button> 
-                 </div>
-             </form>
-        </div>
-
-        <!-- Stats View -->
-        <div id="stats-view" class="view">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>Mission Statistics</h2>
-                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
-            </div>
-            
-            <div class="stats-container">
-                <h3 style="color: #00bfa5;"><i class="fas fa-crown"></i> Top 3 Good Guys</h3>
-                <div id="top-good-list">Loading...</div>
-            </div>
-
-            <div class="stats-container">
-                <h3 style="color: #ff5252;"><i class="fas fa-skull"></i> Top 3 Bad Guys</h3>
-                <div id="top-bad-list">Loading...</div>
-            </div>
-
-            <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back to Menu</button>
-        </div>
-
-        <!-- Good Guys View -->
-        <div id="good-guys-view" class="view">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>Good Guys</h2>
-                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
-              </div>
-              <div id="good-guys-list-content" class="data-list">Loading...</div>
-              <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
-        </div>
-
-        <!-- Mid Guys View -->
-        <div id="mid-guys-view" class="view">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>Mid Guys</h2>
-                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
-              </div>
-              <div id="mid-guys-list-content" class="data-list">Loading...</div>
-              <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
-        </div>
-
-        <!-- Bad Guys View -->
-        <div id="bad-guys-view" class="view">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>Bad Guys</h2>
-                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
-              </div>
-              <div id="bad-guys-list-content" class="data-list">Loading...</div>
-              <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
-        </div>
-
-        <!-- Search View -->
-        <div id="search-view" class="view">
-             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>Database Search</h2>
-                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
-             </div>
-             <div id="search-container" class="form-section">
-                 <input type="text" id="search-box" placeholder="Start typing a captain's name...">
-                 <div id="search-results-list" class="data-list" style="display: none; margin-top: 10px;"></div>
-             </div>
-              <div id="search-profile-content" style="display: none;"></div>
-              <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
-        </div>
-
-        <!-- ABBA View -->
-        <div id="abba-view" class="view">
-             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>ABBA Q&A Archive</h2>
-                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
-             </div>
-             <div id="abba-list-content" class="data-list">Loading...</div>
-             <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
-        </div>
-
-        <!-- Profile View -->
-        <div id="profile-view" class="view">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2 id="profile-view-captain-name">Captain Profile</h2>
-                <button type="button" class="button button-back" onclick="window.history.back()">Back</button>
-              </div>
-              <div id="profile-view-content"></div>
-              <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
-        </div>
-
-    </div> 
-
-    <script>
-        // --- CONFIGURATION ---
-        const API_KEY = 'AIzaSyA0JGGJAYg_xY8EpR-cVn4hVFKkZyji5ck'; // Replace if needed
-        const SPREADSHEET_ID = '1JNwm0Tl2HpaDW6MJdrF_0bcTL7imtwvYldt1UDx1r3Q'; // Replace if needed
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzS42fKFx8_A2XL1Aa1nOAOpeelyz1w02T_nl1zF-cGXR1CwOvJSYaCiy06IKWTzBDPWA/exec'; // Replace if needed
-        const PASSWORD_SHEET_NAME = 'Sheet2';
-        const PASSWORD_CELL = 'A1';
-
-        // --- STATE ---
-        let allSheetData = null;
-        let captainProfiles = {};
-        let isFetching = false;
-        let isAuthenticated = false;
-
-        // --- ANIMATIONS (STARS) ---
-        function createStars() {
-            const container = document.getElementById('stars-container');
-            const count = 70;
-            for(let i=0; i<count; i++){
-                const star = document.createElement('div');
-                star.className = 'star';
-                const duration = Math.random() * 3 + 2;
-                const size = Math.random() * 2 + 1;
-                star.style.left = Math.random() * 100 + '%';
-                star.style.top = Math.random() * 100 + '%';
-                star.style.width = size + 'px';
-                star.style.height = size + 'px';
-                star.style.animationDuration = duration + 's';
-                star.style.animationDelay = Math.random() * 5 + 's';
-                container.appendChild(star);
+        const handler = () => {
+            const role = roleSel.value;
+            const container = document.getElementById(nameGroupContainerId);
+            if(container) {
+                if(role === 'Captain') container.classList.add('hidden');
+                else container.classList.remove('hidden');
             }
-        }
-        createStars();
-
-        // --- NIGHT MODE TOGGLE ---
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        function setDarkMode(isDay) {
-            if (isDay) { 
-                document.body.classList.add('day-mode'); 
-                localStorage.setItem('dayMode', 'true');
-            } else { 
-                document.body.classList.remove('day-mode'); 
-                localStorage.setItem('dayMode', 'false');
-            }
-        }
-        if (darkModeToggle) {
-            // Check pref
-            const savedMode = localStorage.getItem('dayMode');
-            if(savedMode === 'true') { darkModeToggle.checked = true; setDarkMode(true); }
-            
-            darkModeToggle.addEventListener('change', () => setDarkMode(darkModeToggle.checked));
-        }
-
-        // --- NAVIGATION & HISTORY (BACK BUTTON SUPPORT) ---
-        function navigateTo(viewId) {
-            if (!isAuthenticated && viewId !== 'password-view') return;
-            
-            // Push state to history
-            window.history.pushState({ view: viewId }, "", `#${viewId}`);
-            renderView(viewId);
-        }
-
-        function renderView(viewId) {
-            console.log("Rendering view:", viewId);
-            document.querySelectorAll('.view').forEach(v => {
-                v.classList.remove('active');
-                setTimeout(() => { if(!v.classList.contains('active')) v.style.display = 'none'; }, 400); // Fade out
-            });
-
-            const active = document.getElementById(viewId);
-            if(active) {
-                active.style.display = 'block';
-                // Small delay to allow display:block to apply before opacity transition
-                setTimeout(() => active.classList.add('active'), 10);
-            }
-
-            // View specific logic
-            if (viewId === 'good-guys-view') displayList('good');
-            if (viewId === 'mid-guys-view') displayList('mid');
-            if (viewId === 'bad-guys-view') displayList('bad');
-            if (viewId === 'abba-view') displayAbba();
-            if (viewId === 'submit-view') populateSubmitDropdown();
-            if (viewId === 'stats-view') displayStats();
-            if (viewId === 'search-view') {
-                document.getElementById('search-box').value = '';
-                document.getElementById('search-results-list').style.display = 'none';
-                document.getElementById('search-profile-content').style.display = 'none';
-            }
-        }
-
-        window.addEventListener('popstate', (event) => {
-            if (event.state && event.state.view) {
-                renderView(event.state.view);
-            } else {
-                // Default if no state (e.g., initial load)
-                if (isAuthenticated) renderView('menu-view');
-                else renderView('password-view');
-            }
-        });
-
-        // --- AUTHENTICATION ---
-        const passwordForm = document.getElementById('password-form');
-        passwordForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const input = document.getElementById('password-input').value;
-            const btn = passwordForm.querySelector('button');
-            const err = document.getElementById('password-error');
-            
-            btn.textContent = 'Authenticating...';
-            btn.disabled = true;
-            err.style.display = 'none';
-
-            try {
-                // Fetch password from sheet
-                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${PASSWORD_SHEET_NAME}!${PASSWORD_CELL}?key=${API_KEY}`;
-                const res = await fetch(url);
-                const data = await res.json();
-                
-                if(!res.ok) throw new Error("API Error");
-                
-                const correctPass = data.values?.[0]?.[0];
-                
-                if(String(input) === String(correctPass)) {
-                    isAuthenticated = true;
-                    document.getElementById('password-view').style.display = 'none';
-                    document.getElementById('main-container').style.display = 'block';
-                    await fetchAllData();
-                    // Initial History State
-                    window.history.replaceState({ view: 'menu-view' }, "", "#menu-view");
-                    renderView('menu-view');
-                } else {
-                    err.style.display = 'block';
-                    err.textContent = "Incorrect Access Code.";
+            // Arrival Tab Logic Specifics
+            if(nameLabelId) {
+                const lbl = document.getElementById(nameLabelId);
+                if(lbl) {
+                    lbl.textContent = role === 'Captain' ? 'Pilot Name' : "First Officer's Name";
                 }
-            } catch (error) {
-                console.error(error);
-                err.style.display = 'block';
-                err.textContent = "System Offline or Config Error.";
-            } finally {
-                btn.textContent = 'Authenticate';
-                btn.disabled = false;
-            }
-        });
-
-        // --- DATA LOGIC ---
-        async function fetchAllData() {
-            if (isFetching) return;
-            isFetching = true;
-            try {
-                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Sheet1!A2:I?key=${API_KEY}&valueRenderOption=UNFORMATTED_VALUE`;
-                const res = await fetch(url);
-                const data = await res.json();
-                allSheetData = data.values || [];
-                processData();
-            } catch(e) {
-                console.error("Data fetch error", e);
-                alert("Could not load database.");
-            } finally {
-                isFetching = false;
-            }
-        }
-
-        function processData() {
-            captainProfiles = {};
-            allSheetData.forEach(row => {
-                const name = row[1];
-                if (!name) return;
-                
-                if (!captainProfiles[name]) {
-                    captainProfiles[name] = { 
-                        name: name, submissions: [], goodCount: 0, midCount: 0, badCount: 0, 
-                        appointments: [], status: 'Neutral' 
-                    };
+                // Specific to Arrival Tab: Captain name (for closing) toggle
+                if(roleSelectId === 'arr_speakerRole') {
+                    const captGroup = document.getElementById('arr_captainNameGroup');
+                    if(role === 'Captain') captGroup.classList.add('hidden');
+                    else captGroup.classList.remove('hidden');
                 }
-
-                const sub = {
-                    timestamp: row[0],
-                    appointment: row[2],
-                    experience: row[3], // Raw HTML/Text
-                    dos: row[4],
-                    donts: row[5],
-                    questions: parseJSON(row[6]),
-                    rating: row[7]
-                };
-
-                captainProfiles[name].submissions.push(sub);
-                if (sub.appointment) captainProfiles[name].appointments.push(sub.appointment);
-                
-                if (sub.rating === 'good') captainProfiles[name].goodCount++;
-                else if (sub.rating === 'bad') captainProfiles[name].badCount++;
-                else if (sub.rating === 'mid') captainProfiles[name].midCount++;
-            });
-
-            // Calculate Status
-            Object.values(captainProfiles).forEach(p => {
-                const max = Math.max(p.goodCount, p.midCount, p.badCount);
-                
-                if (max === 0) {
-                     p.status = 'Neutral';
-                } else if (p.badCount === max) {
-                     // Priority 1: If Bad is highest OR tied for highest with anything, classify as Bad.
-                     // (Covers: Strict Bad, Bad==Mid, Bad==Good, Bad==Mid==Good)
-                     p.status = 'Bad';
-                } else if (p.midCount === max) {
-                     // Priority 2: If Mid is highest OR tied for highest (implied with Good only, since Bad checked above), classify as Mid.
-                     // (Covers: Strict Mid, Mid==Good)
-                     p.status = 'Mid';
-                } else {
-                     // Priority 3: Good is strictly highest.
-                     p.status = 'Good';
-                }
-                
-                p.modeAppointment = findMode(p.appointments);
-            });
-        }
-
-        function findMode(arr) {
-            if(!arr.length) return "N/A";
-            return arr.sort((a,b) => arr.filter(v => v===a).length - arr.filter(v => v===b).length).pop();
-        }
-
-        function parseJSON(str) {
-            try { return JSON.parse(str); } catch(e) { return []; }
-        }
-
-        // --- DISPLAY LOGIC ---
-        function displayList(type) {
-            const listDiv = document.getElementById(`${type}-guys-list-content`);
-            
-            let statusTarget = '';
-            if (type === 'good') statusTarget = 'Good';
-            else if (type === 'bad') statusTarget = 'Bad';
-            else if (type === 'mid') statusTarget = 'Mid';
-            
-            const filtered = Object.values(captainProfiles).filter(p => p.status === statusTarget);
-            
-            if(filtered.length === 0) {
-                listDiv.innerHTML = `<div style="text-align:center; padding:20px;">No captains classified as ${statusTarget}.</div>`;
-                return;
             }
+        };
+        roleSel.addEventListener('change', handler);
+        // Run once on init
+        handler();
+    }
 
-            let html = '<ul>';
-            filtered.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
-                html += `<li onclick="showProfile('${p.name}')">
-                            <span style="font-weight:bold; font-size:1.1em;">${p.name}</span>
-                            <span style="font-size:0.9em; opacity:0.8;">${p.modeAppointment} (${p.goodCount}G / ${p.midCount}M / ${p.badCount}B)</span>
-                         </li>`;
-            });
-            html += '</ul>';
-            listDiv.innerHTML = html;
+    // --- WELCOME TAB ---
+    function toggleUSWelcome() {
+        // Logic handled in generation
+    }
+
+    function generateWelcome() {
+        const role = document.getElementById('welc_speakerRole').value;
+        const captain = document.getElementById('welc_captainName').value.trim() || "(Name)";
+        const assist = document.getElementById('welc_assistPilot').value.trim() || "(Names)";
+        const flight = document.getElementById('welc_flightNo').value.trim() || "(Flight No)";
+        const dest = document.getElementById('welc_destination').value.trim() || "(Destination)";
+        const time = document.getElementById('welc_flightTime').value.trim() || "(Time)";
+        const cic = document.getElementById('welc_cicName').value.trim() || "(Name)";
+        const hasIFE = document.getElementById('welc_hasIFE').checked;
+        const isUS = document.getElementById('welc_isUS').checked;
+
+        let intro;
+        let assistText;
+
+        if (role === 'Captain') {
+            intro = `Good ${getTimeOfDay()}, Ladies and Gentlemen. This is your Captain, ${captain}.`;
+            assistText = `Assisting me on the flight deck is/are ${assist}.`;
+        } else {
+            intro = `Good ${getTimeOfDay()}, Ladies and Gentlemen. This is First Officer ${assist}, welcoming you on behalf of Captain ${captain}.`;
+            assistText = `Our flight time today will be ${time}.`; // Slight variation as intro covered hierarchy
         }
 
-        function displayStats() {
-            const goodList = document.getElementById('top-good-list');
-            const badList = document.getElementById('top-bad-list');
-
-            const all = Object.values(captainProfiles);
-            
-            // Top 3 Good
-            const topGood = [...all].sort((a,b) => b.goodCount - a.goodCount).slice(0, 3).filter(p => p.goodCount > 0);
-            renderBarChart(goodList, topGood, 'goodCount', 'good');
-
-            // Top 3 Bad
-            const topBad = [...all].sort((a,b) => b.badCount - a.badCount).slice(0, 3).filter(p => p.badCount > 0);
-            renderBarChart(badList, topBad, 'badCount', 'bad');
-        }
-
-        function renderBarChart(container, data, metric, styleType) {
-            if(data.length === 0) { container.innerHTML = "No data available."; return; }
-            let html = '';
-            const maxVal = data[0][metric]; // Highest value for scaling
-            
-            data.forEach(p => {
-                const widthPct = (p[metric] / maxVal) * 100;
-                html += `<div class="stat-bar-row" onclick="showProfile('${p.name}')">
-                            <div class="stat-label">${p.name}</div>
-                            <div class="stat-track">
-                                <div class="stat-fill fill-${styleType}" style="width: ${widthPct}%;">${p[metric]}</div>
-                            </div>
-                         </div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        function showProfile(name) {
-            const p = captainProfiles[name];
-            if(!p) return;
-            
-            document.getElementById('profile-view-captain-name').textContent = p.name;
-            const container = document.getElementById('profile-view-content');
-            
-            let statusColor = p.status === 'Good' ? '#00bfa5' : (p.status === 'Bad' ? '#ff5252' : '#FFD700');
-            
-            let html = `<div class="entry-card" style="border-left-color: ${statusColor};">
-                            <h3>Summary</h3>
-                            <p><strong>Status:</strong> <span style="color:${statusColor}; font-weight:bold; font-size:1.2em;">${p.status}</span></p>
-                            <p><strong>Appointment:</strong> ${p.modeAppointment}</p>
-                            <p><strong>Votes:</strong> ${p.goodCount} Good | ${p.midCount} Mid | ${p.badCount} Bad</p>
-                        </div>`;
-
-            // Render Segregated Entries
-            // Sort by newest first (assuming timestamp exists)
-            p.submissions.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-            p.submissions.forEach((sub, index) => {
-                let ratingIcon = sub.rating === 'good' ? '😇' : (sub.rating === 'bad' ? '👿' : '😐');
-                let dateStr = sub.timestamp ? new Date((sub.timestamp - 25569) * 86400 * 1000).toLocaleDateString() : 'Unknown Date';
-                
-                html += `<div class="entry-card">
-                            <div class="entry-meta">
-                                <span>Entry #${p.submissions.length - index} (${ratingIcon})</span>
-                                <span>${dateStr} | ${sub.appointment}</span>
-                            </div>`;
-                
-                if(sub.experience) html += `<h4>Experience</h4><div style="margin-bottom:15px; line-height:1.5; white-space: pre-wrap;">${sub.experience}</div>`;
-                if(sub.dos) html += `<h4>Do's</h4><div style="margin-bottom:15px; line-height:1.5; white-space: pre-wrap;">${sub.dos}</div>`;
-                if(sub.donts) html += `<h4>Don'ts</h4><div style="margin-bottom:15px; line-height:1.5; white-space: pre-wrap;">${sub.donts}</div>`;
-                
-                if(sub.questions && sub.questions.length > 0) {
-                    html += `<h4>Q&A</h4>`;
-                    sub.questions.forEach(q => {
-                        html += `<div style="background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; margin-bottom:5px;">
-                                    <strong>Q: ${q.q}</strong><br>
-                                    <span style="opacity:0.8;">A: ${q.a}</span>
-                                 </div>`;
-                    });
-                }
-                html += `</div>`;
-            });
-
-            container.innerHTML = html;
-            navigateTo('profile-view');
-        }
-
-        // --- SUBMIT FORM LOGIC ---
-        function populateSubmitDropdown() {
-            const select = document.getElementById('captain-name-select');
-            select.innerHTML = '<option value="" selected disabled>-- Select or Add New --</option><option value="__add_new__">+ Add New Captain</option>';
-            Object.keys(captainProfiles).sort().forEach(name => {
-                const opt = document.createElement('option');
-                opt.value = name; opt.textContent = name;
-                select.appendChild(opt);
-            });
+        let txt = `${intro}\n\n`;
+        if (role === 'Captain') {
+            txt += `On behalf of my crew, I would like to welcome all of you on board flight SQ ${flight} to ${dest}.\n`;
+            txt += `${assistText} Our flight time today will be ${time}.\n\n`;
+        } else {
+            txt += `On behalf of the Captain and crew, I would like to welcome all of you on board flight SQ ${flight} to ${dest}.\n`;
+            txt += `${assistText}\n\n`;
         }
         
-        document.getElementById('captain-name-select').addEventListener('change', function() {
-            document.getElementById('add-captain-field').style.display = this.value === '__add_new__' ? 'block' : 'none';
-        });
+        txt += `Under the care of your Cabin Crew-In-Charge ${cic}, our cabin crew will make sure you are well looked after during the flight.\n\n`;
+        txt += `For your safety, please ensure that your seat belt is fastened while seated at all times.\n\n`;
 
-        // Rich Text Logic
-        function formatText(elementId, command) {
-            // execCommand is deprecated but still the only way for single-file vanilla JS rich text without massive libraries.
-            // It works in all major browsers.
-            document.execCommand(command, false, null);
-            document.getElementById(elementId).focus();
+        if (hasIFE) {
+            txt += `We will be departing shortly. You can track the progress of our flight via the Flight Path programme on your inflight-entertainment system.\n\n`;
+        } else {
+            txt += `We will be departing shortly, and I will provide more information on the progress of our flight later.\n\n`;
         }
 
-        // Q&A Logic
-        let qaCount = 0;
-        function addQaPair() {
-            qaCount++;
-            const div = document.createElement('div');
-            div.className = 'qa-pair';
-            div.style = "background: rgba(0,0,0,0.1); padding: 10px; margin-bottom: 10px; border-radius: 8px; position:relative;";
-            div.innerHTML = `
-                <button type="button" class="button-delete" onclick="this.parentElement.remove()" style="position:absolute; right:5px; top:5px;">X</button>
-                <input type="text" placeholder="Question" class="qa-q" style="margin-bottom:5px;">
-                <input type="text" placeholder="Answer" class="qa-a">
-            `;
-            document.getElementById('qa-container').appendChild(div);
+        if (isUS) {
+            txt += `For security reasons mandated by the US authorities, we kindly request the cooperation of all passengers not to congregate in any area of the cabin. We thank you for your cooperation and understanding on this matter.\n\n`;
         }
 
-        document.getElementById('entry-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const btn = this.querySelector('button[type="submit"]');
-            btn.disabled = true; btn.textContent = "Transmitting...";
+        txt += `Have a pleasant flight and thank you for choosing Singapore Airlines.`;
+        setOutput(txt);
+    }
 
-            const formData = new FormData();
+    // --- ARRIVAL TAB ---
+    function populateData() {
+        const os = document.getElementById('arr_originAirport');
+        const as = document.getElementById('arr_arrivalAirport');
+        const ws = document.getElementById('arr_weather');
+        
+        let html = '<option value="">Select Airport</option>';
+        Object.keys(airportData).sort().forEach(code => {
+            html += `<option value="${code}">${airportData[code].name} (${code})</option>`;
+        });
+        os.innerHTML = html;
+        as.innerHTML = html;
+
+        let wHtml = '';
+        weatherList.forEach(w => wHtml += `<option value="${w}">${w}</option>`);
+        ws.innerHTML = wHtml;
+    }
+
+    // Time Calc
+    function calculateLocalTime(zuluHH, zuluMM, offset) {
+        if (zuluHH === "" || zuluMM === "") return null;
+        let utcMins = parseInt(zuluHH) * 60 + parseInt(zuluMM);
+        let localMins = utcMins + (offset * 60);
+        // Normalize
+        while (localMins < 0) localMins += 1440;
+        localMins = localMins % 1440;
+        
+        let hh = Math.floor(localMins / 60);
+        let mm = Math.floor(localMins % 60);
+        
+        // Conversational format
+        let period = hh < 12 ? "AM" : "PM";
+        let h12 = hh % 12;
+        if (h12 === 0) h12 = 12;
+        let mmStr = mm.toString().padStart(2, '0');
+        
+        return `${h12}:${mmStr} ${period}`;
+    }
+
+    function generateArrival() {
+        const role = document.getElementById('arr_speakerRole').value;
+        const name = document.getElementById('arr_pilotName').value.trim();
+        const captainName = document.getElementById('arr_captainName').value.trim();
+        const originCode = document.getElementById('arr_originAirport').value;
+        const arrivalCode = document.getElementById('arr_arrivalAirport').value;
+        
+        const manualOffsetActive = document.getElementById('arr_manualOffsetToggle').checked;
+        const manualOffsetVal = document.getElementById('arr_manualOffset').value;
+
+        const tod = document.getElementById('arr_todMinutes').value;
+        const zHH = document.getElementById('arr_zuluHH').value;
+        const zMM = document.getElementById('arr_zuluMM').value;
+        const weather = document.getElementById('arr_weather').value.toLowerCase();
+        const temp = document.getElementById('arr_temp').value;
+        const isSCP = document.getElementById('arr_scp').checked;
+
+        if (!originCode || !arrivalCode) { alert("Please select origin and arrival airports."); return; }
+        
+        const originData = airportData[originCode];
+        const arrivalData = airportData[arrivalCode];
+        
+        // Offset Logic (Arrival)
+        let arrivalOffset = arrivalData.standardGmtOffset;
+        if (manualOffsetActive && manualOffsetVal !== "") {
+            arrivalOffset = parseFloat(manualOffsetVal);
+        }
+
+        // Offset Logic (Origin)
+        let originOffset = originData.standardGmtOffset;
+        const originManualToggle = document.getElementById('arr_originManualOffsetToggle').checked;
+        const originManualVal = document.getElementById('arr_originManualOffset').value;
+        if (originManualToggle && originManualVal !== "") {
+            originOffset = parseFloat(originManualVal);
+        }
+
+        const etaStr = calculateLocalTime(zHH, zMM, arrivalOffset) || "(Time)";
+        
+        // Time Diff Logic
+        const diff = arrivalOffset - originOffset;
+        let timeDiffText = "";
+        if (diff === 0) {
+            timeDiffText = "There is no time difference between the two cities.";
+        } else {
+            let now = new Date();
+            // Calculate destination time for context "Current time is..."
+            let d = new Date();
+            let utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+            let nd = new Date(utc + (3600000 * arrivalOffset));
+            let destHH = nd.getHours();
+            let destMM = nd.getMinutes();
+            let p = destHH < 12 ? "AM" : "PM";
+            let h12 = destHH % 12; if(h12===0)h12=12;
+            let curTimeStr = `${h12}:${destMM.toString().padStart(2,'0')} ${p}`;
             
-            // Get Name
-            const selectVal = document.getElementById('captain-name-select').value;
-            let name = selectVal === '__add_new__' ? document.getElementById('captain-name-new').value.trim() : selectVal;
-            if(!name) { alert("Name required"); btn.disabled=false; return; }
+            timeDiffText = `There is a time difference between the two cities. The current time in ${arrivalData.shortName} is ${curTimeStr}.`;
+        }
+
+        // Intro Logic
+        let intro = "";
+        if (role === 'Captain') {
+            intro = `Ladies and Gentlemen, this is your Captain.`;
+        } else {
+            intro = `Ladies and Gentlemen, this is First Officer ${name || "(Name)"}.`;
+        }
+
+        // Closing Logic
+        let closing = "";
+        if (role === 'Captain') {
+            closing = "On behalf of my crew, we would like to wish you a pleasant day/evening ahead. Once again, thank you for flying with Singapore Airlines.";
+        } else {
+            closing = `On behalf of Captain ${captainName || "(Name)"} and the crew, we would like to wish you a pleasant day/evening ahead. Once again, thank you for flying with Singapore Airlines.`;
+        }
+        
+        // SCP Text
+        let scpText = "";
+        let cabPrep = "Cabin Crew prepare the cabin for arrival.";
+        if (isSCP) {
+            scpText = `\nDue to possible turbulence along our arrival path, the seat belt sign will be switched ON earlier. Passengers who wish to use the lavatories may do so now, as you will be required to remain seated with your seat belt fastened for a longer period of time. Thank you for your cooperation.\n`;
+            cabPrep = "Cabin Crew secure the cabin for landing.";
+        }
+
+        let txt = `${intro}\n\n`;
+        txt += `We hope you have enjoyed your flight with us. We will be commencing our descent in approximately ${tod} minutes. Our estimated time of arrival is ${etaStr} local time.\n\n`;
+        txt += `${timeDiffText}\n\n`;
+        txt += `The current weather in ${arrivalData.shortName} is ${weather} with a ground temperature of ${temp} degrees Celsius.\n`;
+        txt += scpText;
+        txt += `\n${closing}\n\n`;
+        txt += `${cabPrep}`;
+
+        setOutput(txt);
+    }
+
+    // --- IRROPS TAB ---
+    function updateIrropsFields() {
+        const s = document.getElementById('irr_scenario').value;
+        const reasonField = document.getElementById('irr_reasonText');
+        const actionField = document.getElementById('irr_action');
+        
+        let text = "";
+        let defAction = "delayed";
+
+        // Map selection to text
+        switch(s) {
+            case 'late_inbound': text = "the late arrival of the inbound aircraft"; break;
+            case 'late_boarding': text = "late boarding (passengers not seated)"; break;
+            case 'congestion': text = "airport congestion"; break;
+            case 'weather_dest': text = "adverse weather at the destination"; break;
+            case 'atc': text = "air traffic control restrictions"; break;
+            case 'crew': text = "crew requirements"; break;
+            case 'tech_simple': text = "a technical issue (e.g. with aircraft tyres)"; break;
+            case 'tech_complex': text = "a technical issue"; break;
+            case 'baggage': text = "the offloading of baggage for passengers who missed the flight"; break;
             
-            formData.append('captainName', name);
-            formData.append('appointment', document.getElementById('appointment').value);
-            formData.append('rating', document.querySelector('input[name="rating"]:checked').value);
-            formData.append('timestamp', new Date().toISOString());
+            case 'medical': text = "passengers requiring immediate medical attention"; defAction = 'return'; break;
+            case 'lithium': text = "the removal of spare lithium batteries in the cargo hold"; defAction = 'return'; break;
+            case 'security': text = "security requirements"; defAction = 'return'; break;
+            case 'tech_rtb': text = "a technical issue"; defAction = 'return'; break;
+            case 'unruly': text = "an unforeseen situation involving a passenger that requires immediate attention"; defAction = 'return'; break;
+            
+            case 'weather_div': text = "deteriorating weather conditions over the destination"; defAction = 'divert'; break;
+            case 'atc_closure': text = "airspace closure"; defAction = 'divert'; break;
+        }
+        
+        reasonField.value = text;
+        actionField.value = defAction;
+        checkIrrAction();
+    }
 
-            // Get Rich Text HTML
-            formData.append('experience', document.getElementById('experience').innerHTML);
-            // Get Plain Text
-            formData.append('dos', document.getElementById('dos').value);
-            formData.append('donts', document.getElementById('donts').value);
+    function checkIrrAction() {
+        const act = document.getElementById('irr_action').value;
+        const durGroup = document.getElementById('irr_durationGroup');
+        const lbl = durGroup.querySelector('label');
+        
+        if (act === 'delayed') {
+            lbl.textContent = "Duration (e.g. 20 minutes)";
+        } else {
+            lbl.textContent = "Airport/Location";
+        }
+    }
 
-            // Get Q&A
-            const qaList = [];
-            document.querySelectorAll('#qa-container > div').forEach(div => {
-                const q = div.querySelector('.qa-q').value.trim();
-                const a = div.querySelector('.qa-a').value.trim();
-                if(q) qaList.push({q, a});
-            });
-            formData.append('questions', JSON.stringify(qaList));
+    function generateIrrops() {
+        const intro = getStandardIntro('irr', 'irr_speakerRole', 'irr_speakerName');
+        const reason = document.getElementById('irr_reasonText').value;
+        const action = document.getElementById('irr_action').value;
+        const dur = document.getElementById('irr_duration').value;
+        const closing = document.getElementById('irr_closing').value;
+        
+        let actText = "";
+        if (action === 'delayed') actText = `will be delayed for approximately ${dur}`;
+        else if (action === 'return') actText = `had to return to ${dur}`;
+        else actText = `had to divert to ${dur}`;
 
-            try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    body: new URLSearchParams(formData) // Google Apps Script requires form-urlencoded usually
-                });
-                const res = await response.json();
-                if(res.status === 'success') {
-                    alert("Log Entry Saved.");
-                    this.reset();
-                    document.getElementById('experience').innerHTML = '';
-                    document.getElementById('dos').value = '';
-                    document.getElementById('donts').value = '';
-                    document.getElementById('qa-container').innerHTML = '';
-                    await fetchAllData();
-                    navigateTo('menu-view');
-                } else {
-                    throw new Error(res.message);
-                }
-            } catch(e) {
-                alert("Submission failed: " + e.message);
-            } finally {
-                btn.disabled = false; btn.textContent = "Submit";
-            }
+        let closeText = "";
+        if (closing === 'gate') closeText = "I shall come back to you on the situation once we are at the gate.";
+        else if (closing === 'further') closeText = "I shall come back to you on the situation once we have further updates.";
+        
+        if (document.getElementById('irr_scenario').value === 'weather_div') {
+             actText += ". The adverse weather is forecast to last for at least the next (Time), and we anticipate a significant delay before we can land";
+        }
+
+        let txt = `${intro}\n\n`;
+        txt += `Due to ${reason}, the flight ${actText}.\n\n`;
+        txt += `I would like to apologise for the inconvenience caused.\n\n`;
+        if (closeText) txt += `${closeText}`;
+
+        setOutput(txt);
+    }
+
+    // --- CREEPING DELAY TAB ---
+    function generateCreep() {
+        const intro = getStandardIntro('crp', 'crp_speakerRole', 'crp_speakerName');
+        const stage = document.querySelector('input[name="creepStage"]:checked').value;
+        const depTime = document.getElementById('creep_depTime').value;
+        const resolvedGroup = document.getElementById('creep_resolvedTimeGroup');
+
+        if (stage === 'resolved') resolvedGroup.classList.remove('hidden');
+        else resolvedGroup.classList.add('hidden');
+
+        let txt = "";
+        
+        if (stage === 'initial') {
+            txt = `${intro} Our flight departure will be slightly delayed due to a technical issue. We apologise for the inconvenience caused. We are working with the ground staff and will provide an update soon as we can. Please reach out to our cabin crew if you require any assistance. Thank you.`;
+        } else if (stage === '30') {
+            txt = `${intro} We regret the extended delay caused by the technical issue. Please accept our sincere apologies for the inconvenience caused. We are in regular contact with the ground staff and the engineers who are working to rectify the issue. Thank you for your patience.`;
+        } else if (stage === '60') {
+            txt = `${intro} Thank you for your patience. We have been advised that more time is required to resolve the technical issue and we sincerely apologise for the delay.\n\nTo facilitate a quicker departure once the issue is fixed, all passengers will continue to remain on board the aircraft. Our Cabin Crew will continue to serve refreshments and ensure that you are comfortable on board the aircraft. Please reach out to your Cabin Crew if you require assistance. Thank you, once again, for your understanding.`;
+        } else if (stage === '180') {
+            txt = `${intro} Thank you for your continued patience. Based on the latest update from our engineers, we understand that more time is required to rectify the technical issue.\n\nAs a result, we would like to inform you that all passengers have the option to disembark or voluntarily offload themselves.\n\nPlease reach out to our Cabin Crew if you require any assistance. We will provide updates as soon as we can. Thank you, once again, for your patience and understanding.`;
+        } else if (stage === 'cancel') {
+            txt = `${intro} Thank you for your patience. Our engineers have advised that the technical issue cannot be rectified at this time, and we regret that we have to cancel this flight.\n\nWe sincerely apologise for the inconvenience this has caused.\n\nOur Cabin Crew will guide you as you disembark the aircraft, and our ground staff will provide further assistance inside the gatehold room. Thank you for your understanding, and we are sorry once again.`;
+        } else if (stage === 'resolved') {
+            txt = `${intro} I have some good news for you. The technical issue has been resolved. Our estimated departure time is ${depTime || "(Time)"}. We thank you for your continued patience. In the meantime, our Cabin Crew will continue to serve refreshments, and you are welcome to enjoy the inflight-entertainment. We will begin preparations for departure shortly. Please reach out to our Cabin Crew if you require assistance. Thank you.`;
+        }
+
+        setOutput(txt);
+    }
+
+    // --- TURBULENCE TAB ---
+    function generateTurbulence(type) {
+        const intro = getStandardIntro('trb', 'trb_speakerRole', 'trb_speakerName');
+        let txt = "";
+        if (type === 'pa1') {
+            txt = `${intro} For your safety, please fasten your seat belts.\n\n(Internal to Crew) Cabin Crew, to continue service/duties with caution.`;
+        } else if (type === 'pa2') {
+            txt = `(Internal to Crew) Cabin Crew, please suspend service and be seated.\n\n${intro} For your safety, please fasten your seat belts.`;
+        } else if (type === 'reassure') {
+            const nature = document.getElementById('turb_nature').value || "(Nature)";
+            const dur = document.getElementById('turb_duration').value || "(Time)";
+            txt = `${intro} We are currently experiencing unforecasted turbulence associated with ${nature}. We expect the situation to improve in ${dur}. For your safety, please remain seated with your seat belt fastened.`;
+        }
+        setOutput(txt);
+    }
+
+    // --- MISC TAB ---
+    function generateMisc(type) {
+        const intro = getStandardIntro('msc', 'msc_speakerRole', 'msc_speakerName');
+        let txt = "";
+        if (type === 'goaround') {
+            const r = document.getElementById('misc_goAroundReason').value || "(Reason)";
+            const t = document.getElementById('misc_goAroundTime').value || "(Time)";
+            txt = `${intro}\n\nDue to ${r}, we have discontinued our approach and landing and will be making another approach shortly.\n\nPlease remain seated with your seat belts fastened. We expect to land in ${t}.\n\nRest assured that there is no cause for concern. Thank you for your patience and understanding.`;
+        } else if (type === 'warm') {
+            const t = document.getElementById('misc_warmTime').value || "(Time)";
+            txt = `${intro} speaking.\n\nYou may have noticed that the cabin temperature is warmer than usual at the moment. This is due to the temporary unavailability of our ground cooling system.\n\nOnce we start our engines in approximately ${t}, the aircraft's main air conditioning will become fully operational, and the cabin will cool down quickly.\n\nWe appreciate your patience and understanding. Thank you.`;
+        }
+        setOutput(txt);
+    }
+
+    // --- INIT ---
+    document.addEventListener('DOMContentLoaded', () => {
+        populateData();
+        
+        // Manual GMT Toggle (Arrival)
+        const tog = document.getElementById('arr_manualOffsetToggle');
+        const grp = document.getElementById('arr_manualOffsetGroup');
+        tog.addEventListener('change', () => {
+             if(tog.checked) grp.classList.remove('hidden');
+             else grp.classList.add('hidden');
         });
 
-        // --- SEARCH LOGIC ---
-        document.getElementById('search-box').addEventListener('input', function(e) {
-            const term = e.target.value.toLowerCase().trim();
-            const resultsDiv = document.getElementById('search-results-list');
-            const profileDiv = document.getElementById('search-profile-content');
-            
-            profileDiv.style.display = 'none';
-            if(!term) { resultsDiv.style.display = 'none'; return; }
-
-            const matches = Object.keys(captainProfiles).filter(n => n.toLowerCase().includes(term));
-            
-            if(matches.length > 0) {
-                resultsDiv.style.display = 'block';
-                let html = '<ul>';
-                matches.forEach(name => {
-                    html += `<li onclick="showProfile('${name}')">${name}</li>`;
-                });
-                html += '</ul>';
-                resultsDiv.innerHTML = html;
-            } else {
-                resultsDiv.style.display = 'block';
-                resultsDiv.innerHTML = '<div style="padding:10px;">No match found.</div>';
-            }
+        // Manual GMT Toggle (Origin)
+        const togOrigin = document.getElementById('arr_originManualOffsetToggle');
+        const grpOrigin = document.getElementById('arr_originManualOffsetGroup');
+        togOrigin.addEventListener('change', () => {
+             if(togOrigin.checked) grpOrigin.classList.remove('hidden');
+             else grpOrigin.classList.add('hidden');
         });
 
-        // ABBA Display
-        function displayAbba() {
-            const container = document.getElementById('abba-list-content');
-            let pairs = [];
-            Object.values(captainProfiles).forEach(p => {
-                p.submissions.forEach(sub => {
-                    if(sub.questions) {
-                        sub.questions.forEach(q => {
-                            if(q.q && q.a) pairs.push({ c: p.name, q: q.q, a: q.a });
-                        });
+        // Setup Speaker Toggles
+        setupSpeakerToggle('arr_speakerRole', 'arr_pilotNameGroup', 'arr_pilotNameLabel'); // Arrival has special closing logic internally
+        setupSpeakerToggle('irr_speakerRole', 'irr_speakerNameGroup');
+        setupSpeakerToggle('crp_speakerRole', 'crp_speakerNameGroup');
+        setupSpeakerToggle('trb_speakerRole', 'trb_speakerNameGroup');
+        setupSpeakerToggle('msc_speakerRole', 'msc_speakerNameGroup');
+
+        // Copy Button
+        document.getElementById('copyButton').addEventListener('click', () => {
+            const el = document.getElementById('mainOutput');
+            if(el.value) {
+                el.select();
+                document.execCommand('copy');
+                alert("Copied to clipboard!");
+            }
+        });
+        
+        // Dark Mode
+        document.getElementById('darkModeToggle').addEventListener('change', function() {
+            if(this.checked) document.body.classList.add('night-mode');
+            else document.body.classList.remove('night-mode');
+        });
+
+        // Swap Airports
+        document.getElementById('swapAirportsButton').addEventListener('click', () => {
+            const o = document.getElementById('arr_originAirport');
+            const a = document.getElementById('arr_arrivalAirport');
+            const temp = o.value;
+            o.value = a.value;
+            a.value = temp;
+        });
+
+        // Search logic
+        ['arr_origin', 'arr_arrival'].forEach(prefix => {
+            document.getElementById(`${prefix}Search`).addEventListener('input', function() {
+                const val = this.value.toUpperCase();
+                const sel = document.getElementById(`${prefix}Airport`);
+                for (let i = 0; i < sel.options.length; i++) {
+                    const txt = sel.options[i].text.toUpperCase();
+                    if (txt.includes(val) || sel.options[i].value.includes(val)) {
+                        sel.selectedIndex = i;
+                        break;
                     }
-                });
+                }
             });
-
-            if(pairs.length === 0) { container.innerHTML = "No Data"; return; }
-
-            let html = '<ul>';
-            pairs.forEach(item => {
-                html += `<li>
-                            <div style="width:100%;">
-                                <strong>Q: ${item.q}</strong> <br>
-                                <span style="opacity:0.8;">A: ${item.a}</span> <br>
-                                <small style="float:right; color:var(--accent);"> - re: ${item.c}</small>
-                            </div>
-                         </li>`;
-            });
-            html += '</ul>';
-            container.innerHTML = html;
-        }
-
-    </script>
+        });
+    });
+  </script>
 </body>
 </html>
