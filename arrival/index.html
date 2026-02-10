@@ -376,7 +376,7 @@
                 <label>Announcing Pilot</label>
                 <select id="welc_speakerRole">
                     <option value="Captain">Captain</option>
-                    <option value="First Officer">First Officer</option>
+                    <option value="Pilot">Pilot</option>
                 </select>
             </div>
 
@@ -386,8 +386,8 @@
                     <input type="text" id="welc_captainName" placeholder="e.g. Captain Tan">
                 </div>
                 <div class="form-group">
-                    <label>First Officer / Assisting Pilot(s)</label>
-                    <input type="text" id="welc_assistPilot" placeholder="e.g. First Officer Lee">
+                    <label>Assisting Pilot(s)</label>
+                    <input type="text" id="welc_assistPilot" placeholder="e.g. Pilot Lee">
                 </div>
             </div>
             <div class="form-row">
@@ -440,14 +440,11 @@
                     <label for="arr_speakerRole">Speaker</label>
                     <select id="arr_speakerRole">
                         <option value="Captain" selected>Captain</option>
-                        <option value="First Officer">First Officer</option>
+                        <option value="Pilot">Pilot</option>
                     </select>
                 </div>
-                <div class="form-group hidden" id="arr_pilotNameGroup" style="flex: 2;">
-                    <label id="arr_pilotNameLabel">Pilot Name</label>
-                    <input type="text" id="arr_pilotName" placeholder="Name">
-                </div>
-                <!-- Captain name field specifically for when FO is speaking (for closing statement) -->
+                <!-- Captain name field specifically for when Pilot is speaking (for closing statement) -->
+                <!-- Default is hidden (since default role is Captain) -->
                 <div class="form-group hidden" id="arr_captainNameGroup" style="flex: 2;">
                     <label>Captain's Name (for Closing)</label>
                     <input type="text" id="arr_captainName" placeholder="Captain's Name">
@@ -545,7 +542,7 @@
                     <label>Speaker</label>
                     <select id="irr_speakerRole">
                         <option value="Captain">Captain</option>
-                        <option value="First Officer">First Officer</option>
+                        <option value="Pilot">Pilot</option>
                     </select>
                 </div>
                 <div class="form-group hidden" id="irr_speakerNameGroup" style="flex: 2;">
@@ -632,7 +629,7 @@
                 <label>Speaker</label>
                 <select id="crp_speakerRole">
                     <option value="Captain">Captain</option>
-                    <option value="First Officer">First Officer</option>
+                    <option value="Pilot">Pilot</option>
                 </select>
             </div>
             <div class="form-group hidden" id="crp_speakerNameGroup" style="flex: 2;">
@@ -671,7 +668,7 @@
                 <label>Speaker</label>
                 <select id="trb_speakerRole">
                     <option value="Captain">Captain</option>
-                    <option value="First Officer">First Officer</option>
+                    <option value="Pilot">Pilot</option>
                 </select>
             </div>
             <div class="form-group hidden" id="trb_speakerNameGroup" style="flex: 2;">
@@ -718,7 +715,7 @@
                 <label>Speaker</label>
                 <select id="msc_speakerRole">
                     <option value="Captain">Captain</option>
-                    <option value="First Officer">First Officer</option>
+                    <option value="Pilot">Pilot</option>
                 </select>
             </div>
             <div class="form-group hidden" id="msc_speakerNameGroup" style="flex: 2;">
@@ -792,110 +789,110 @@
 
   <script>
     // --- AIRPORT DATA ---
-    // Full SIA Network + Key Destinations
+    // Full SIA Network + Key Destinations with Updated Announcement Names
     const airportData = {
         // South East Asia
-        "WSSS": { iata: "SIN", name: "Singapore Changi Airport", standardGmtOffset: 8, shortName: "Singapore" },
-        "WADD": { iata: "DPS", name: "Denpasar Ngurah Rai", standardGmtOffset: 8, shortName: "Denpasar" },
-        "WIDD": { iata: "KNO", name: "Medan Kualanamu", standardGmtOffset: 7, shortName: "Medan" },
-        "WMKJ": { iata: "PEN", name: "Penang", standardGmtOffset: 8, shortName: "Penang" },
-        "WMKK": { iata: "KUL", name: "Kuala Lumpur Intl", standardGmtOffset: 8, shortName: "Kuala Lumpur" },
-        "WBKK": { iata: "BKI", name: "Kota Kinabalu", standardGmtOffset: 8, shortName: "Kota Kinabalu" },
-        "WBGR": { iata: "KCH", name: "Kuching", standardGmtOffset: 8, shortName: "Kuching" },
-        "WMKL": { iata: "LGK", name: "Langkawi", standardGmtOffset: 8, shortName: "Langkawi" },
-        "WBSB": { iata: "BWN", name: "Brunei", standardGmtOffset: 8, shortName: "Bandar Seri Begawan" },
-        "VVTS": { iata: "SGN", name: "Ho Chi Minh City Tan Son Nhat", standardGmtOffset: 7, shortName: "Ho Chi Minh City" },
-        "VVNB": { iata: "HAN", name: "Hanoi Noi Bai", standardGmtOffset: 7, shortName: "Hanoi" },
-        "VTBS": { iata: "BKK", name: "Bangkok Suvarnabhumi", standardGmtOffset: 7, shortName: "Bangkok" },
-        "VTSG": { iata: "HKT", name: "Phuket", standardGmtOffset: 7, shortName: "Phuket" },
-        "RPLL": { iata: "MNL", name: "Manila Ninoy Aquino", standardGmtOffset: 8, shortName: "Manila" },
-        "RPVM": { iata: "CEB", name: "Cebu Mactan-Cebu", standardGmtOffset: 8, shortName: "Cebu" },
-        "VYYY": { iata: "RGN", name: "Yangon", standardGmtOffset: 6.5, shortName: "Yangon" },
-        "VDPP": { iata: "PNH", name: "Phnom Penh", standardGmtOffset: 7, shortName: "Phnom Penh" },
-        "VDSR": { iata: "REP", name: "Siem Reap Angkor (SAI/REP)", standardGmtOffset: 7, shortName: "Siem Reap" },
-        "WARR": { iata: "SUB", name: "Surabaya Juanda", standardGmtOffset: 7, shortName: "Surabaya" },
-        "WIII": { iata: "CGK", name: "Jakarta Soekarno-Hatta", standardGmtOffset: 7, shortName: "Jakarta" },
+        "WSSS": { iata: "SIN", name: "Singapore Changi Airport", announcementName: "Singapore Changi Airport", standardGmtOffset: 8, shortName: "Singapore" },
+        "WADD": { iata: "DPS", name: "Denpasar Ngurah Rai", announcementName: "Denpasar Ngurah Rai International Airport", standardGmtOffset: 8, shortName: "Denpasar" },
+        "WIDD": { iata: "KNO", name: "Medan Kualanamu", announcementName: "Medan Kualanamu International Airport", standardGmtOffset: 7, shortName: "Medan" },
+        "WMKJ": { iata: "PEN", name: "Penang", announcementName: "Penang International Airport", standardGmtOffset: 8, shortName: "Penang" },
+        "WMKK": { iata: "KUL", name: "Kuala Lumpur Intl", announcementName: "Kuala Lumpur International Airport", standardGmtOffset: 8, shortName: "Kuala Lumpur" },
+        "WBKK": { iata: "BKI", name: "Kota Kinabalu", announcementName: "Kota Kinabalu International Airport", standardGmtOffset: 8, shortName: "Kota Kinabalu" },
+        "WBGR": { iata: "KCH", name: "Kuching", announcementName: "Kuching International Airport", standardGmtOffset: 8, shortName: "Kuching" },
+        "WMKL": { iata: "LGK", name: "Langkawi", announcementName: "Langkawi International Airport", standardGmtOffset: 8, shortName: "Langkawi" },
+        "WBSB": { iata: "BWN", name: "Brunei", announcementName: "Brunei International Airport", standardGmtOffset: 8, shortName: "Bandar Seri Begawan" },
+        "VVTS": { iata: "SGN", name: "Ho Chi Minh City Tan Son Nhat", announcementName: "Ho Chi Minh City Tan Son Nhat International Airport", standardGmtOffset: 7, shortName: "Ho Chi Minh City" },
+        "VVNB": { iata: "HAN", name: "Hanoi Noi Bai", announcementName: "Hanoi Noi Bai International Airport", standardGmtOffset: 7, shortName: "Hanoi" },
+        "VTBS": { iata: "BKK", name: "Bangkok Suvarnabhumi", announcementName: "Bangkok Suvarnabhumi Airport", standardGmtOffset: 7, shortName: "Bangkok" },
+        "VTSG": { iata: "HKT", name: "Phuket", announcementName: "Phuket International Airport", standardGmtOffset: 7, shortName: "Phuket" },
+        "RPLL": { iata: "MNL", name: "Manila Ninoy Aquino", announcementName: "Manila Ninoy Aquino International Airport", standardGmtOffset: 8, shortName: "Manila" },
+        "RPVM": { iata: "CEB", name: "Cebu Mactan-Cebu", announcementName: "Cebu Mactan-Cebu International Airport", standardGmtOffset: 8, shortName: "Cebu" },
+        "VYYY": { iata: "RGN", name: "Yangon", announcementName: "Yangon International Airport", standardGmtOffset: 6.5, shortName: "Yangon" },
+        "VDPP": { iata: "PNH", name: "Phnom Penh", announcementName: "Phnom Penh International Airport", standardGmtOffset: 7, shortName: "Phnom Penh" },
+        "VDSR": { iata: "REP", name: "Siem Reap Angkor (SAI/REP)", announcementName: "Siem Reap Angkor International Airport", standardGmtOffset: 7, shortName: "Siem Reap" },
+        "WARR": { iata: "SUB", name: "Surabaya Juanda", announcementName: "Surabaya Juanda International Airport", standardGmtOffset: 7, shortName: "Surabaya" },
+        "WIII": { iata: "CGK", name: "Jakarta Soekarno-Hatta", announcementName: "Jakarta Soekarno-Hatta International Airport", standardGmtOffset: 7, shortName: "Jakarta" },
         
         // North East Asia
-        "RJAA": { iata: "NRT", name: "Tokyo Narita", standardGmtOffset: 9, shortName: "Tokyo" },
-        "RJTT": { iata: "HND", name: "Tokyo Haneda", standardGmtOffset: 9, shortName: "Tokyo" },
-        "RJBB": { iata: "KIX", name: "Osaka Kansai", standardGmtOffset: 9, shortName: "Osaka" },
-        "RJFF": { iata: "FUK", name: "Fukuoka", standardGmtOffset: 9, shortName: "Fukuoka" },
-        "RJGG": { iata: "NGO", name: "Nagoya Chubu Centrair", standardGmtOffset: 9, shortName: "Nagoya" },
-        "ROAH": { iata: "OKA", name: "Naha (Okinawa)", standardGmtOffset: 9, shortName: "Naha" },
-        "RKSI": { iata: "ICN", name: "Seoul Incheon", standardGmtOffset: 9, shortName: "Seoul" },
-        "ZBAA": { iata: "PEK", name: "Beijing Capital", standardGmtOffset: 8, shortName: "Beijing" },
-        "ZBAD": { iata: "PKX", name: "Beijing Daxing", standardGmtOffset: 8, shortName: "Beijing" },
-        "ZSPD": { iata: "PVG", name: "Shanghai Pudong", standardGmtOffset: 8, shortName: "Shanghai" },
-        "ZGGG": { iata: "CAN", name: "Guangzhou Baiyun", standardGmtOffset: 8, shortName: "Guangzhou" },
-        "ZGSZ": { iata: "SZX", name: "Shenzhen Bao'an", standardGmtOffset: 8, shortName: "Shenzhen" },
-        "ZUCK": { iata: "CKG", name: "Chongqing Jiangbei", standardGmtOffset: 8, shortName: "Chongqing" },
-        "ZUTF": { iata: "TFU", name: "Chengdu Tianfu", standardGmtOffset: 8, shortName: "Chengdu" },
-        "ZSAM": { iata: "XMN", name: "Xiamen Gaoqi", standardGmtOffset: 8, shortName: "Xiamen" },
-        "ZGHA": { iata: "CSX", name: "Changsha Huanghua", standardGmtOffset: 8, shortName: "Changsha" },
-        "RCKH": { iata: "KHH", name: "Kaohsiung", standardGmtOffset: 8, shortName: "Kaohsiung" },
-        "RCTP": { iata: "TPE", name: "Taipei Taoyuan", standardGmtOffset: 8, shortName: "Taipei" },
-        "VHHH": { iata: "HKG", name: "Hong Kong", standardGmtOffset: 8, shortName: "Hong Kong" },
-        "VMMC": { iata: "MFM", name: "Macau", standardGmtOffset: 8, shortName: "Macau" },
+        "RJAA": { iata: "NRT", name: "Tokyo Narita", announcementName: "Tokyo Narita International Airport", standardGmtOffset: 9, shortName: "Tokyo" },
+        "RJTT": { iata: "HND", name: "Tokyo Haneda", announcementName: "Tokyo Haneda Airport", standardGmtOffset: 9, shortName: "Tokyo" },
+        "RJBB": { iata: "KIX", name: "Osaka Kansai", announcementName: "Osaka Kansai International Airport", standardGmtOffset: 9, shortName: "Osaka" },
+        "RJFF": { iata: "FUK", name: "Fukuoka", announcementName: "Fukuoka Airport", standardGmtOffset: 9, shortName: "Fukuoka" },
+        "RJGG": { iata: "NGO", name: "Nagoya Chubu Centrair", announcementName: "Nagoya Chubu Centrair International Airport", standardGmtOffset: 9, shortName: "Nagoya" },
+        "ROAH": { iata: "OKA", name: "Naha (Okinawa)", announcementName: "Naha Airport", standardGmtOffset: 9, shortName: "Naha" },
+        "RKSI": { iata: "ICN", name: "Seoul Incheon", announcementName: "Seoul Incheon International Airport", standardGmtOffset: 9, shortName: "Seoul" },
+        "ZBAA": { iata: "PEK", name: "Beijing Capital", announcementName: "Beijing Capital International Airport", standardGmtOffset: 8, shortName: "Beijing" },
+        "ZBAD": { iata: "PKX", name: "Beijing Daxing", announcementName: "Beijing Daxing International Airport", standardGmtOffset: 8, shortName: "Beijing" },
+        "ZSPD": { iata: "PVG", name: "Shanghai Pudong", announcementName: "Shanghai Pudong International Airport", standardGmtOffset: 8, shortName: "Shanghai" },
+        "ZGGG": { iata: "CAN", name: "Guangzhou Baiyun", announcementName: "Guangzhou Baiyun International Airport", standardGmtOffset: 8, shortName: "Guangzhou" },
+        "ZGSZ": { iata: "SZX", name: "Shenzhen Bao'an", announcementName: "Shenzhen Bao'an International Airport", standardGmtOffset: 8, shortName: "Shenzhen" },
+        "ZUCK": { iata: "CKG", name: "Chongqing Jiangbei", announcementName: "Chongqing Jiangbei International Airport", standardGmtOffset: 8, shortName: "Chongqing" },
+        "ZUTF": { iata: "TFU", name: "Chengdu Tianfu", announcementName: "Chengdu Tianfu International Airport", standardGmtOffset: 8, shortName: "Chengdu" },
+        "ZSAM": { iata: "XMN", name: "Xiamen Gaoqi", announcementName: "Xiamen Gaoqi International Airport", standardGmtOffset: 8, shortName: "Xiamen" },
+        "ZGHA": { iata: "CSX", name: "Changsha Huanghua", announcementName: "Changsha Huanghua International Airport", standardGmtOffset: 8, shortName: "Changsha" },
+        "RCKH": { iata: "KHH", name: "Kaohsiung", announcementName: "Kaohsiung International Airport", standardGmtOffset: 8, shortName: "Kaohsiung" },
+        "RCTP": { iata: "TPE", name: "Taipei Taoyuan", announcementName: "Taipei Taoyuan International Airport", standardGmtOffset: 8, shortName: "Taipei" },
+        "VHHH": { iata: "HKG", name: "Hong Kong", announcementName: "Hong Kong International Airport", standardGmtOffset: 8, shortName: "Hong Kong" },
+        "VMMC": { iata: "MFM", name: "Macau", announcementName: "Macau International Airport", standardGmtOffset: 8, shortName: "Macau" },
 
         // South West Pacific
-        "YSSY": { iata: "SYD", name: "Sydney Kingsford Smith", standardGmtOffset: 10, hasDST: true, shortName: "Sydney" },
-        "YMML": { iata: "MEL", name: "Melbourne", standardGmtOffset: 10, hasDST: true, shortName: "Melbourne" },
-        "YBBN": { iata: "BNE", name: "Brisbane", standardGmtOffset: 10, shortName: "Brisbane" }, // QLD no DST
-        "YPPH": { iata: "PER", name: "Perth", standardGmtOffset: 8, shortName: "Perth" },
-        "YPAD": { iata: "ADL", name: "Adelaide", standardGmtOffset: 9.5, hasDST: true, shortName: "Adelaide" },
-        "YPDN": { iata: "DRW", name: "Darwin", standardGmtOffset: 9.5, shortName: "Darwin" },
-        "YBCS": { iata: "CNS", name: "Cairns", standardGmtOffset: 10, shortName: "Cairns" },
-        "NZAA": { iata: "AKL", name: "Auckland", standardGmtOffset: 12, hasDST: true, shortName: "Auckland" },
-        "NZCH": { iata: "CHC", name: "Christchurch", standardGmtOffset: 12, hasDST: true, shortName: "Christchurch" },
+        "YSSY": { iata: "SYD", name: "Sydney Kingsford Smith", announcementName: "Sydney Kingsford Smith Airport", standardGmtOffset: 10, hasDST: true, shortName: "Sydney" },
+        "YMML": { iata: "MEL", name: "Melbourne", announcementName: "Melbourne Airport", standardGmtOffset: 10, hasDST: true, shortName: "Melbourne" },
+        "YBBN": { iata: "BNE", name: "Brisbane", announcementName: "Brisbane Airport", standardGmtOffset: 10, shortName: "Brisbane" }, // QLD no DST
+        "YPPH": { iata: "PER", name: "Perth", announcementName: "Perth Airport", standardGmtOffset: 8, shortName: "Perth" },
+        "YPAD": { iata: "ADL", name: "Adelaide", announcementName: "Adelaide Airport", standardGmtOffset: 9.5, hasDST: true, shortName: "Adelaide" },
+        "YPDN": { iata: "DRW", name: "Darwin", announcementName: "Darwin International Airport", standardGmtOffset: 9.5, shortName: "Darwin" },
+        "YBCS": { iata: "CNS", name: "Cairns", announcementName: "Cairns Airport", standardGmtOffset: 10, shortName: "Cairns" },
+        "NZAA": { iata: "AKL", name: "Auckland", announcementName: "Auckland Airport", standardGmtOffset: 12, hasDST: true, shortName: "Auckland" },
+        "NZCH": { iata: "CHC", name: "Christchurch", announcementName: "Christchurch International Airport", standardGmtOffset: 12, hasDST: true, shortName: "Christchurch" },
 
         // West Asia & Africa
-        "VIDP": { iata: "DEL", name: "Delhi Indira Gandhi", standardGmtOffset: 5.5, shortName: "Delhi" },
-        "VABB": { iata: "BOM", name: "Mumbai CSIA", standardGmtOffset: 5.5, shortName: "Mumbai" },
-        "VOBL": { iata: "BLR", name: "Bengaluru Kempegowda", standardGmtOffset: 5.5, shortName: "Bengaluru" },
-        "VOMM": { iata: "MAA", name: "Chennai", standardGmtOffset: 5.5, shortName: "Chennai" },
-        "VOHS": { iata: "HYD", name: "Hyderabad Rajiv Gandhi", standardGmtOffset: 5.5, shortName: "Hyderabad" },
-        "VAAH": { iata: "AMD", name: "Ahmedabad", standardGmtOffset: 5.5, shortName: "Ahmedabad" },
-        "VOCI": { iata: "COK", name: "Kochi", standardGmtOffset: 5.5, shortName: "Kochi" },
-        "VECC": { iata: "CCU", name: "Kolkata", standardGmtOffset: 5.5, shortName: "Kolkata" },
-        "VOGO": { iata: "GOI", name: "Goa Dabolim", standardGmtOffset: 5.5, shortName: "Goa" },
-        "VOTV": { iata: "TRV", name: "Thiruvananthapuram", standardGmtOffset: 5.5, shortName: "Thiruvananthapuram" },
-        "VGHS": { iata: "DAC", name: "Dhaka Shahjalal", standardGmtOffset: 6, shortName: "Dhaka" },
-        "VCBI": { iata: "CMB", name: "Colombo Bandaranaike", standardGmtOffset: 5.5, shortName: "Colombo" },
-        "VRMM": { iata: "MLE", name: "Malé Velana", standardGmtOffset: 5, shortName: "Malé" },
-        "VNKT": { iata: "KTM", name: "Kathmandu Tribhuvan", standardGmtOffset: 5.75, shortName: "Kathmandu" },
-        "OMDB": { iata: "DXB", name: "Dubai International", standardGmtOffset: 4, shortName: "Dubai" },
-        "OTHH": { iata: "DOH", name: "Doha Hamad", standardGmtOffset: 3, shortName: "Doha" },
-        "FACT": { iata: "CPT", name: "Cape Town", standardGmtOffset: 2, shortName: "Cape Town" },
-        "FAOR": { iata: "JNB", name: "Johannesburg O.R. Tambo", standardGmtOffset: 2, shortName: "Johannesburg" },
+        "VIDP": { iata: "DEL", name: "Delhi Indira Gandhi", announcementName: "Delhi Indira Gandhi International Airport", standardGmtOffset: 5.5, shortName: "Delhi" },
+        "VABB": { iata: "BOM", name: "Mumbai CSIA", announcementName: "Mumbai Chhatrapati Shivaji Maharaj International Airport", standardGmtOffset: 5.5, shortName: "Mumbai" },
+        "VOBL": { iata: "BLR", name: "Bengaluru Kempegowda", announcementName: "Bengaluru Kempegowda International Airport", standardGmtOffset: 5.5, shortName: "Bengaluru" },
+        "VOMM": { iata: "MAA", name: "Chennai", announcementName: "Chennai Airport, Anna International Terminal", standardGmtOffset: 5.5, shortName: "Chennai" },
+        "VOHS": { iata: "HYD", name: "Hyderabad Rajiv Gandhi", announcementName: "Hyderabad Rajiv Gandhi International Airport", standardGmtOffset: 5.5, shortName: "Hyderabad" },
+        "VAAH": { iata: "AMD", name: "Ahmedabad", announcementName: "Ahmedabad Airport", standardGmtOffset: 5.5, shortName: "Ahmedabad" },
+        "VOCI": { iata: "COK", name: "Kochi", announcementName: "Cochin International Airport", standardGmtOffset: 5.5, shortName: "Kochi" },
+        "VECC": { iata: "CCU", name: "Kolkata", announcementName: "Kolkata Netaji Subhash Chandra Bose International Airport", standardGmtOffset: 5.5, shortName: "Kolkata" },
+        "VOGO": { iata: "GOI", name: "Goa Dabolim", announcementName: "Goa Dabolim Airport", standardGmtOffset: 5.5, shortName: "Goa" },
+        "VOTV": { iata: "TRV", name: "Thiruvananthapuram", announcementName: "Thiruvananthapuram International Airport", standardGmtOffset: 5.5, shortName: "Thiruvananthapuram" },
+        "VGHS": { iata: "DAC", name: "Dhaka Shahjalal", announcementName: "Dhaka Shahjalal International Airport", standardGmtOffset: 6, shortName: "Dhaka" },
+        "VCBI": { iata: "CMB", name: "Colombo Bandaranaike", announcementName: "Colombo Bandaranaike International Airport", standardGmtOffset: 5.5, shortName: "Colombo" },
+        "VRMM": { iata: "MLE", name: "Malé Velana", announcementName: "Malé Velana International Airport", standardGmtOffset: 5, shortName: "Malé" },
+        "VNKT": { iata: "KTM", name: "Kathmandu Tribhuvan", announcementName: "Kathmandu Tribhuvan International Airport", standardGmtOffset: 5.75, shortName: "Kathmandu" },
+        "OMDB": { iata: "DXB", name: "Dubai International", announcementName: "Dubai International Airport", standardGmtOffset: 4, shortName: "Dubai" },
+        "OTHH": { iata: "DOH", name: "Doha Hamad", announcementName: "Doha Hamad International Airport", standardGmtOffset: 3, shortName: "Doha" },
+        "FACT": { iata: "CPT", name: "Cape Town", announcementName: "Cape Town International Airport", standardGmtOffset: 2, shortName: "Cape Town" },
+        "FAOR": { iata: "JNB", name: "Johannesburg O.R. Tambo", announcementName: "Johannesburg O. R. Tambo International Airport", standardGmtOffset: 2, shortName: "Johannesburg" },
 
         // Europe
-        "EGLL": { iata: "LHR", name: "London Heathrow", standardGmtOffset: 0, hasDST: true, shortName: "London" },
-        "EGKK": { iata: "LGK", name: "London Gatwick", standardGmtOffset: 0, hasDST: true, shortName: "London" },
-        "EGCC": { iata: "MAN", name: "Manchester", standardGmtOffset: 0, hasDST: true, shortName: "Manchester" },
-        "LFPG": { iata: "CDG", name: "Paris Charles de Gaulle", standardGmtOffset: 1, hasDST: true, shortName: "Paris" },
-        "EDDF": { iata: "FRA", name: "Frankfurt", standardGmtOffset: 1, hasDST: true, shortName: "Frankfurt" },
-        "EDDM": { iata: "MUC", name: "Munich", standardGmtOffset: 1, hasDST: true, shortName: "Munich" },
-        "EHAM": { iata: "AMS", name: "Amsterdam Schiphol", standardGmtOffset: 1, hasDST: true, shortName: "Amsterdam" },
-        "LSZH": { iata: "ZRH", name: "Zurich", standardGmtOffset: 1, hasDST: true, shortName: "Zurich" },
-        "EBBR": { iata: "BRU", name: "Brussels", standardGmtOffset: 1, hasDST: true, shortName: "Brussels" },
-        "LIMC": { iata: "MXP", name: "Milan Malpensa", standardGmtOffset: 1, hasDST: true, shortName: "Milan" },
-        "LIRF": { iata: "FCO", name: "Rome Fiumicino", standardGmtOffset: 1, hasDST: true, shortName: "Rome" },
-        "LEMD": { iata: "MAD", name: "Madrid Barajas", standardGmtOffset: 1, hasDST: true, shortName: "Madrid" },
-        "LEBL": { iata: "BCN", name: "Barcelona El Prat", standardGmtOffset: 1, hasDST: true, shortName: "Barcelona" },
-        "EKCH": { iata: "CPH", name: "Copenhagen", standardGmtOffset: 1, hasDST: true, shortName: "Copenhagen" },
-        "LTFM": { iata: "IST", name: "Istanbul", standardGmtOffset: 3, shortName: "Istanbul" },
+        "EGLL": { iata: "LHR", name: "London Heathrow", announcementName: "London Heathrow Airport", standardGmtOffset: 0, hasDST: true, shortName: "London" },
+        "EGKK": { iata: "LGK", name: "London Gatwick", announcementName: "London Gatwick Airport", standardGmtOffset: 0, hasDST: true, shortName: "London" },
+        "EGCC": { iata: "MAN", name: "Manchester", announcementName: "Manchester Airport", standardGmtOffset: 0, hasDST: true, shortName: "Manchester" },
+        "LFPG": { iata: "CDG", name: "Paris Charles de Gaulle", announcementName: "Paris Charles de Gaulle Airport", standardGmtOffset: 1, hasDST: true, shortName: "Paris" },
+        "EDDF": { iata: "FRA", name: "Frankfurt", announcementName: "Frankfurt Airport", standardGmtOffset: 1, hasDST: true, shortName: "Frankfurt" },
+        "EDDM": { iata: "MUC", name: "Munich", announcementName: "Munich Airport", standardGmtOffset: 1, hasDST: true, shortName: "Munich" },
+        "EHAM": { iata: "AMS", name: "Amsterdam Schiphol", announcementName: "Amsterdam Schiphol Airport", standardGmtOffset: 1, hasDST: true, shortName: "Amsterdam" },
+        "LSZH": { iata: "ZRH", name: "Zurich", announcementName: "Zurich Airport", standardGmtOffset: 1, hasDST: true, shortName: "Zurich" },
+        "EBBR": { iata: "BRU", name: "Brussels", announcementName: "Brussels Airport", standardGmtOffset: 1, hasDST: true, shortName: "Brussels" },
+        "LIMC": { iata: "MXP", name: "Milan Malpensa", announcementName: "Milan Malpensa Airport", standardGmtOffset: 1, hasDST: true, shortName: "Milan" },
+        "LIRF": { iata: "FCO", name: "Rome Fiumicino", announcementName: "Rome Fiumicino Airport", standardGmtOffset: 1, hasDST: true, shortName: "Rome" },
+        "LEMD": { iata: "MAD", name: "Madrid Barajas", announcementName: "Madrid Barajas Airport", standardGmtOffset: 1, hasDST: true, shortName: "Madrid" },
+        "LEBL": { iata: "BCN", name: "Barcelona El Prat", announcementName: "Barcelona El Prat Airport", standardGmtOffset: 1, hasDST: true, shortName: "Barcelona" },
+        "EKCH": { iata: "CPH", name: "Copenhagen", announcementName: "Copenhagen Airport", standardGmtOffset: 1, hasDST: true, shortName: "Copenhagen" },
+        "LTFM": { iata: "IST", name: "Istanbul", announcementName: "Istanbul Airport", standardGmtOffset: 3, shortName: "Istanbul" },
 
         // Americas
-        "KJFK": { iata: "JFK", name: "New York JFK", standardGmtOffset: -5, hasDST: true, shortName: "New York" },
-        "KEWR": { iata: "EWR", name: "Newark Liberty", standardGmtOffset: -5, hasDST: true, shortName: "New York" },
-        "KLAX": { iata: "LAX", name: "Los Angeles", standardGmtOffset: -8, hasDST: true, shortName: "Los Angeles" },
-        "KSFO": { iata: "SFO", name: "San Francisco", standardGmtOffset: -8, hasDST: true, shortName: "San Francisco" },
-        "KSEA": { iata: "SEA", name: "Seattle-Tacoma", standardGmtOffset: -8, hasDST: true, shortName: "Seattle" },
-        "KIAH": { iata: "IAH", name: "Houston George Bush", standardGmtOffset: -6, hasDST: true, shortName: "Houston" },
-        "KORD": { iata: "ORD", name: "Chicago O'Hare", standardGmtOffset: -6, hasDST: true, shortName: "Chicago" },
-        "CYYZ": { iata: "YYZ", name: "Toronto Pearson", standardGmtOffset: -5, hasDST: true, shortName: "Toronto" },
-        "CYVR": { iata: "YVR", name: "Vancouver", standardGmtOffset: -8, hasDST: true, shortName: "Vancouver" }
+        "KJFK": { iata: "JFK", name: "New York JFK", announcementName: "New York John F. Kennedy International Airport", standardGmtOffset: -5, hasDST: true, shortName: "New York" },
+        "KEWR": { iata: "EWR", name: "Newark Liberty", announcementName: "Newark Liberty International Airport", standardGmtOffset: -5, hasDST: true, shortName: "New York" },
+        "KLAX": { iata: "LAX", name: "Los Angeles", announcementName: "Los Angeles International Airport", standardGmtOffset: -8, hasDST: true, shortName: "Los Angeles" },
+        "KSFO": { iata: "SFO", name: "San Francisco", announcementName: "San Francisco International Airport", standardGmtOffset: -8, hasDST: true, shortName: "San Francisco" },
+        "KSEA": { iata: "SEA", name: "Seattle-Tacoma", announcementName: "Seattle-Tacoma International Airport", standardGmtOffset: -8, hasDST: true, shortName: "Seattle" },
+        "KIAH": { iata: "IAH", name: "Houston George Bush", announcementName: "Houston George Bush Intercontinental Airport", standardGmtOffset: -6, hasDST: true, shortName: "Houston" },
+        "KORD": { iata: "ORD", name: "Chicago O'Hare", announcementName: "Chicago O'Hare International Airport", standardGmtOffset: -6, hasDST: true, shortName: "Chicago" },
+        "CYYZ": { iata: "YYZ", name: "Toronto Pearson", announcementName: "Toronto Pearson International Airport", standardGmtOffset: -5, hasDST: true, shortName: "Toronto" },
+        "CYVR": { iata: "YVR", name: "Vancouver", announcementName: "Vancouver International Airport", standardGmtOffset: -8, hasDST: true, shortName: "Vancouver" }
     };
 
     const weatherList = [
@@ -931,7 +928,7 @@
         if (role === 'Captain') {
             return `Ladies and Gentlemen, this is your Captain.`;
         } else {
-            return `Ladies and Gentlemen, this is First Officer${name ? " " + name : ""}.`;
+            return `Ladies and Gentlemen, this is your Pilot${name ? " " + name : ""}.`;
         }
     }
 
@@ -989,10 +986,10 @@
             const content = textArea.value;
             const citySafe = escapeRegExp(cityName);
             
-            // Regex: Looks for "The current time in City is" followed by a time pattern
-            // Capture group 1: Prefix "The current time in City is "
+            // Regex: Looks for "Local time in City is" followed by a time pattern
+            // Capture group 1: Prefix "Local time in City is "
             // Capture group 2: The old time "10:45 AM"
-            const regex = new RegExp(`(The current time in ${citySafe} is )(\\d{1,2}:\\d{2} [AP]M)`);
+            const regex = new RegExp(`(Local time in ${citySafe} is )(\\d{1,2}:\\d{2} [AP]M)`);
             
             const match = content.match(regex);
             
@@ -1033,7 +1030,7 @@
             if(nameLabelId) {
                 const lbl = document.getElementById(nameLabelId);
                 if(lbl) {
-                    lbl.textContent = role === 'Captain' ? 'Pilot Name' : "First Officer's Name";
+                    lbl.textContent = role === 'Captain' ? 'Pilot Name' : "Pilot's Name";
                 }
                 // Specific to Arrival Tab: Captain name (for closing) toggle
                 if(roleSelectId === 'arr_speakerRole') {
@@ -1083,7 +1080,7 @@
             intro = `Good ${getTimeOfDay()}, Ladies and Gentlemen. This is your Captain, ${captain}.`;
             assistText = `Assisting me on the flight deck is/are ${assist}.`;
         } else {
-            intro = `Good ${getTimeOfDay()}, Ladies and Gentlemen. This is First Officer ${assist}, welcoming you on behalf of Captain ${captain}.`;
+            intro = `Good ${getTimeOfDay()}, Ladies and Gentlemen. This is your Pilot ${assist}, welcoming you on behalf of Captain ${captain}.`;
             assistText = `Our flight time today will be ${timeStr}.`; 
         }
 
@@ -1120,8 +1117,9 @@
         const ws = document.getElementById('arr_weather');
         
         let html = '<option value="">Select Airport</option>';
-        Object.keys(airportData).sort((a,b) => airportData[a].name.localeCompare(airportData[b].name)).forEach(code => {
-            html += `<option value="${code}">${airportData[code].name} (${code})</option>`;
+        Object.keys(airportData).sort((a,b) => (airportData[a].announcementName || airportData[a].name).localeCompare(airportData[b].announcementName || airportData[b].name)).forEach(code => {
+            const disp = airportData[code].announcementName || airportData[code].name;
+            html += `<option value="${code}">${disp} (${code})</option>`;
         });
         os.innerHTML = html;
         as.innerHTML = html;
@@ -1149,12 +1147,15 @@
         if (h12 === 0) h12 = 12;
         let mmStr = mm.toString().padStart(2, '0');
         
-        return `${h12}:${mmStr} ${period}`;
+        return {
+            str: `${h12}:${mmStr} ${period}`,
+            hour24: hh
+        };
     }
 
     function generateArrival() {
         const role = document.getElementById('arr_speakerRole').value;
-        const name = document.getElementById('arr_pilotName').value.trim();
+        // Pilot Name removed
         const captainName = document.getElementById('arr_captainName').value.trim();
         const originCode = document.getElementById('arr_originAirport').value;
         const arrivalCode = document.getElementById('arr_arrivalAirport').value;
@@ -1189,31 +1190,41 @@
             originOffset = parseFloat(originManualVal);
         }
 
-        const etaStr = calculateLocalTime(zHH, zMM, arrivalOffset) || "(Time)";
+        const etaObj = calculateLocalTime(zHH, zMM, arrivalOffset);
+        const etaStr = etaObj ? etaObj.str : "(Time)";
         
         // Time Diff Logic & Start Live Clock
         const diff = arrivalOffset - originOffset;
         let timeDiffText = "";
         
+        const originCity = originData.shortName || originData.name;
+        const destCity = arrivalData.shortName || arrivalData.name;
+        
+        // Calculate initial Current Time for the text (to avoid "undefined" before first tick)
+        let now = new Date();
+        let utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        let nd = new Date(utc + (3600000 * arrivalOffset));
+        let destHH = nd.getHours();
+        let destMM = nd.getMinutes();
+        let p = destHH < 12 ? "AM" : "PM";
+        let h12 = destHH % 12; if(h12===0)h12=12;
+        let curTimeStr = `${h12}:${destMM.toString().padStart(2,'0')} ${p}`;
+        
         if (diff === 0) {
-            timeDiffText = "There is no time difference between the two cities.";
-            // Even if no difference, we start the clock for reference
+            timeDiffText = `There is no time difference between ${originCity} and ${destCity}.`;
             startLiveDestinationClock(arrivalData.shortName, arrivalOffset);
         } else {
-            // Initial calculation for text generation (will be auto-updated by interval)
-            let now = new Date();
-            let utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            let nd = new Date(utc + (3600000 * arrivalOffset));
-            let destHH = nd.getHours();
-            let destMM = nd.getMinutes();
-            let p = destHH < 12 ? "AM" : "PM";
-            let h12 = destHH % 12; if(h12===0)h12=12;
-            let curTimeStr = `${h12}:${destMM.toString().padStart(2,'0')} ${p}`;
-            
-            timeDiffText = `There is a time difference between the two cities. The current time in ${arrivalData.shortName} is ${curTimeStr}.`;
-            
             // Start the live clock updater
             startLiveDestinationClock(arrivalData.shortName, arrivalOffset);
+            
+            // Format time difference text
+            const diffHours = Math.abs(Math.floor(diff));
+            const diffMins = Math.abs((diff % 1) * 60);
+            let diffStr = `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
+            if (diffMins > 0) diffStr += ` and ${diffMins} minute${diffMins !== 1 ? 's' : ''}`;
+            
+            const relation = diff > 0 ? "ahead of" : "behind";
+            timeDiffText = `There is a ${diffStr} time difference between ${originCity} and ${destCity}. Local time in ${arrivalData.shortName} is ${curTimeStr}.`;
         }
 
         // Temp Logic
@@ -1223,37 +1234,56 @@
             tempStr += `, which is ${f} degrees Fahrenheit`;
         }
 
-        // Intro Logic
+        // --- NEW PHRASING LOGIC ---
+        
+        // 1. Intro
+        // "Ladies and Gentlemen, this is your Pilot." (Or Captain)
         let intro = "";
         if (role === 'Captain') {
             intro = `Ladies and Gentlemen, this is your Captain.`;
         } else {
-            intro = `Ladies and Gentlemen, this is First Officer ${name || "(Name)"}.`;
+            // Removed name requirement for Pilot
+            intro = `Ladies and Gentlemen, this is your Pilot.`;
         }
 
-        // Closing Logic
-        let closing = "";
-        if (role === 'Captain') {
-            closing = "On behalf of my crew, we would like to wish you a pleasant day/evening ahead. Once again, thank you for flying with Singapore Airlines.";
-        } else {
-            closing = `On behalf of Captain ${captainName || "(Name)"} and the crew, we would like to wish you a pleasant day/evening ahead. Once again, thank you for flying with Singapore Airlines.`;
+        // 2. Descent & ETA
+        const arrivalFullName = arrivalData.announcementName || arrivalData.name;
+        const descentText = `We hope you have enjoyed your flight with us so far as we will be commencing our descent into ${arrivalFullName} in approximately ${tod} minutes. Our estimated time of arrival is ${etaStr} local time subject to air traffic control instructions.`;
+
+        // 3. Closing (Day/Evening detection)
+        // Default to "day"
+        let dayOrEvening = "day";
+        if (etaObj && etaObj.hour24 !== undefined) {
+            // Simple logic: Evening starts at 6 PM (18:00)
+            if (etaObj.hour24 >= 18 || etaObj.hour24 < 5) { // Evening from 6pm to 4:59am
+                dayOrEvening = "evening";
+            }
         }
         
-        // SCP Text
-        let scpText = "";
-        let cabPrep = "Cabin Crew prepare the cabin for arrival.";
-        if (isSCP) {
-            scpText = `\nDue to possible turbulence along our arrival path, the seat belt sign will be switched ON earlier. Passengers who wish to use the lavatories may do so now, as you will be required to remain seated with your seat belt fastened for a longer period of time. Thank you for your cooperation.\n`;
-            cabPrep = "Cabin Crew secure the cabin for landing.";
+        let closingText = "";
+        if (role === 'Captain') {
+            closingText = `On behalf of my crew, we would like to wish you a pleasant ${dayOrEvening} ahead. Once again, thank you for flying with Singapore Airlines.`;
+        } else {
+            // Restored "On behalf of Captain [Name]" logic
+            closingText = `On behalf of Captain ${captainName || "(Name)"} and the crew, we would like to wish you a pleasant ${dayOrEvening} ahead. Once again, thank you for flying with Singapore Airlines.`;
         }
 
+        // SCP Text (Optional insert)
+        let scpText = "";
+        if (isSCP) {
+            scpText = `\n\nDue to possible turbulence along our arrival path, the seat belt sign will be switched ON earlier. Passengers who wish to use the lavatories may do so now. Thank you for your cooperation.`;
+        }
+
+        // 4. Cabin Command
+        const cabinCommand = "Cabin Crew prepare the cabin for arrival.";
+
+        // Assembly
         let txt = `${intro}\n\n`;
-        txt += `We hope you have enjoyed your flight with us. We will be commencing our descent in approximately ${tod} minutes. Our estimated time of arrival is ${etaStr} local time.\n\n`;
+        txt += `${descentText}\n\n`;
         txt += `${timeDiffText}\n\n`;
-        txt += `The current weather in ${arrivalData.shortName} is ${weather} with a ground temperature of ${tempStr}.\n`;
-        txt += scpText;
-        txt += `\n${closing}\n\n`;
-        txt += `${cabPrep}`;
+        txt += `The current weather at destination is ${weather} with a ground temperature of ${tempStr}.${scpText}\n\n`;
+        txt += `${closingText}\n\n`;
+        txt += `${cabinCommand}`;
 
         setOutput(txt);
     }
@@ -1431,7 +1461,20 @@
         });
 
         // Setup Speaker Toggles
-        setupSpeakerToggle('arr_speakerRole', 'arr_pilotNameGroup', 'arr_pilotNameLabel'); // Arrival has special closing logic internally
+        // ARRIVAL TAB: Custom logic for Captain Name display (show when Pilot selected)
+        const arrRoleSel = document.getElementById('arr_speakerRole');
+        if(arrRoleSel) {
+            arrRoleSel.addEventListener('change', () => {
+                const isPilot = arrRoleSel.value === 'Pilot';
+                const captGroup = document.getElementById('arr_captainNameGroup');
+                if(isPilot) captGroup.classList.remove('hidden');
+                else captGroup.classList.add('hidden');
+            });
+            // Init
+            arrRoleSel.dispatchEvent(new Event('change'));
+        }
+
+        // Other Tabs: Standard toggle
         setupSpeakerToggle('irr_speakerRole', 'irr_speakerNameGroup');
         setupSpeakerToggle('crp_speakerRole', 'crp_speakerNameGroup');
         setupSpeakerToggle('trb_speakerRole', 'trb_speakerNameGroup');
