@@ -1,0 +1,544 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { 
+  Palette, Pencil, Eraser, PaintBucket, Play, Plus, 
+  Copy, Trash2, Download, Upload, Save, FileImage, X, 
+  Trash
+} from 'lucide-react';
+
+// Pico-8 Inspired Default Palette
+const PALETTE = [
+  '#000000', '#1D2B53', '#7E2553', '#008751', '#AB5236', '#5F574F', '#C2C3C7', '#FFF1E8',
+  '#FF004D', '#FFA300', '#FFEC27', '#00E436', '#29ADFF', '#83769C', '#FF77A8', '#FFCCAA'
+];
+
+export default function App() {
+  // State
+  const [frames, setFrames] = useState([new Array(256).fill(null)]);
+  const [currentFrame, setCurrentFrame] = useState(0);
+  const [currentColor, setCurrentColor] = useState(PALETTE[0]);
+  const [tool, setTool] = useState('pencil'); // 'pencil', 'eraser', 'fill'
+  const [fps, setFps] = useState(8);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // Refs for Canvas and Drawing Logic
+  const pixelCanvasRef = useRef(null);
+  const gridCanvasRef = useRef(null);
+  const previewCanvasRef = useRef(null);
+  const isDrawingRef = useRef(false);
+  const lastPosRef = useRef(null);
+
+  // --- CANVAS INITIALIZATION & DRAWING ---
+  
+  // Draw the grid overlay once
+  useEffect(() => {
+    if (!gridCanvasRef.current) return;
+    const ctx = gridCanvasRef.current.getContext('2d');
+    ctx.clearRect(0, 0, 512, 512);
+    ctx.strokeStyle = '#3b3b46';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 16; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * 32, 0);
+      ctx.lineTo(i * 32, 512);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, i * 32);
+      ctx.lineTo(512, i * 32);
+      ctx.stroke();
+    }
+  }, []);
+
+  // Redraw the entire active frame onto the pixel canvas
+  const drawFullFrameToCanvas = useCallback(() => {
+    if (!pixelCanvasRef.current) return;
+    const ctx = pixelCanvasRef.current.getContext('2d');
+    ctx.clearRect(0, 0, 512, 512);
+    const frame = frames[currentFrame];
+    for (let i = 0; i < 256; i++) {
+      if (frame[i]) {
+        const x = (i % 16) * 32;
+        const y = Math.floor(i / 16) * 32;
+        ctx.fillStyle = frame[i];
+        ctx.fillRect(x, y, 32, 32);
+      }
+    }
+  }, [frames, currentFrame]);
+
+  // Sync canvas when frame changes
+  useEffect(() => {
+    drawFullFrameToCanvas();
+  }, [currentFrame, drawFullFrameToCanvas]);
+
+  // Apply a single color to the state array and immediately draw it to the canvas for 0-latency feedback
+  const applyColorToCell = useCallback((col, row, colorToApply) => {
+    if (col < 0 || col > 15 || row < 0 || row > 15) return;
+    const idx = row * 16 + col;
+    
+    // Mutate state directly for immediate performance during drawing strokes
+    const frame = frames[currentFrame];
+    if (frame[idx] !== colorToApply) {
+      frame[idx] = colorToApply;
+      
+      const ctx = pixelCanvasRef.current.getContext('2d');
+      ctx.clearRect(col * 32, row * 32, 32, 32);
+      if (colorToApply) {
+        ctx.fillStyle = colorToApply;
+        ctx.fillRect(col * 32, row * 32, 32, 32);
+      }
+    }
+  }, [frames, currentFrame]);
+
+  // Bresenham's Line Algorithm to interpolate rapid swiping/drawing
+  const drawLine = useCallback((x0, y0, x1, y1, colorToApply) => {
+    let dx = Math.abs(x1 - x0);
+    let dy = Math.abs(y1 - y0);
+    let sx = (x0 < x1) ? 1 : -1;
+    let sy = (y0 < y1) ? 1 : -1;
+    let err = dx - dy;
+
+    while (true) {
+      applyColorToCell(x0, y0, colorToApply);
+      if ((x0 === x1) && (y0 === y1)) break;
+      let e2 = 2 * err;
+      if (e2 > -dy) { err -= dy; x0 += sx; }
+      if (e2 < dx) { err += dx; y0 += sy; }
+    }
+  }, [applyColorToCell]);
+
+  const floodFill = useCallback((startCol, startRow, targetColor, replacementColor) => {
+    if (targetColor === replacementColor) return;
+    const stack = [[startCol, startRow]];
+    const frame = frames[currentFrame];
+
+    while (stack.length > 0) {
+      const [c, r] = stack.pop();
+      const idx = r * 16 + c;
+
+      if (c < 0 || c > 15 || r < 0 || r > 15) continue;
+      if (frame[idx] !== targetColor) continue;
+
+      applyColorToCell(c, r, replacementColor);
+
+      stack.push([c + 1, r]);
+      stack.push([c - 1, r]);
+      stack.push([c, r + 1]);
+      stack.push([c, r - 1]);
+    }
+  }, [frames, currentFrame, applyColorToCell]);
+
+  // --- POINTER EVENTS ---
+
+  const getCoordinates = (e) => {
+    const canvas = pixelCanvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    
+    return {
+      col: Math.floor(x / 32),
+      row: Math.floor(y / 32)
+    };
+  };
+
+  const handlePointerDown = (e) => {
+    e.target.setPointerCapture(e.pointerId);
+    isDrawingRef.current = true;
+    const { col, row } = getCoordinates(e);
+    lastPosRef.current = { col, row };
+
+    if (tool === 'fill') {
+      const idx = row * 16 + col;
+      floodFill(col, row, frames[currentFrame][idx], currentColor);
+      // Force React update for thumbnails after fill
+      setFrames([...frames]); 
+    } else {
+      const colorToApply = tool === 'eraser' ? null : currentColor;
+      applyColorToCell(col, row, colorToApply);
+    }
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDrawingRef.current || tool === 'fill') return;
+    const { col, row } = getCoordinates(e);
+    const colorToApply = tool === 'eraser' ? null : currentColor;
+    
+    if (lastPosRef.current) {
+      drawLine(lastPosRef.current.col, lastPosRef.current.row, col, row, colorToApply);
+    } else {
+      applyColorToCell(col, row, colorToApply);
+    }
+    lastPosRef.current = { col, row };
+  };
+
+  const handlePointerUp = (e) => {
+    if (!isDrawingRef.current) return;
+    e.target.releasePointerCapture(e.pointerId);
+    isDrawingRef.current = false;
+    lastPosRef.current = null;
+    // Trigger React state update to refresh thumbnails
+    setFrames([...frames]);
+  };
+
+  // --- TIMELINE MANAGEMENT ---
+
+  const addFrame = () => {
+    setFrames([...frames, new Array(256).fill(null)]);
+    setCurrentFrame(frames.length);
+  };
+
+  const duplicateFrame = () => {
+    setFrames([...frames, [...frames[currentFrame]]]);
+    setCurrentFrame(frames.length);
+  };
+
+  const deleteFrame = () => {
+    if (frames.length > 1) {
+      const newFrames = frames.filter((_, i) => i !== currentFrame);
+      setFrames(newFrames);
+      setCurrentFrame(Math.max(0, currentFrame - 1));
+    }
+  };
+
+  const clearCurrentFrame = () => {
+    const newFrames = [...frames];
+    newFrames[currentFrame] = new Array(256).fill(null);
+    setFrames(newFrames);
+    drawFullFrameToCanvas();
+  };
+
+  // --- EXPORT & SAVE/LOAD ---
+
+  const handleSaveProject = () => {
+    const projectData = { format: 'glrs', version: 1, fps, frames };
+    const blob = new Blob([JSON.stringify(projectData)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'animation.glrs';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleLoadProject = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target.result);
+        if (data.format === 'glrs' && data.frames) {
+          setFrames(data.frames);
+          setFps(data.fps || 8);
+          setCurrentFrame(0);
+        } else {
+          alert('Invalid project file format.');
+        }
+      } catch (err) {
+        alert('Failed to parse the file.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = null; // Reset input
+  };
+
+  const handleExportSpriteSheet = () => {
+    const scale = 10;
+    const canvas = document.createElement('canvas');
+    canvas.width = frames.length * 16 * scale;
+    canvas.height = 16 * scale;
+    const ctx = canvas.getContext('2d');
+    
+    frames.forEach((frame, frameIdx) => {
+      for (let i = 0; i < 256; i++) {
+        if (frame[i]) {
+          const x = i % 16;
+          const y = Math.floor(i / 16);
+          ctx.fillStyle = frame[i];
+          ctx.fillRect((frameIdx * 16 + x) * scale, y * scale, scale, scale);
+        }
+      }
+    });
+
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'spritesheet.png';
+    a.click();
+  };
+
+  // --- PREVIEW MODE ---
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsPlaying(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (!isPlaying || !previewCanvasRef.current) return;
+    let currentIdx = 0;
+    const ctx = previewCanvasRef.current.getContext('2d');
+
+    const drawPreviewFrame = () => {
+      const frame = frames[currentIdx];
+      ctx.clearRect(0, 0, 16, 16);
+      for (let i = 0; i < 256; i++) {
+        if (frame[i]) {
+          ctx.fillStyle = frame[i];
+          ctx.fillRect(i % 16, Math.floor(i / 16), 1, 1);
+        }
+      }
+      currentIdx = (currentIdx + 1) % frames.length;
+    };
+
+    drawPreviewFrame();
+    const interval = setInterval(drawPreviewFrame, 1000 / fps);
+    return () => clearInterval(interval);
+  }, [isPlaying, frames, fps]);
+
+  return (
+    <div className="flex flex-col h-screen w-screen bg-[#18181c] text-gray-200 overflow-hidden select-none font-sans">
+      
+      {/* Top Header */}
+      <header className="flex justify-between items-center px-4 py-2 bg-[#232329] border-b border-gray-800 shadow-md z-10 shrink-0 h-14">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-blue-500/20 text-blue-400 rounded-lg">
+            <Palette size={20} />
+          </div>
+          <h1 className="text-lg font-bold tracking-wide">Pixel Art Maker</h1>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {/* Actions */}
+          <button onClick={handleSaveProject} className="flex items-center gap-2 px-3 py-1.5 bg-[#2d2d36] hover:bg-[#3b3b46] rounded text-sm transition-colors" title="Save Project (.glrs)">
+            <Save size={16} /> Save
+          </button>
+          
+          <label className="flex items-center gap-2 px-3 py-1.5 bg-[#2d2d36] hover:bg-[#3b3b46] rounded text-sm transition-colors cursor-pointer" title="Load Project (.glrs)">
+            <Upload size={16} /> Load
+            <input type="file" accept=".glrs" className="hidden" onChange={handleLoadProject} />
+          </label>
+          
+          <button onClick={handleExportSpriteSheet} className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm transition-colors ml-2" title="Export Sprite Sheet (.png)">
+            <FileImage size={16} /> Export
+          </button>
+
+          <button onClick={() => setIsPlaying(true)} className="flex items-center gap-2 px-4 py-1.5 bg-green-600 hover:bg-green-500 text-white rounded font-medium text-sm transition-colors ml-2">
+            <Play size={16} fill="currentColor" /> Preview
+          </button>
+        </div>
+      </header>
+
+      {/* Main Workspace */}
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* Left Toolbar */}
+        <aside className="w-[88px] bg-[#232329] border-r border-gray-800 flex flex-col items-center py-4 gap-6 shrink-0 overflow-y-auto hidden-scrollbar">
+          
+          {/* Tool Selection */}
+          <div className="flex flex-col gap-2 w-full px-3">
+            {[
+              { id: 'pencil', icon: Pencil },
+              { id: 'eraser', icon: Eraser },
+              { id: 'fill', icon: PaintBucket }
+            ].map(t => (
+              <button
+                key={t.id}
+                onClick={() => setTool(t.id)}
+                className={`p-3 rounded-xl flex items-center justify-center transition-all ${
+                  tool === t.id ? 'bg-blue-500 text-white shadow-lg' : 'bg-[#2d2d36] text-gray-400 hover:bg-[#3b3b46] hover:text-white'
+                }`}
+              >
+                <t.icon size={22} />
+              </button>
+            ))}
+            <button 
+              onClick={clearCurrentFrame} 
+              title="Erase All (Clear Frame)"
+              className="p-2 rounded-xl flex flex-col items-center justify-center bg-[#2d2d36] text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all mt-2 gap-1"
+            >
+              <Trash size={20} />
+              <span className="text-[10px] font-bold leading-none">CLEAR</span>
+            </button>
+          </div>
+
+          <div className="w-12 h-px bg-gray-700"></div>
+
+          {/* Color Palette */}
+          <div className="grid grid-cols-2 gap-2 px-3 pb-4">
+            {PALETTE.map((color) => (
+              <button
+                key={color}
+                onClick={() => { setTool('pencil'); setCurrentColor(color); }}
+                className={`w-8 h-8 rounded-full border-2 transition-transform ${
+                  currentColor === color && tool !== 'eraser' ? 'border-white scale-110 shadow-[0_0_10px_rgba(255,255,255,0.4)]' : 'border-transparent scale-100 hover:scale-110'
+                }`}
+                style={{ backgroundColor: color }}
+              />
+            ))}
+            {/* Custom Color Picker */}
+            <label className="w-8 h-8 rounded-full border-2 border-dashed border-gray-500 flex items-center justify-center cursor-pointer hover:border-white transition-colors overflow-hidden">
+              <input 
+                type="color" 
+                value={currentColor}
+                onChange={(e) => { setTool('pencil'); setCurrentColor(e.target.value); }}
+                className="opacity-0 absolute w-full h-full cursor-pointer"
+              />
+              <div className="w-full h-full rounded-full" style={{ backgroundColor: currentColor }}></div>
+            </label>
+          </div>
+        </aside>
+
+        {/* Center Canvas Area */}
+        <main className="flex-1 flex flex-col items-center justify-center bg-[#18181c] p-4 relative">
+          <div 
+            className="relative shadow-[0_0_40px_rgba(0,0,0,0.5)] touch-none rounded-sm bg-[#232329]"
+            style={{ 
+              width: 'min(90%, 80vh)', 
+              aspectRatio: '1/1',
+              imageRendering: 'pixelated'
+            }}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
+          >
+            <canvas 
+              ref={gridCanvasRef} 
+              width={512} 
+              height={512} 
+              className="absolute inset-0 w-full h-full pointer-events-none"
+            />
+            <canvas 
+              ref={pixelCanvasRef} 
+              width={512} 
+              height={512} 
+              className="absolute inset-0 w-full h-full touch-none"
+            />
+          </div>
+        </main>
+      </div>
+
+      {/* Bottom Timeline */}
+      <footer className="h-32 bg-[#232329] border-t border-gray-800 flex items-center px-4 shrink-0 shadow-[0_-10px_20px_rgba(0,0,0,0.2)] z-10">
+        
+        {/* Playback Controls */}
+        <div className="flex flex-col items-center justify-center pr-6 border-r border-gray-700 mr-4 h-full gap-3 min-w-[120px]">
+          <div className="flex items-center justify-between w-full text-xs font-medium text-gray-400">
+            <span>Speed:</span>
+            <span className="text-white">{fps} FPS</span>
+          </div>
+          <input 
+            type="range" 
+            min="1" 
+            max="24" 
+            value={fps} 
+            onChange={(e) => setFps(Number(e.target.value))}
+            className="w-full accent-blue-500"
+          />
+        </div>
+
+        {/* Frames List */}
+        <div className="flex-1 flex items-center gap-3 overflow-x-auto h-full py-4 px-2 hidden-scrollbar">
+          {frames.map((frame, index) => (
+            <FrameThumbnail 
+              key={index}
+              frame={frame}
+              isActive={currentFrame === index}
+              onClick={() => setCurrentFrame(index)}
+              number={index + 1}
+            />
+          ))}
+
+          {/* Timeline Actions */}
+          <div className="flex flex-col gap-2 ml-2 pl-4 border-l border-gray-700 h-full justify-center">
+            <button onClick={addFrame} className="p-2 bg-[#2d2d36] hover:bg-blue-600 text-gray-300 hover:text-white rounded-lg transition-colors" title="Add Blank Frame">
+              <Plus size={18} />
+            </button>
+            <button onClick={duplicateFrame} className="p-2 bg-[#2d2d36] hover:bg-blue-600 text-gray-300 hover:text-white rounded-lg transition-colors" title="Duplicate Current Frame">
+              <Copy size={18} />
+            </button>
+            <button 
+              onClick={deleteFrame} 
+              disabled={frames.length <= 1}
+              className={`p-2 rounded-lg transition-colors ${frames.length > 1 ? 'bg-[#2d2d36] hover:bg-red-600 text-gray-300 hover:text-white' : 'bg-transparent text-gray-600 cursor-not-allowed'}`}
+              title="Delete Current Frame"
+            >
+              <Trash2 size={18} />
+            </button>
+          </div>
+        </div>
+      </footer>
+
+      {/* Fullscreen Preview Modal */}
+      {isPlaying && (
+        <div 
+          className="fixed inset-0 z-50 bg-black flex items-center justify-center cursor-pointer flex-col"
+          onClick={() => setIsPlaying(false)}
+        >
+          <canvas 
+            ref={previewCanvasRef} 
+            width={16} 
+            height={16} 
+            className="w-[90vmin] h-[90vmin] max-w-full max-h-full border border-gray-800 bg-[#232329]" 
+            style={{ imageRendering: 'pixelated' }} 
+          />
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2 text-white/50 text-sm bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm pointer-events-none">
+            <X size={16} /> Tap anywhere or press ESC to exit
+          </div>
+        </div>
+      )}
+
+      {/* Global styles for hiding scrollbars but keeping functionality */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .hidden-scrollbar::-webkit-scrollbar { display: none; }
+        .hidden-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}} />
+    </div>
+  );
+}
+
+// Sub-component for Timeline Thumbnails
+function FrameThumbnail({ frame, isActive, onClick, number }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    const ctx = canvasRef.current.getContext('2d');
+    ctx.clearRect(0, 0, 16, 16);
+    for (let i = 0; i < 256; i++) {
+      if (frame[i]) {
+        ctx.fillStyle = frame[i];
+        ctx.fillRect(i % 16, Math.floor(i / 16), 1, 1);
+      }
+    }
+  }, [frame]);
+
+  return (
+    <div 
+      onClick={onClick}
+      className={`relative flex-shrink-0 cursor-pointer border-2 rounded-xl overflow-hidden transition-all duration-200 bg-[#232329] ${
+        isActive 
+        ? 'border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)] scale-105 z-10' 
+        : 'border-[#4a4a5a] hover:border-gray-400 opacity-70 hover:opacity-100'
+      }`}
+      style={{ width: '68px', height: '68px' }}
+    >
+      <div className="absolute top-0 left-0 bg-black/70 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br-lg z-10 backdrop-blur-sm">
+        {number}
+      </div>
+      <canvas 
+        ref={canvasRef} 
+        width={16} 
+        height={16} 
+        className="w-full h-full" 
+        style={{ imageRendering: 'pixelated' }} 
+      />
+    </div>
+  );
+}
