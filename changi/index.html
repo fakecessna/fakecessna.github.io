@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Changi Incident 1998</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'VT323', monospace;
+            touch-action: none; 
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        /* Touch Control Zones */
+        #ui-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10;
+            display: flex;
+        }
+        .touch-zone {
+            flex: 1;
+            height: 100%;
+            position: relative;
+        }
+        .joystick-base {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            pointer-events: none;
+        }
+        .joystick-stick {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            font-size: 24px;
+            text-shadow: 2px 2px 0 #000;
+            z-index: 20;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        #recording-dot {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            background-color: red;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            text-align: center;
+        }
+
+        #title {
+            font-size: 60px;
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc, 3px 3px 0 #000;
+            margin-bottom: 20px;
+        }
+
+        .instructions {
+            font-size: 24px;
+            max-width: 600px;
+            margin-bottom: 40px;
+            color: #ccc;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 30px;
+            background: #222;
+            color: #fff;
+            border: 2px solid #fff;
+            font-family: 'VT323', monospace;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .btn:active {
+            background: #fff;
+            color: #000;
+        }
+
+        #game-over-screen {
+            display: none;
+            background: #300;
+        }
+        #game-over-text {
+            font-size: 80px;
+            color: #ff0000;
+            text-shadow: 4px 4px 0 #000;
+            margin-bottom: 30px;
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        #scanlines {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0),
+                rgba(0, 0, 0, 0) 2px,
+                rgba(0, 0, 0, 0.15) 2px,
+                rgba(0, 0, 0, 0.15) 4px
+            );
+            pointer-events: none;
+            z-index: 15;
+            mix-blend-mode: overlay;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="game-canvas"></canvas>
+    <div id="scanlines"></div>
+    <div id="hud" style="display: none;">
+        <span id="recording-dot"></span> REC SP
+        <div style="font-size: 18px; margin-top: 5px;" id="location-text">CHANGI JEWEL - 03:14 AM</div>
+    </div>
+
+    <div id="ui-layer" style="display: none;">
+        <div class="touch-zone" id="zone-left"><div class="joystick-base" id="base-left"><div class="joystick-stick" id="stick-left"></div></div></div>
+        <div class="touch-zone" id="zone-right"><div class="joystick-base" id="base-right"><div class="joystick-stick" id="stick-right"></div></div></div>
+    </div>
+
+    <div class="screen" id="start-screen">
+        <div id="title">CHANGI INCIDENT</div>
+        <div class="instructions">
+            Explore the abandoned Terminals at night.<br><br>
+            <strong>Controls:</strong><br>
+            Left half: Move | Right half: Look<br><br>
+            <em>Do not let it see you.</em>
+        </div>
+        <button class="btn" id="start-btn">ENTER AIRPORT</button>
+    </div>
+
+    <div class="screen" id="game-over-screen">
+        <div id="game-over-text">YOU WERE FOUND</div>
+        <button class="btn" onclick="location.reload()">RESTART SYSTEM</button>
+    </div>
+</div>
+
+<script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+    // --- GAME CONSTANTS & STATE ---
+    let gameState = 'START';
+    const LOW_RES_WIDTH = 320;
+    const LOW_RES_HEIGHT = 240;
+    
+    let scene, camera, renderer;
+    let postScene, postCamera, postMaterial, renderTarget;
+    let player, flashlight;
+    let clock = new THREE.Clock();
+
+    let waterfallMaterial, skytrain;
+    let monster, monsterState = 'WANDER', monsterSpeed = 10;
+    let targetWaypoint = new THREE.Vector3();
+
+    let audioCtx, ambientOsc, ambientGain, lfo, chaseOsc, chaseGain;
+
+    // --- COLLISION ENGINE ---
+    const colliders = [];
+    const PLAYER_RADIUS = 2;
+
+    function addAABB(cx, cz, w, d) {
+        colliders.push({ type: 'box', minX: cx - w/2, maxX: cx + w/2, minZ: cz - d/2, maxZ: cz + d/2 });
+    }
+    
+    function addCircle(cx, cz, r) {
+        colliders.push({ type: 'circle', x: cx, z: cz, r: r });
+    }
+
+    function isColliding(nx, nz, radius) {
+        for(let c of colliders) {
+            if (c.type === 'box') {
+                if (nx + radius > c.minX && nx - radius < c.maxX && 
+                    nz + radius > c.minZ && nz - radius < c.maxZ) {
+                    return true;
+                }
+            } else if (c.type === 'circle') {
+                const dx = nx - c.x;
+                const dz = nz - c.z;
+                if (dx*dx + dz*dz < (c.r + radius) * (c.r + radius)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // --- INPUT HANDLING ---
+    const joysticks = { left: { active: false, startX: 0, startY: 0, deltaX: 0, deltaY: 0 }, right: { active: false, startX: 0, startY: 0, deltaX: 0, deltaY: 0 } };
+
+    function setupTouchControls() {
+        const setupZone = (zoneId, joyId, baseId, stickId) => {
+            const zone = document.getElementById(zoneId);
+            const base = document.getElementById(baseId);
+            const stick = document.getElementById(stickId);
+            const joy = joysticks[joyId];
+
+            zone.addEventListener('touchstart', (e) => {
+                e.preventDefault(); if(gameState !== 'PLAYING') return;
+                const touch = e.changedTouches[0];
+                joy.active = true; joy.startX = touch.clientX; joy.startY = touch.clientY; joy.deltaX = 0; joy.deltaY = 0;
+                base.style.display = 'block'; base.style.left = touch.clientX + 'px'; base.style.top = touch.clientY + 'px';
+                stick.style.transform = `translate(-50%, -50%)`;
+            }, {passive: false});
+
+            zone.addEventListener('touchmove', (e) => {
+                e.preventDefault(); if (!joy.active) return;
+                const touch = Array.from(e.touches).find(t => t.target === zone || zone.contains(t.target));
+                if (!touch) return;
+                let dx = touch.clientX - joy.startX; let dy = touch.clientY - joy.startY;
+                const maxDist = 40; const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
+                stick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                joy.deltaX = dx / maxDist; joy.deltaY = dy / maxDist;
+            }, {passive: false});
+
+            const endTouch = (e) => {
+                e.preventDefault(); joy.active = false; joy.deltaX = 0; joy.deltaY = 0; base.style.display = 'none';
+            };
+            zone.addEventListener('touchend', endTouch); zone.addEventListener('touchcancel', endTouch);
+        };
+
+        setupZone('zone-left', 'left', 'base-left', 'stick-left');
+        setupZone('zone-right', 'right', 'base-right', 'stick-right');
+
+        // Desktop Fallback
+        let isMouseDown = false; let lastMouseX = 0;
+        document.addEventListener('mousedown', (e) => { if(e.target.tagName !== 'BUTTON') { isMouseDown = true; lastMouseX = e.clientX; }});
+        document.addEventListener('mouseup', () => { isMouseDown = false; joysticks.right.deltaX = 0; });
+        document.addEventListener('mousemove', (e) => {
+            if (isMouseDown && gameState === 'PLAYING') {
+                joysticks.right.deltaX = (e.clientX - lastMouseX) * 0.05;
+                lastMouseX = e.clientX; setTimeout(()=> { joysticks.right.deltaX = 0; }, 50);
+            }
+        });
+        
+        const keys = {};
+        window.addEventListener('keydown', e => keys[e.code] = true);
+        window.addEventListener('keyup', e => keys[e.code] = false);
+        setInterval(() => {
+            if(gameState !== 'PLAYING') return;
+            if(!joysticks.left.active) {
+                let dx = 0, dy = 0;
+                if(keys['KeyW']) dy = -1; if(keys['KeyS']) dy = 1; if(keys['KeyA']) dx = -1; if(keys['KeyD']) dx = 1;
+                joysticks.left.deltaX = dx; joysticks.left.deltaY = dy;
+            }
+        }, 50);
+    }
+
+    // --- AUDIO SYSTEM ---
+    function initAudio() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const compressor = audioCtx.createDynamicsCompressor();
+        compressor.connect(audioCtx.destination);
+
+        ambientOsc = audioCtx.createOscillator();
+        ambientOsc.type = 'sine'; ambientOsc.frequency.value = 50; 
+        
+        lfo = audioCtx.createOscillator();
+        lfo.type = 'sine'; lfo.frequency.value = 0.1;
+        const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 10;
+        lfo.connect(lfoGain); lfoGain.connect(ambientOsc.frequency);
+        
+        ambientGain = audioCtx.createGain(); ambientGain.gain.value = 0.08; 
+        ambientOsc.connect(ambientGain); ambientGain.connect(compressor);
+        ambientOsc.start(); lfo.start();
+
+        chaseOsc = audioCtx.createOscillator(); chaseOsc.type = 'sawtooth'; chaseOsc.frequency.value = 120;
+        chaseGain = audioCtx.createGain(); chaseGain.gain.value = 0; 
+        
+        const chaseLfo = audioCtx.createOscillator(); chaseLfo.type = 'square'; chaseLfo.frequency.value = 8;
+        const chaseLfoGain = audioCtx.createGain(); chaseLfoGain.gain.value = 1;
+        chaseLfo.connect(chaseLfoGain); chaseLfoGain.connect(chaseGain.gain);
+
+        chaseOsc.connect(chaseGain); chaseGain.connect(compressor);
+        chaseOsc.start(); chaseLfo.start();
+    }
+
+    function triggerJumpScareAudio() {
+        if(!audioCtx) return;
+        const osc = audioCtx.createOscillator(); const noiseGain = audioCtx.createGain();
+        osc.type = 'square'; osc.frequency.setValueAtTime(100, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.5);
+        noiseGain.gain.setValueAtTime(0.5, audioCtx.currentTime); noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
+        osc.connect(noiseGain); noiseGain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 1.0);
+    }
+
+    // --- THREE.JS SETUP & SCENE BUILDING ---
+    function initThreeJS() {
+        const canvas = document.getElementById('game-canvas');
+        renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: false });
+        renderer.setPixelRatio(1); renderer.setSize(window.innerWidth, window.innerHeight);
+
+        renderTarget = new THREE.WebGLRenderTarget(LOW_RES_WIDTH, LOW_RES_HEIGHT);
+        renderTarget.texture.minFilter = THREE.NearestFilter; renderTarget.texture.magFilter = THREE.NearestFilter; renderTarget.texture.generateMipmaps = false;
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x010102);
+        scene.fog = new THREE.FogExp2(0x010102, 0.0025); // Huge visibility
+
+        camera = new THREE.PerspectiveCamera(70, LOW_RES_WIDTH / LOW_RES_HEIGHT, 0.1, 600); 
+        
+        player = new THREE.Group();
+        player.position.set(0, 4, 180); // Start in South link bridge
+        player.add(camera); scene.add(player);
+
+        flashlight = new THREE.SpotLight(0xccddff, 1500, 300, Math.PI/4, 0.5, 1);
+        flashlight.position.set(0, 0, 0); flashlight.target.position.set(0, 0, -1);
+        camera.add(flashlight); camera.add(flashlight.target);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.15); scene.add(ambientLight);
+
+        buildChangiEnvironment();
+        buildEntity();
+        setupPostProcessing();
+
+        window.addEventListener('resize', onWindowResize);
+    }
+
+    // --- PROCEDURAL TEXTURES ---
+    function createTexture(colorBg, elementsFn) {
+        const c = document.createElement('canvas'); c.width = 256; c.height = 256;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = colorBg; ctx.fillRect(0,0,256,256);
+        elementsFn(ctx);
+        const tex = new THREE.CanvasTexture(c);
+        tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+        tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
+        return tex;
+    }
+
+    const tileTex = createTexture('#1a1c1f', ctx => {
+        ctx.strokeStyle = '#050505'; ctx.lineWidth = 4;
+        for(let i=0; i<=256; i+=64) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,256); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(256,i); ctx.stroke(); }
+        for(let i=0; i<8000; i++) { ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.08)'; ctx.fillRect(Math.random()*256, Math.random()*256, 2, 2); }
+    });
+
+    const carpetT1Tex = createTexture('#1d2b38', ctx => { // T1 Blueish carpet
+        ctx.fillStyle = '#2a4259';
+        for(let i=0; i<256; i+=32) { for(let j=0; j<256; j+=32) { ctx.fillRect(i+8, j+8, 16, 16); } }
+        for(let i=0; i<4000; i++) { ctx.fillStyle = Math.random() > 0.5 ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.1)'; ctx.fillRect(Math.random()*256, Math.random()*256, 2, 2); }
+    });
+
+    const carpetT3Tex = createTexture('#6a1d2d', ctx => { // T3 Reddish carpet
+        ctx.fillStyle = '#8b2a40';
+        for(let i=0; i<256; i+=32) { for(let j=0; j<256; j+=32) { ctx.fillRect(i+8, j+8, 16, 16); } }
+        for(let i=0; i<4000; i++) { ctx.fillStyle = Math.random() > 0.5 ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.1)'; ctx.fillRect(Math.random()*256, Math.random()*256, 2, 2); }
+    });
+    
+    const fidsTex = createTexture('#050505', ctx => { // Flight info board
+        ctx.fillStyle = '#ffcc00'; ctx.font = 'bold 24px monospace';
+        ctx.fillText("DEP FLIGHT DESTINATION   TIME", 10, 30);
+        for(let i=0; i<6; i++) {
+            const time = `0${3+i}:${Math.floor(Math.random()*60).toString().padStart(2,'0')}`;
+            const f = `SQ${Math.floor(Math.random()*900)+100}`;
+            const dests = ['TOKYO', 'LONDON', 'SYDNEY', 'PARIS', 'NEW YORK', 'SEOUL'];
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(`    ${f}  ${dests[i]} ${time}`, 10, 70 + (i*30));
+        }
+    });
+
+    const monitorTex = createTexture('#111', ctx => {
+        ctx.fillStyle = '#0044aa'; ctx.fillRect(10, 10, 236, 236);
+        ctx.fillStyle = '#fff'; ctx.fillRect(20, 20, 100, 20); ctx.fillRect(20, 50, 200, 10); ctx.fillRect(20, 70, 180, 10);
+    });
+
+    // --- ENVIRONMENT GENERATION ---
+    function buildChangiEnvironment() {
+        const geoParams = { flatShading: true };
+        const wallMat = new THREE.MeshLambertMaterial({ color: 0x1a1a1c, ...geoParams });
+        const glassMat = new THREE.MeshBasicMaterial({ color: 0x05101a, transparent: true, opacity: 0.4 });
+        const metalMat = new THREE.MeshLambertMaterial({ color: 0x555555, ...geoParams });
+        const seatMat = new THREE.MeshLambertMaterial({ color: 0x111111, ...geoParams });
+
+        // -- 1. THE JEWEL (Center Hub) --
+        tileTex.repeat.set(20, 20);
+        const jewelFloor = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), new THREE.MeshLambertMaterial({ map: tileTex }));
+        jewelFloor.rotation.x = -Math.PI / 2; scene.add(jewelFloor);
+
+        // Vortex
+        tileTex.repeat.set(2, 10);
+        waterfallMaterial = new THREE.MeshBasicMaterial({ map: tileTex, transparent: true, opacity: 0.6, color: 0x44aaff, blending: THREE.AdditiveBlending });
+        const vortex = new THREE.Mesh(new THREE.CylinderGeometry(8, 16, 120, 24, 1, true), waterfallMaterial);
+        vortex.position.y = 60; scene.add(vortex);
+        addCircle(0, 0, 16); // Center collision
+
+        const vortexLight = new THREE.PointLight(0x44aaff, 5000, 300); vortexLight.position.set(0, 30, 0); scene.add(vortexLight);
+
+        // Jewel Boundaries & Terraces
+        const woodTex = createTexture('#2b1d14', ctx => { ctx.fillStyle = '#1f130c'; for(let i=0; i<256; i+=16) ctx.fillRect(0, i, 256, 2); });
+        const woodMat = new THREE.MeshLambertMaterial({ map: woodTex, ...geoParams });
+        
+        for(let i = 0; i < 4; i++) {
+            const radius = 30 + i * 15; const height = 40 - i * 10;
+            const wall = new THREE.Mesh(new THREE.CylinderGeometry(radius+2, radius+2, height, 32, 1, true), wallMat);
+            wall.position.y = height/2; scene.add(wall);
+            const deck = new THREE.Mesh(new THREE.RingGeometry(radius+2, radius+8, 32), woodMat);
+            deck.rotation.x = -Math.PI / 2; deck.position.y = height; scene.add(deck);
+        }
+        
+        // Block player from leaving the exact central bounds where there are no terminals
+        addAABB(-120, -120, 100, 100); addAABB(120, -120, 100, 100);
+        addAABB(-120, 120, 100, 100); addAABB(120, 120, 100, 100);
+
+        // -- 2. TERMINAL BUILDER FUNCTION --
+        function buildTerminal(type, cx, cz, width, length, isVertical) {
+            const group = new THREE.Group();
+            const halfW = width/2; const halfL = length/2;
+            
+            // Layout Orientation
+            let texToUse = type === 'T1' ? carpetT1Tex : carpetT3Tex;
+            texToUse.repeat.set(width/20, length/20);
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(width, length), new THREE.MeshLambertMaterial({map: texToUse}));
+            floor.rotation.x = -Math.PI/2; group.add(floor);
+
+            const ceilingHeight = type === 'T3' ? 35 : 25; // T3 is taller
+            const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(width, length), wallMat);
+            ceiling.rotation.x = Math.PI/2; ceiling.position.y = ceilingHeight; group.add(ceiling);
+
+            // Walls & Colliders
+            const wL = new THREE.Mesh(new THREE.PlaneGeometry(length, ceilingHeight), glassMat);
+            wL.rotation.y = Math.PI/2; wL.position.set(-halfW, ceilingHeight/2, 0); group.add(wL);
+            const wR = new THREE.Mesh(new THREE.PlaneGeometry(length, ceilingHeight), glassMat);
+            wR.rotation.y = -Math.PI/2; wR.position.set(halfW, ceilingHeight/2, 0); group.add(wR);
+
+            // Add outer wall colliders
+            if (isVertical) {
+                addAABB(cx - halfW, cz, 4, length); addAABB(cx + halfW, cz, 4, length);
+                // End wall cap
+                addAABB(cx, cz + (cz>0?halfL:-halfL), width, 4);
+                const endWall = new THREE.Mesh(new THREE.PlaneGeometry(width, ceilingHeight), wallMat);
+                endWall.position.set(0, ceilingHeight/2, cz>0?halfL:-halfL);
+                if(cz<0) endWall.rotation.y = Math.PI;
+                group.add(endWall);
+            } else {
+                addAABB(cx, cz - halfW, length, 4); addAABB(cx, cz + halfW, length, 4);
+                addAABB(cx + (cx>0?halfL:-halfL), cz, 4, width);
+                const endWall = new THREE.Mesh(new THREE.PlaneGeometry(ceilingHeight, width), wallMat);
+                endWall.rotation.y = cx>0 ? -Math.PI/2 : Math.PI/2;
+                endWall.position.set(cx>0?halfL:-halfL, ceilingHeight/2, 0);
+                endWall.rotation.z = Math.PI/2; // Fix orientation
+                group.add(endWall);
+            }
+
+            // High Detail Interior Population
+            for(let p = -halfL + 40; p < halfL - 20; p += 80) {
+                // Pillars
+                const pL = new THREE.Mesh(new THREE.BoxGeometry(4, ceilingHeight, 4), metalMat); pL.position.set(-halfW + 10, ceilingHeight/2, p); group.add(pL);
+                const pR = new THREE.Mesh(new THREE.BoxGeometry(4, ceilingHeight, 4), metalMat); pR.position.set(halfW - 10, ceilingHeight/2, p); group.add(pR);
+                if(isVertical) { addAABB(cx - halfW + 10, cz + p, 4, 4); addAABB(cx + halfW - 10, cz + p, 4, 4); }
+                else { addAABB(cx + p, cz - halfW + 10, 4, 4); addAABB(cx + p, cz + halfW - 10, 4, 4); }
+
+                // Check-in Desk Island
+                const desk = new THREE.Group();
+                const deskBody = new THREE.Mesh(new THREE.BoxGeometry(24, 4, 8), wallMat); deskBody.position.y = 2; desk.add(deskBody);
+                // Monitors
+                for(let m=-10; m<=10; m+=5) {
+                    const mon = new THREE.Mesh(new THREE.BoxGeometry(2, 1.5, 0.2), new THREE.MeshBasicMaterial({map: monitorTex}));
+                    mon.position.set(m, 4.5, 0); desk.add(mon);
+                }
+                desk.position.set(0, 0, p); group.add(desk);
+                if(isVertical) addAABB(cx, cz + p, 24, 8); else addAABB(cx + p, cz, 8, 24);
+
+                // Seating Rows (Left & Right)
+                const sL = new THREE.Mesh(new THREE.BoxGeometry(15, 2, 6), seatMat); sL.position.set(-halfW/2, 1, p-20); group.add(sL);
+                const sR = new THREE.Mesh(new THREE.BoxGeometry(15, 2, 6), seatMat); sR.position.set(halfW/2, 1, p-20); group.add(sR);
+                if(isVertical){ addAABB(cx - halfW/2, cz + p - 20, 15, 6); addAABB(cx + halfW/2, cz + p - 20, 15, 6); }
+                else { addAABB(cx + p - 20, cz - halfW/2, 6, 15); addAABB(cx + p - 20, cz + halfW/2, 6, 15); }
+
+                // FIDS (Flight Info Display)
+                const fids = new THREE.Mesh(new THREE.BoxGeometry(20, 6, 1), new THREE.MeshBasicMaterial({map: fidsTex}));
+                fids.position.set(0, ceilingHeight - 8, p + 20); group.add(fids);
+
+                // Luggage Trolleys (Scattered)
+                if (Math.random() > 0.3) {
+                    const cart = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 4), metalMat); // Abstraction of cart
+                    cart.position.set((Math.random()-0.5)*halfW, 1.5, p + 30);
+                    cart.rotation.y = Math.random() * Math.PI;
+                    group.add(cart);
+                    // Add collider based on rotation approx
+                    if(isVertical) addCircle(cx + cart.position.x, cz + cart.position.z, 2.5);
+                    else addCircle(cx + cart.position.z, cz + cart.position.x, 2.5); 
+                }
+
+                // Travelators (Moving walkways)
+                const trav = new THREE.Group();
+                const tread = new THREE.Mesh(new THREE.BoxGeometry(6, 0.2, 50), new THREE.MeshLambertMaterial({color: 0x111111}));
+                tread.position.y = 0.1; trav.add(tread);
+                const tRailL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3, 50), glassMat); tRailL.position.set(-3.1, 1.5, 0); trav.add(tRailL);
+                const tRailR = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3, 50), glassMat); tRailR.position.set(3.1, 1.5, 0); trav.add(tRailR);
+                trav.position.set((p%160===0)? -25 : 25, 0, p - 40); // Stagger them
+                group.add(trav);
+                if(isVertical) addAABB(cx + trav.position.x, cz + trav.position.z, 6.4, 50);
+                else addAABB(cx + trav.position.z, cz + trav.position.x, 50, 6.4);
+            }
+
+            // T3 Ceiling Louvres (Baffles)
+            if (type === 'T3') {
+                for(let b = -halfL; b < halfL; b += 8) {
+                    const baffle = new THREE.Mesh(new THREE.BoxGeometry(width, 2, 0.5), metalMat);
+                    baffle.position.set(0, ceilingHeight - 1, b);
+                    group.add(baffle);
+                }
+            }
+            
+            // Kinetic Rain in T1 (Abstracted)
+            if (type === 'T1') {
+                for(let k=0; k<100; k++) {
+                    const drop = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1, 0.5), new THREE.MeshLambertMaterial({color: 0xcceeff}));
+                    drop.position.set((Math.random()-0.5)*30, 5 + Math.random()*15, (Math.random()-0.5)*30);
+                    group.add(drop);
+                }
+            }
+
+            group.position.set(cx, 0, cz);
+            if (!isVertical) group.rotation.y = Math.PI/2;
+            scene.add(group);
+        }
+
+        // Generate the colossal map
+        buildTerminal('T1', 0, -500, 100, 700, true);   // North (T1)
+        buildTerminal('T3', 0, 500, 140, 700, true);    // South (T3 - wider)
+        buildTerminal('T2', 500, 0, 100, 700, false);   // East (T2)
+        // No T4 (West), block it off
+        addAABB(-150, 0, 10, 100); 
+
+        // 3. Skytrain (Spanning across T1 to T3 above Jewel)
+        const track = new THREE.Mesh(new THREE.BoxGeometry(10, 1.5, 1500), metalMat);
+        track.position.set(40, 32, 0); scene.add(track);
+
+        skytrain = new THREE.Mesh(new THREE.BoxGeometry(6, 7, 40), new THREE.MeshLambertMaterial({ color: 0xeeeeee }));
+        skytrain.position.set(40, 36.5, -700); scene.add(skytrain);
+        const trainWindows = new THREE.Mesh(new THREE.BoxGeometry(6.2, 3, 38), new THREE.MeshBasicMaterial({ color: 0x00aaff, transparent: true, opacity: 0.8 }));
+        skytrain.add(trainWindows);
+        skytrain.add(new THREE.PointLight(0x00aaff, 500, 80));
+    }
+
+    function buildEntity() {
+        monster = new THREE.Group();
+        const mat = new THREE.MeshBasicMaterial({ color: 0x000000 }); 
+        
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 0.8, 10, 6), mat); body.position.y = 8;
+        const legGeo = new THREE.CylinderGeometry(0.4, 0.2, 8, 4);
+        const legL = new THREE.Mesh(legGeo, mat); legL.position.set(-0.8, 4, 0); legL.rotation.z = -0.1;
+        const legR = new THREE.Mesh(legGeo, mat); legR.position.set(0.8, 4, 0); legR.rotation.z = 0.1;
+        const armGeo = new THREE.CylinderGeometry(0.3, 0.1, 11, 4);
+        const armL = new THREE.Mesh(armGeo, mat); armL.position.set(-2, 7.5, 0); armL.rotation.z = 0.2;
+        const armR = new THREE.Mesh(armGeo, mat); armR.position.set(2, 7.5, 0); armR.rotation.z = -0.2;
+        const head = new THREE.Mesh(new THREE.BoxGeometry(2, 2.5, 2.5), mat); head.position.y = 14.5; head.position.z = 0.5; 
+        
+        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.1), eyeMat); eyeL.position.set(-0.6, 14.5, 1.8);
+        const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.1), eyeMat); eyeR.position.set(0.6, 14.5, 1.8);
+
+        monster.add(body, legL, legR, armL, armR, head, eyeL, eyeR);
+
+        // Spawn far away in T1
+        monster.position.set(0, 0, -600); 
+        setMonsterRandomWaypoint(); scene.add(monster);
+    }
+
+    function setupPostProcessing() {
+        postScene = new THREE.Scene(); postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        const vhsShader = {
+            uniforms: { tDiffuse: { value: renderTarget.texture }, time: { value: 0.0 } },
+            vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+            fragmentShader: `
+                uniform sampler2D tDiffuse; uniform float time; varying vec2 vUv;
+                float rand(vec2 co){ return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453); }
+                void main() {
+                    vec2 uv = vUv;
+                    float y = uv.y;
+                    float trackingAmt = max(0.0, sin(time * 2.0 + y * 10.0) - 0.9) * 0.05;
+                    trackingAmt += max(0.0, sin(time * 5.0 + y * 3.0) - 0.95) * 0.1;
+                    uv.x += trackingAmt * rand(vec2(time, y));
+
+                    float shift = 0.003 + trackingAmt;
+                    vec4 r = texture2D(tDiffuse, uv + vec2(shift, 0.0));
+                    vec4 g = texture2D(tDiffuse, uv);
+                    vec4 b = texture2D(tDiffuse, uv - vec2(shift, 0.0));
+                    vec4 color = vec4(r.r, g.g, b.b, 1.0);
+
+                    color.rgb += (rand(uv + time) - 0.5) * 0.1;
+                    color.rgb *= smoothstep(0.9, 0.3, distance(vUv, vec2(0.5)));
+                    gl_FragColor = color;
+                }
+            `
+        };
+        postMaterial = new THREE.ShaderMaterial(vhsShader);
+        postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMaterial));
+    }
+
+    function onWindowResize() { renderer.setSize(window.innerWidth, window.innerHeight); }
+
+    // --- GAME LOGIC ---
+
+    function updatePlayerMovement(dt) {
+        // Look
+        const lookSensitivity = 1.5 * dt;
+        camera.rotation.y -= joysticks.right.deltaX * lookSensitivity;
+        camera.rotation.x -= joysticks.right.deltaY * lookSensitivity;
+        camera.rotation.x = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, camera.rotation.x));
+        camera.rotation.order = 'YXZ';
+
+        // Move calculation
+        const moveSpeed = 45 * dt; 
+        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion); forward.y = 0; forward.normalize();
+        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion); right.y = 0; right.normalize();
+
+        const moveX = forward.x * (-joysticks.left.deltaY * moveSpeed) + right.x * (joysticks.left.deltaX * moveSpeed);
+        const moveZ = forward.z * (-joysticks.left.deltaY * moveSpeed) + right.z * (joysticks.left.deltaX * moveSpeed);
+
+        // SLIDING COLLISION SYSTEM
+        let nextX = player.position.x + moveX;
+        let nextZ = player.position.z + moveZ;
+
+        // X-axis check
+        if (!isColliding(nextX, player.position.z, PLAYER_RADIUS)) {
+            player.position.x = nextX;
+        }
+        // Z-axis check
+        if (!isColliding(player.position.x, nextZ, PLAYER_RADIUS)) {
+            player.position.z = nextZ;
+        }
+        
+        // Head bobbing & Location Update
+        if (joysticks.left.deltaX !== 0 || joysticks.left.deltaY !== 0) {
+            camera.position.y = 4 + Math.sin(clock.getElapsedTime() * 12) * 0.4;
+        } else {
+            camera.position.y = 4;
+        }
+
+        // HUD update based on world Z/X
+        let loc = "CHANGI JEWEL";
+        if (player.position.z < -150) loc = "TERMINAL 1 DEPARTURES";
+        else if (player.position.z > 150) loc = "TERMINAL 3 DEPARTURES";
+        else if (player.position.x > 150) loc = "TERMINAL 2 DEPARTURES";
+        document.getElementById('location-text').innerText = `${loc} - 03:14 AM`;
+    }
+
+    function setMonsterRandomWaypoint() {
+        const zones = [
+            {x: 0, z: -500, w: 80, d: 500}, // T1
+            {x: 0, z: 500, w: 100, d: 500}, // T3
+            {x: 500, z: 0, w: 500, d: 80}   // T2
+        ];
+        const z = zones[Math.floor(Math.random() * zones.length)];
+        targetWaypoint.set(
+            z.x + (Math.random() - 0.5) * z.w,
+            0,
+            z.z + (Math.random() - 0.5) * z.d
+        );
+    }
+
+    function updateMonster(dt) {
+        const dirToTarget = new THREE.Vector3().subVectors(targetWaypoint, monster.position); dirToTarget.y = 0;
+
+        if (monsterState === 'WANDER') {
+            if (dirToTarget.length() < 5) {
+                setMonsterRandomWaypoint();
+            } else {
+                dirToTarget.normalize();
+                
+                // Entity moves through objects to be scarier, but stays in bounds generally
+                monster.position.add(dirToTarget.multiplyScalar(monsterSpeed * 0.6 * dt));
+                monster.lookAt(monster.position.clone().add(dirToTarget));
+            }
+
+            // Vision check
+            const vecToPlayer = new THREE.Vector3().subVectors(player.position, monster.position);
+            
+            // Raycast rough check to see if massive walls block view
+            const isBlocked = isColliding(monster.position.x + vecToPlayer.x*0.5, monster.position.z + vecToPlayer.z*0.5, 1);
+
+            if (vecToPlayer.length() < 40 && !isBlocked) {
+                monsterState = 'CHASE';
+                if(chaseGain) chaseGain.gain.setTargetAtTime(0.5, audioCtx.currentTime, 0.5);
+                if(ambientGain) ambientGain.gain.setTargetAtTime(0.01, audioCtx.currentTime, 0.5);
+            }
+
+        } else if (monsterState === 'CHASE') {
+            targetWaypoint.copy(player.position);
+            
+            if (dirToTarget.length() < 4) { gameOver(); return; }
+
+            dirToTarget.normalize();
+            // Chase logic with slight sliding to prevent it getting hopelessly stuck on desks
+            const mx = dirToTarget.x * monsterSpeed * 2.5 * dt;
+            const mz = dirToTarget.z * monsterSpeed * 2.5 * dt;
+            
+            if(!isColliding(monster.position.x + mx, monster.position.z, 2)) monster.position.x += mx;
+            if(!isColliding(monster.position.x, monster.position.z + mz, 2)) monster.position.z += mz;
+            
+            monster.lookAt(player.position);
+            monster.position.y = Math.abs(Math.sin(clock.getElapsedTime() * 15)) * 1.5;
+            
+            // Give up if player escapes far enough
+            if(new THREE.Vector3().subVectors(player.position, monster.position).length() > 80) {
+                monsterState = 'WANDER';
+                if(chaseGain) chaseGain.gain.setTargetAtTime(0, audioCtx.currentTime, 1.0);
+                if(ambientGain) ambientGain.gain.setTargetAtTime(0.08, audioCtx.currentTime, 1.0);
+            }
+        }
+    }
+
+    function updateEnvironment(dt) {
+        if (waterfallMaterial.map) waterfallMaterial.map.offset.y -= 0.5 * dt;
+        if (skytrain) {
+            skytrain.position.z += 60 * dt; 
+            if (skytrain.position.z > 800) skytrain.position.z = -800;
+        }
+    }
+
+    function gameOver() {
+        gameState = 'GAMEOVER';
+        document.getElementById('ui-layer').style.display = 'none';
+        document.getElementById('hud').style.display = 'none';
+        camera.lookAt(monster.position.clone().add(new THREE.Vector3(0, 10, 0)));
+        setTimeout(() => {
+            document.getElementById('game-over-screen').style.display = 'flex';
+            triggerJumpScareAudio();
+        }, 300);
+    }
+
+    // --- MAIN LOOP ---
+    function animate() {
+        requestAnimationFrame(animate);
+        const dt = clock.getDelta(); const time = clock.getElapsedTime();
+
+        if (gameState === 'PLAYING') {
+            updatePlayerMovement(dt); updateMonster(dt); updateEnvironment(dt);
+        }
+
+        postMaterial.uniforms.time.value = time;
+        renderer.setRenderTarget(renderTarget); renderer.render(scene, camera);
+        renderer.setRenderTarget(null); renderer.render(postScene, postCamera);
+    }
+
+    // --- BOOTSTRAP ---
+    document.getElementById('start-btn').addEventListener('click', () => {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('ui-layer').style.display = 'flex';
+        document.getElementById('hud').style.display = 'block';
+        
+        initAudio(); if (audioCtx.state === 'suspended') audioCtx.resume();
+        gameState = 'PLAYING'; clock.start();
+    });
+
+    initThreeJS();
+    setupTouchControls();
+    animate();
+
+</script>
+</body>
+</html>
