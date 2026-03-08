@@ -1,341 +1,895 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Changi Incident 1998</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Changi Incident 2001</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #000; overflow: hidden;
+            font-family: 'VT323', monospace; touch-action: none; 
+            -webkit-user-select: none; user-select: none;
+        }
 
-body{
-margin:0;
-overflow:hidden;
-background:black;
-font-family:'VT323',monospace;
-}
+        #game-container { position: relative; width: 100vw; height: 100vh; }
 
-canvas{
-width:100vw;
-height:100vh;
-display:block;
-image-rendering:pixelated;
-}
+        canvas {
+            display: block; width: 100%; height: 100%; object-fit: cover;
+            image-rendering: -moz-crisp-edges; image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated; image-rendering: crisp-edges;
+        }
 
-#hud{
-position:absolute;
-top:20px;
-left:20px;
-color:white;
-font-size:28px;
-z-index:5;
-}
+        /* Touch Control Zones */
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; }
+        .touch-zone { flex: 1; height: 100%; position: relative; }
+        .joystick-base {
+            position: absolute; width: 120px; height: 120px;
+            border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 50%;
+            transform: translate(-50%, -50%); display: none; pointer-events: none;
+        }
+        .joystick-stick {
+            position: absolute; width: 50px; height: 50px;
+            background: rgba(255, 255, 255, 0.4); border-radius: 50%;
+            top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;
+        }
 
-.screen{
-position:absolute;
-width:100%;
-height:100%;
-display:flex;
-align-items:center;
-justify-content:center;
-flex-direction:column;
-background:black;
-color:white;
-z-index:10;
-}
+        #hud {
+            position: absolute; top: 30px; left: 30px; color: #fff;
+            font-size: 28px; text-shadow: 2px 2px 0 #000; z-index: 20;
+            pointer-events: none; opacity: 0.85;
+        }
 
-button{
-font-family:'VT323';
-font-size:30px;
-padding:10px 40px;
-border:2px solid white;
-background:#111;
-color:white;
-cursor:pointer;
-}
+        #recording-dot {
+            display: inline-block; width: 16px; height: 16px; background-color: #ff0000;
+            border-radius: 50%; margin-right: 12px; animation: blink 1s infinite;
+        }
 
-#scan{
-position:absolute;
-width:100%;
-height:100%;
-pointer-events:none;
-background:repeating-linear-gradient(
-0deg,
-rgba(0,0,0,0) 0px,
-rgba(0,0,0,0) 2px,
-rgba(0,0,0,0.25) 3px
-);
-}
-</style>
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; color: #fff; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 50; text-align: center;
+        }
+
+        #title {
+            font-size: 70px; color: #d4af37;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.5), 4px 4px 0 #000;
+            margin-bottom: 20px; letter-spacing: 5px;
+        }
+
+        .instructions { font-size: 26px; max-width: 600px; margin-bottom: 40px; color: #aaa; line-height: 1.5; }
+        .controls-hint { color: #888; font-size: 20px; margin-top: 20px; }
+
+        .btn {
+            padding: 15px 50px; font-size: 32px; background: #111; color: #fff;
+            border: 2px solid #555; font-family: 'VT323', monospace; cursor: pointer;
+            text-transform: uppercase; transition: all 0.2s;
+        }
+        .btn:hover { background: #333; border-color: #fff; }
+        .btn:active { background: #fff; color: #000; }
+
+        #game-over-screen { display: none; background: #1a0000; }
+        #game-over-text {
+            font-size: 90px; color: #ff0000; text-shadow: 5px 5px 0 #000;
+            margin-bottom: 30px; animation: shake 0.4s infinite;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(2px, 2px) rotate(0deg); }
+            20% { transform: translate(-2px, -3px) rotate(-1deg); }
+            40% { transform: translate(-4px, 1px) rotate(1deg); }
+            60% { transform: translate(3px, 2px) rotate(0deg); }
+            80% { transform: translate(-2px, -2px) rotate(1deg); }
+            100% { transform: translate(2px, -3px) rotate(-1deg); }
+        }
+
+        #scanlines {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0.2) 2px, rgba(0, 0, 0, 0.2) 4px);
+            pointer-events: none; z-index: 15; mix-blend-mode: multiply;
+        }
+        
+        #vignette {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.85) 100%);
+            pointer-events: none; z-index: 14;
+        }
+    </style>
 </head>
-
 <body>
 
-<div id="hud">CHANGI TERMINAL 1 — 03:14AM</div>
+<div id="game-container">
+    <canvas id="game-canvas"></canvas>
+    <div id="vignette"></div>
+    <div id="scanlines"></div>
+    <div id="hud" style="display: none;">
+        <span id="recording-dot"></span> REC 
+        <div style="font-size: 20px; margin-top: 8px; color: #00ffcc;" id="location-text">CHANGI JEWEL - 02:45 AM</div>
+    </div>
 
-<div class="screen" id="start">
-<h1>CHANGI INCIDENT</h1>
-<p>Explore the abandoned airport.</p>
-<button id="play">ENTER TERMINAL</button>
+    <div id="ui-layer" style="display: none;">
+        <div class="touch-zone" id="zone-left"><div class="joystick-base" id="base-left"><div class="joystick-stick" id="stick-left"></div></div></div>
+        <div class="touch-zone" id="zone-right"><div class="joystick-base" id="base-right"><div class="joystick-stick" id="stick-right"></div></div></div>
+    </div>
+
+    <div class="screen" id="start-screen">
+        <div id="title">CHANGI INCIDENT</div>
+        <div class="instructions">
+            Explore the entirety of the Changi complex.<br>
+            T1, T2, T3, and Jewel are fully connected.<br><br>
+            <span style="color: #ff4444;">Do not let the entity catch you.</span>
+            <div class="controls-hint">Desktop: WASD + Mouse Drag<br>Mobile: Dual Touch Joysticks</div>
+        </div>
+        <button class="btn" id="start-btn">INITIALIZE</button>
+    </div>
+
+    <div class="screen" id="game-over-screen">
+        <div id="game-over-text">CONNECTION LOST</div>
+        <button class="btn" onclick="location.reload()">REBOOT SYSTEM</button>
+    </div>
 </div>
 
-<div id="scan"></div>
-<canvas id="game"></canvas>
-
 <script type="module">
-
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
-
-let scene,camera,renderer;
-let player=new THREE.Object3D();
-let clock=new THREE.Clock();
-
-let escalators=[];
-let baggageBelts=[];
-let npcs=[];
-let lights=[];
-
-let keys={};
-
-document.addEventListener("keydown",e=>keys[e.code]=true);
-document.addEventListener("keyup",e=>keys[e.code]=false);
-
-document.getElementById("play").onclick=()=>{
-document.getElementById("start").style.display="none";
-init();
-};
-
-function init(){
-
-renderer=new THREE.WebGLRenderer({canvas:game});
-renderer.setSize(window.innerWidth,window.innerHeight);
-
-scene=new THREE.Scene();
-scene.fog=new THREE.FogExp2(0x000000,0.002);
-
-camera=new THREE.PerspectiveCamera(70,window.innerWidth/window.innerHeight,0.1,2000);
-
-player.position.set(0,6,50);
-player.add(camera);
-scene.add(player);
-
-const amb=new THREE.AmbientLight(0x888888);
-scene.add(amb);
-
-buildAirport();
-animate();
-}
-
-function buildAirport(){
-
-buildFloor(0);
-buildFloor(30);
-
-buildCheckIn();
-buildSecurity();
-buildDutyFree();
-buildGates();
-
-buildEscalator(0,0);
-buildBaggageCarousel(60,-120);
-buildNPCs();
-
-buildSkytrain();
-}
-
-function buildFloor(y){
-
-const floor=new THREE.Mesh(
-new THREE.PlaneGeometry(800,800),
-new THREE.MeshLambertMaterial({color:0x1a1c1f})
-);
-
-floor.rotation.x=-Math.PI/2;
-floor.position.y=y;
-scene.add(floor);
-}
-
-function buildCheckIn(){
-
-for(let i=-200;i<200;i+=80){
-
-const desk=new THREE.Mesh(
-new THREE.BoxGeometry(40,6,10),
-new THREE.MeshLambertMaterial({color:0x333333})
-);
-
-desk.position.set(i,3,0);
-scene.add(desk);
-
-for(let j=-15;j<20;j+=15){
-
-const monitor=new THREE.Mesh(
-new THREE.BoxGeometry(6,3,0.3),
-new THREE.MeshBasicMaterial({color:0x33aaff})
-);
-
-monitor.position.set(i+j,8,0);
-scene.add(monitor);
-
-}
-}
-}
-
-function buildSecurity(){
-
-for(let i=-3;i<4;i++){
-
-const lane=new THREE.Mesh(
-new THREE.BoxGeometry(6,2,30),
-new THREE.MeshLambertMaterial({color:0x444})
-);
-
-lane.position.set(i*15,1,-70);
-scene.add(lane);
-
-}
-}
-
-function buildDutyFree(){
-
-for(let i=0;i<10;i++){
-
-const shelf=new THREE.Mesh(
-new THREE.BoxGeometry(10,10,4),
-new THREE.MeshLambertMaterial({color:0x663300})
-);
-
-shelf.position.set(-200+i*40,5,-150);
-scene.add(shelf);
-
-}
-}
-
-function buildGates(){
-
-for(let i=0;i<6;i++){
-
-const gateArea=new THREE.Mesh(
-new THREE.BoxGeometry(80,4,40),
-new THREE.MeshLambertMaterial({color:0x222})
-);
-
-gateArea.position.set(-200+i*80,2,-300);
-scene.add(gateArea);
-
-}
-}
-
-function buildEscalator(x,z){
-
-const escalator=new THREE.Group();
-
-const ramp=new THREE.Mesh(
-new THREE.BoxGeometry(12,1,40),
-new THREE.MeshLambertMaterial({color:0x555})
-);
-
-ramp.rotation.x=-0.4;
-escalator.add(ramp);
-
-escalator.position.set(x,0,z);
-scene.add(escalator);
-
-escalators.push(ramp);
-}
-
-function buildBaggageCarousel(x,z){
-
-const belt=new THREE.Mesh(
-new THREE.TorusGeometry(20,3,8,40),
-new THREE.MeshLambertMaterial({color:0x222})
-);
-
-belt.rotation.x=Math.PI/2;
-belt.position.set(x,3,z);
-
-scene.add(belt);
-baggageBelts.push(belt);
-}
-
-function buildNPCs(){
-
-for(let i=0;i<10;i++){
-
-const npc=new THREE.Mesh(
-new THREE.BoxGeometry(2,8,2),
-new THREE.MeshLambertMaterial({color:0x111})
-);
-
-npc.position.set(
-Math.random()*400-200,
-4,
-Math.random()*-400
-);
-
-scene.add(npc);
-npcs.push(npc);
-}
-}
-
-function buildSkytrain(){
-
-const track=new THREE.Mesh(
-new THREE.BoxGeometry(6,2,1200),
-new THREE.MeshLambertMaterial({color:0x777})
-);
-
-track.position.set(120,40,0);
-scene.add(track);
-
-const train=new THREE.Mesh(
-new THREE.BoxGeometry(6,6,40),
-new THREE.MeshLambertMaterial({color:0xffffff})
-);
-
-train.position.set(120,44,-500);
-scene.add(train);
-
-lights.push(train);
-}
-
-function updatePlayer(dt){
-
-let speed=40*dt;
-
-if(keys["KeyW"])player.translateZ(-speed);
-if(keys["KeyS"])player.translateZ(speed);
-if(keys["KeyA"])player.translateX(-speed);
-if(keys["KeyD"])player.translateX(speed);
-}
-
-function animate(){
-
-requestAnimationFrame(animate);
-
-let dt=clock.getDelta();
-
-updatePlayer(dt);
-
-escalators.forEach(e=>{
-e.material.color.offsetHSL(0,0,Math.sin(clock.elapsedTime)*0.002);
-});
-
-baggageBelts.forEach(b=>{
-b.rotation.z+=dt;
-});
-
-npcs.forEach(n=>{
-n.position.x+=Math.sin(clock.elapsedTime+n.id)*dt*10;
-});
-
-lights.forEach(l=>{
-l.position.z+=dt*60;
-if(l.position.z>600)l.position.z=-600;
-});
-
-renderer.render(scene,camera);
-}
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+    // --- GAME CONSTANTS & STATE ---
+    let gameState = 'START';
+    const LOW_RES_WIDTH = 480; 
+    const LOW_RES_HEIGHT = 360;
+    
+    let scene, camera, renderer, renderTarget;
+    let postScene, postCamera, postMaterial;
+    let player, flashlight;
+    let clock = new THREE.Clock();
+
+    let animatedMaterials = [];
+    let travelators = [];
+    let rainDrops = [];
+
+    // Monster
+    let monster;
+    let monsterLimbs = {};
+    let monsterState = 'WANDER', monsterSpeed = 22;
+    let targetWaypoint = new THREE.Vector3();
+
+    // Audio Context
+    let audioCtx, delayNode, feedbackNode, filterNode;
+    let chaseOsc, chaseGain, chaseLfo;
+
+    // --- 3D COLLISION ENGINE (Optimized for massive map) ---
+    const colliders = []; 
+    const ramps = [];     
+    const PLAYER_RADIUS = 2;
+    const EYE_LEVEL = 5.5;
+
+    function addAABB(cx, cy, cz, w, h, d) {
+        colliders.push({ 
+            minX: cx - w/2, maxX: cx + w/2, 
+            minY: cy - h/2, maxY: cy + h/2,
+            minZ: cz - d/2, maxZ: cz + d/2,
+            cx, cz 
+        });
+    }
+
+    function addRamp(minX, maxX, minZ, maxZ, startY, endY, dirZ) {
+        ramps.push({ minX, maxX, minZ, maxZ, startY, endY, dirZ });
+    }
+
+    function isColliding(nx, ny, nz, radius) {
+        const playerMinY = ny - EYE_LEVEL;
+        const playerMaxY = ny;
+
+        for(let c of colliders) {
+            // Distance culling for massive map
+            if (Math.abs(nx - c.cx) > 100 || Math.abs(nz - c.cz) > 100) continue;
+
+            if (nx + radius > c.minX && nx - radius < c.maxX && 
+                nz + radius > c.minZ && nz - radius < c.maxZ &&
+                playerMaxY > c.minY && playerMinY < c.maxY) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function getFloorHeight(px, pz) {
+        for(let r of ramps) {
+            if (px >= r.minX && px <= r.maxX && pz >= r.minZ && pz <= r.maxZ) {
+                let t = (pz - r.minZ) / (r.maxZ - r.minZ);
+                if (r.dirZ === -1) t = 1 - t;
+                return r.startY + t * (r.endY - r.startY);
+            }
+        }
+        
+        // Massive Map Zones Elevation
+        if (Math.abs(px) < 200 && Math.abs(pz) < 200) return 0; // Jewel (Ground)
+        if (player && player.position.y > 15) return 30; // Terminals Departures
+        return 0; // Terminals Arrivals
+    }
+
+    // --- INPUT HANDLING ---
+    const joysticks = { left: { active: false, deltaX: 0, deltaY: 0 }, right: { active: false, deltaX: 0, deltaY: 0 } };
+
+    function setupControls() {
+        const setupZone = (zoneId, joyId, baseId, stickId) => {
+            const zone = document.getElementById(zoneId);
+            const base = document.getElementById(baseId);
+            const stick = document.getElementById(stickId);
+            const joy = joysticks[joyId];
+            let startX=0, startY=0;
+
+            zone.addEventListener('touchstart', (e) => {
+                e.preventDefault(); if(gameState !== 'PLAYING') return;
+                const touch = e.changedTouches[0];
+                joy.active = true; startX = touch.clientX; startY = touch.clientY;
+                joy.deltaX = 0; joy.deltaY = 0;
+                base.style.display = 'block'; base.style.left = touch.clientX + 'px'; base.style.top = touch.clientY + 'px';
+                stick.style.transform = `translate(-50%, -50%)`;
+            }, {passive: false});
+
+            zone.addEventListener('touchmove', (e) => {
+                e.preventDefault(); if (!joy.active) return;
+                const touch = Array.from(e.touches).find(t => t.target === zone || zone.contains(t.target));
+                if (!touch) return;
+                let dx = touch.clientX - startX; let dy = touch.clientY - startY;
+                const maxDist = 50; const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
+                stick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                joy.deltaX = dx / maxDist; joy.deltaY = dy / maxDist;
+            }, {passive: false});
+
+            const endTouch = (e) => { e.preventDefault(); joy.active = false; joy.deltaX = 0; joy.deltaY = 0; base.style.display = 'none'; };
+            zone.addEventListener('touchend', endTouch); zone.addEventListener('touchcancel', endTouch);
+        };
+
+        setupZone('zone-left', 'left', 'base-left', 'stick-left');
+        setupZone('zone-right', 'right', 'base-right', 'stick-right');
+
+        let isMouseDown = false; let lastMouseX = 0; let lastMouseY = 0;
+        document.addEventListener('mousedown', (e) => { if(e.target.tagName !== 'BUTTON') { isMouseDown = true; lastMouseX = e.clientX; lastMouseY = e.clientY; }});
+        document.addEventListener('mouseup', () => { isMouseDown = false; joysticks.right.deltaX = 0; joysticks.right.deltaY = 0; });
+        document.addEventListener('mousemove', (e) => {
+            if (isMouseDown && gameState === 'PLAYING') {
+                joysticks.right.deltaX = (e.clientX - lastMouseX) * 0.03;
+                joysticks.right.deltaY = (e.clientY - lastMouseY) * 0.03;
+                lastMouseX = e.clientX; lastMouseY = e.clientY;
+                setTimeout(()=> { joysticks.right.deltaX = 0; joysticks.right.deltaY = 0; }, 100);
+            }
+        });
+        
+        const keys = {};
+        window.addEventListener('keydown', e => keys[e.code] = true);
+        window.addEventListener('keyup', e => keys[e.code] = false);
+        setInterval(() => {
+            if(gameState !== 'PLAYING') return;
+            if(!joysticks.left.active) {
+                let dx = 0, dy = 0;
+                if(keys['KeyW']) dy = -1; if(keys['KeyS']) dy = 1; if(keys['KeyA']) dx = -1; if(keys['KeyD']) dx = 1;
+                joysticks.left.deltaX = dx; joysticks.left.deltaY = dy;
+            }
+        }, 50);
+    }
+
+    // --- PROCEDURAL PS1-STYLE TEXTURES ---
+    function createCrunchyTexture(w, h, drawFn) {
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        const ctx = c.getContext('2d'); ctx.imageSmoothingEnabled = false; 
+        drawFn(ctx, w, h);
+        const tex = new THREE.CanvasTexture(c);
+        tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+        tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter; 
+        return tex;
+    }
+
+    function drawNoise(ctx, w, h, density, opacityDark, opacityLight) {
+        for(let i=0; i<w*h*density; i++) {
+            ctx.fillStyle = Math.random() > 0.5 ? `rgba(0,0,0,${opacityDark})` : `rgba(255,255,255,${opacityLight})`;
+            ctx.fillRect(Math.random()*w, Math.random()*h, 2, 2);
+        }
+    }
+
+    const tileTex = createCrunchyTexture(128, 128, (ctx) => {
+        ctx.fillStyle = '#666'; ctx.fillRect(0,0,128,128);
+        ctx.strokeStyle = '#444'; ctx.lineWidth = 2;
+        for(let i=0; i<=128; i+=32) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,128); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(128,i); ctx.stroke(); }
+        drawNoise(ctx, 128, 128, 0.05, 0.4, 0.2);
+    });
+
+    const carpetT1Tex = createCrunchyTexture(128, 128, (ctx) => {
+        ctx.fillStyle = '#5c4033'; ctx.fillRect(0,0,128,128); // Brownish
+        ctx.fillStyle = '#8b5a2b';
+        for(let i=0; i<128; i+=16) { ctx.fillRect(i, Math.sin(i)*10 + 64, 8, 128); }
+        drawNoise(ctx, 128, 128, 0.1, 0.4, 0.1);
+    });
+
+    const carpetT2Tex = createCrunchyTexture(128, 128, (ctx) => {
+        ctx.fillStyle = '#203a20'; ctx.fillRect(0,0,128,128); // Green
+        ctx.fillStyle = '#b8a020'; 
+        for(let i=0; i<128; i+=32) for(let j=0; j<128; j+=32) if((i+j)%64===0) ctx.fillRect(i, j, 16, 16);
+        drawNoise(ctx, 128, 128, 0.1, 0.4, 0.1);
+    });
+
+    const carpetT3Tex = createCrunchyTexture(128, 128, (ctx) => {
+        ctx.fillStyle = '#8a8a8a'; ctx.fillRect(0,0,128,128); // Grey/Glass vibe
+        ctx.fillStyle = '#aaaaaa'; 
+        for(let i=0; i<128; i+=64) for(let j=0; j<128; j+=64) ctx.fillRect(i+4, j+4, 56, 56);
+        drawNoise(ctx, 128, 128, 0.1, 0.2, 0.4);
+    });
+
+    const jewelFloorTex = createCrunchyTexture(128, 128, (ctx) => {
+        ctx.fillStyle = '#a08a70'; ctx.fillRect(0,0,128,128); // Wood path
+        ctx.fillStyle = '#604020';
+        for(let i=0; i<128; i+=16) ctx.fillRect(0, i, 128, 2);
+    });
+
+    const waterfallTex = createCrunchyTexture(64, 256, (ctx) => {
+        ctx.fillStyle = '#4488ff'; ctx.fillRect(0,0,64,256);
+        ctx.fillStyle = '#ffffff';
+        for(let i=0; i<200; i++) ctx.fillRect(Math.random()*64, Math.random()*256, 2, Math.random()*30+10);
+    });
+
+    const flipboardTex = createCrunchyTexture(512, 256, (ctx) => {
+        ctx.fillStyle = '#111'; ctx.fillRect(0,0,512,256);
+        ctx.fillStyle = '#222'; for(let i=10; i<246; i+=25) ctx.fillRect(5, i, 502, 20);
+        ctx.fillStyle = '#ffcc00'; ctx.font = 'bold 16px monospace';
+        ctx.fillText("TIME  FLIGHT   DESTINATION       GATE REMARK", 10, 25);
+        ctx.fillStyle = '#fff';
+        const dests = ['LONDON', 'TOKYO', 'JAKARTA', 'SYDNEY', 'PARIS', 'KUALA LUMPUR', 'MANILA', 'NEW YORK'];
+        for(let r=0; r<8; r++) {
+            const y = 55 + r*25;
+            const t = `0${Math.floor(Math.random()*4)+1}:${Math.floor(Math.random()*50).toString().padStart(2,'0')}`;
+            const f = `SQ${Math.floor(Math.random()*800)+100}`;
+            const g = `E${Math.floor(Math.random()*20)+1}`;
+            ctx.fillText(`${t} ${f}   ${dests[r].padEnd(15, ' ')} ${g.padEnd(4, ' ')} BOARDING`, 10, y);
+            ctx.fillStyle = '#000'; ctx.fillRect(5, y-8, 502, 2); ctx.fillStyle = '#fff';
+        }
+    });
+
+    const travelatorTex = createCrunchyTexture(64, 64, (ctx) => {
+        ctx.fillStyle = '#222'; ctx.fillRect(0,0,64,64);
+        ctx.fillStyle = '#050505'; for(let i=0; i<64; i+=8) ctx.fillRect(0, i, 64, 4);
+        ctx.fillStyle = '#aaaaaa'; ctx.fillRect(10, 0, 2, 64); ctx.fillRect(52, 0, 2, 64); // Safety yellow/white lines
+    });
+
+    // --- THREE.JS INITIALIZATION ---
+    function initThreeJS() {
+        const canvas = document.getElementById('game-canvas');
+        renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: false });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        renderTarget = new THREE.WebGLRenderTarget(LOW_RES_WIDTH, LOW_RES_HEIGHT);
+        renderTarget.texture.minFilter = THREE.NearestFilter; renderTarget.texture.magFilter = THREE.NearestFilter; renderTarget.texture.generateMipmaps = false;
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x010203);
+        scene.fog = new THREE.Fog(0x010203, 15, 250); // Massive draw distance but still oppressive
+
+        camera = new THREE.PerspectiveCamera(60, LOW_RES_WIDTH / LOW_RES_HEIGHT, 0.1, 400); 
+        
+        player = new THREE.Group();
+        player.position.set(0, EYE_LEVEL, 80); // Start in Jewel
+        player.add(camera); scene.add(player);
+
+        flashlight = new THREE.SpotLight(0xccddff, 1800, 250, Math.PI/4.5, 0.5, 1);
+        flashlight.position.set(0, 0, 0); flashlight.target.position.set(0, 0, -1);
+        camera.add(flashlight); camera.add(flashlight.target);
+
+        const ambientLight = new THREE.AmbientLight(0x111a22, 0.6); scene.add(ambientLight);
+
+        buildMassiveAirport();
+        buildEntity();
+        setupPostProcessing();
+
+        window.addEventListener('resize', () => { renderer.setSize(window.innerWidth, window.innerHeight); });
+    }
+
+    // --- ASSET GENERATORS (Extremely Detailed Objects) ---
+    const matParams = { flatShading: true };
+    const wallMat = new THREE.MeshLambertMaterial({ color: 0x999995, ...matParams });
+    const darkWallMat = new THREE.MeshLambertMaterial({ color: 0x333333, ...matParams });
+    const metalMat = new THREE.MeshLambertMaterial({ color: 0x777788, ...matParams });
+    const glassMat = new THREE.MeshBasicMaterial({ color: 0x051525, transparent: true, opacity: 0.5, side: THREE.DoubleSide });
+    
+    // 1. Luggage Trolley Generator
+    function createTrolley() {
+        const group = new THREE.Group();
+        const base = new THREE.Mesh(new THREE.BoxGeometry(3, 0.5, 4), metalMat); base.position.y = 1;
+        const back = new THREE.Mesh(new THREE.BoxGeometry(3, 4, 0.5), metalMat); back.position.set(0, 3, 1.75);
+        const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 3), metalMat); handle.rotation.z = Math.PI/2; handle.position.set(0, 5, 2);
+        const basket = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.5, 2.5), new THREE.MeshLambertMaterial({color: 0x444444, wireframe: true})); basket.position.set(0, 3, 0);
+        
+        const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.4, 8);
+        const w1 = new THREE.Mesh(wheelGeo, darkWallMat); w1.rotation.z = Math.PI/2; w1.position.set(-1.5, 0.5, 1.5);
+        const w2 = new THREE.Mesh(wheelGeo, darkWallMat); w2.rotation.z = Math.PI/2; w2.position.set(1.5, 0.5, 1.5);
+        const w3 = new THREE.Mesh(wheelGeo, darkWallMat); w3.rotation.z = Math.PI/2; w3.position.set(0, 0.5, -1.5);
+        
+        group.add(base, back, handle, basket, w1, w2, w3);
+        return group;
+    }
+
+    // 2. Waiting Seats Row
+    function createSeatRow() {
+        const group = new THREE.Group();
+        const bar = new THREE.Mesh(new THREE.BoxGeometry(16, 0.5, 0.5), metalMat); bar.position.y = 1.5; group.add(bar);
+        const seatMat = new THREE.MeshLambertMaterial({ color: 0x1a1a1a, ...matParams });
+        for(let x=-6; x<=6; x+=4) {
+            const seat = new THREE.Mesh(new THREE.BoxGeometry(3, 0.5, 3), seatMat); seat.position.set(x, 1.5, 1);
+            const back = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 0.5), seatMat); back.position.set(x, 3, -0.5); back.rotation.x = -0.2;
+            group.add(seat, back);
+        }
+        return group;
+    }
+
+    // 3. Check-in Desk Detailed
+    function createCheckInDesk() {
+        const group = new THREE.Group();
+        const desk = new THREE.Mesh(new THREE.BoxGeometry(8, 4, 4), wallMat); desk.position.y = 2; group.add(desk);
+        const scale = new THREE.Mesh(new THREE.BoxGeometry(4, 0.5, 4), darkWallMat); scale.position.set(6, 0.25, 0); group.add(scale);
+        const monitor = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.2, 0.2), new THREE.MeshBasicMaterial({color: 0x002255})); monitor.position.set(0, 4.8, 0.5); monitor.rotation.x = -0.1; group.add(monitor);
+        const stand = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.8, 0.2), darkWallMat); stand.position.set(0, 4.4, 0.4); group.add(stand);
+        return group;
+    }
+
+    // --- MASSIVE MAP BUILDER ---
+    function buildMassiveAirport() {
+        const f0Tex = tileTex.clone(); f0Tex.repeat.set(80, 80); f0Tex.needsUpdate = true;
+        const floor0Mat = new THREE.MeshLambertMaterial({ map: f0Tex, ...matParams });
+
+        // Base Ground spanning everywhere
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), floor0Mat);
+        ground.rotation.x = -Math.PI / 2; scene.add(ground);
+
+        // Pre-build detailed objects to clone
+        const tplTrolley = createTrolley();
+        const tplSeats = createSeatRow();
+        const tplDesk = createCheckInDesk();
+
+        function spawnProps(cx, cz, w, d, density, type) {
+            for(let i=0; i<density; i++) {
+                const px = cx + (Math.random()-0.5)*w; const pz = cz + (Math.random()-0.5)*d;
+                if(type === 'trolley') {
+                    const t = tplTrolley.clone(); t.position.set(px, 0, pz); t.rotation.y = Math.random()*Math.PI; scene.add(t);
+                    addAABB(px, 2, pz, 4, 4, 4);
+                } else if(type === 'seats') {
+                    const s = tplSeats.clone(); s.position.set(px, 30, pz); s.rotation.y = Math.random()>0.5 ? 0 : Math.PI/2; scene.add(s);
+                    addAABB(px, 32, pz, s.rotation.y===0?16:4, 4, s.rotation.y===0?4:16);
+                }
+            }
+        }
+
+        // --- 1. THE JEWEL (Center: 0, 0) ---
+        const jTex = jewelFloorTex.clone(); jTex.repeat.set(10, 10); jTex.needsUpdate = true;
+        const jewelBase = new THREE.Mesh(new THREE.CylinderGeometry(150, 150, 1, 32), new THREE.MeshLambertMaterial({map: jTex}));
+        scene.add(jewelBase);
+        
+        // Massive Waterfall (Vortex)
+        const waterMat = new THREE.MeshBasicMaterial({ map: waterfallTex, transparent: true, opacity: 0.7, color: 0xaaddff, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+        animatedMaterials.push(waterMat);
+        const vortex = new THREE.Mesh(new THREE.CylinderGeometry(15, 30, 200, 32, 1, true), waterMat);
+        vortex.position.y = 100; scene.add(vortex);
+        addAABB(0, 50, 0, 60, 200, 60); // Block entering waterfall
+
+        // Jewel Terraces & Pillars
+        for(let i=1; i<=3; i++) {
+            const ring = new THREE.Mesh(new THREE.TorusGeometry(30 + i*30, 4, 8, 32), wallMat);
+            ring.position.y = i * 20 + 20; ring.rotation.x = Math.PI/2; scene.add(ring);
+            for(let a=0; a<Math.PI*2; a+=Math.PI/4) {
+                const p = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 100), darkWallMat);
+                p.position.set(Math.cos(a)*130, 50, Math.sin(a)*130); scene.add(p);
+                addAABB(p.position.x, 50, p.position.z, 6, 100, 6);
+            }
+        }
+
+        // --- TERMINAL BUILDER TEMPLATE ---
+        function buildTerminal(type, cx, cz, w, d, rotY) {
+            const group = new THREE.Group();
+            
+            // Floor (Level 1 Departures)
+            let cTex;
+            if(type==='T1') cTex = carpetT1Tex; else if(type==='T2') cTex = carpetT2Tex; else cTex = carpetT3Tex;
+            const tex = cTex.clone(); tex.repeat.set(w/20, d/20); tex.needsUpdate = true;
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(w, d), new THREE.MeshLambertMaterial({map: tex}));
+            floor.rotation.x = -Math.PI/2; floor.position.y = 30; group.add(floor);
+
+            // Roof
+            const roof = new THREE.Mesh(new THREE.PlaneGeometry(w, d), darkWallMat);
+            roof.rotation.x = Math.PI/2; roof.position.y = 70; group.add(roof);
+
+            // Walls (Glass and concrete)
+            const wN = new THREE.Mesh(new THREE.BoxGeometry(w, 40, 2), glassMat); wN.position.set(0, 50, -d/2); group.add(wN); addAABB(cx, 50, cz-d/2, w, 40, 4);
+            const wS = new THREE.Mesh(new THREE.BoxGeometry(w, 40, 2), glassMat); wS.position.set(0, 50, d/2); group.add(wS); addAABB(cx, 50, cz+d/2, w, 40, 4);
+            const wE = new THREE.Mesh(new THREE.BoxGeometry(2, 40, d), wallMat); wE.position.set(w/2, 50, 0); group.add(wE); addAABB(cx+w/2, 50, cz, 4, 40, d);
+            const wW = new THREE.Mesh(new THREE.BoxGeometry(2, 40, d), wallMat); wW.position.set(-w/2, 50, 0); group.add(wW); addAABB(cx-w/2, 50, cz, 4, 40, d);
+
+            // Interiors based on type
+            if (type === 'T2') {
+                // Solari Board
+                const board = new THREE.Mesh(new THREE.PlaneGeometry(120, 20), new THREE.MeshBasicMaterial({map: flipboardTex}));
+                board.position.set(0, 55, 0); group.add(board); addAABB(cx, 55, cz, 120, 40, 4);
+            } else if (type === 'T1') {
+                // Kinetic Rain (Abstracted drops)
+                for(let k=0; k<150; k++) {
+                    const drop = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2, 0.5), new THREE.MeshBasicMaterial({color: 0xccbb88}));
+                    drop.position.set((Math.random()-0.5)*100, 40 + Math.random()*20, (Math.random()-0.5)*100);
+                    group.add(drop); rainDrops.push(drop); // Animate later
+                }
+            } else if (type === 'T3') {
+                // Ceiling Louvres
+                for(let l=-d/2; l<d/2; l+=10) {
+                    const louvre = new THREE.Mesh(new THREE.BoxGeometry(w, 4, 0.5), metalMat);
+                    louvre.position.set(0, 68, l); group.add(louvre);
+                }
+                // Giant glass columns
+                for(let px=-w/2+20; px<=w/2-20; px+=80) {
+                    for(let pz=-d/2+40; pz<=d/2-40; pz+=60) {
+                        const col = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, 40, 16), glassMat);
+                        col.position.set(px, 50, pz); group.add(col); addAABB(cx+px, 50, cz+pz, 8, 40, 8);
+                    }
+                }
+            }
+
+            // Check-in Rows
+            for(let rowZ = -d/2 + 60; rowZ < d/2 - 60; rowZ += 80) {
+                for(let deskX = -w/2 + 40; deskX < w/2 - 40; deskX += 15) {
+                    const d = tplDesk.clone(); d.position.set(deskX, 30, rowZ); group.add(d);
+                    addAABB(cx+deskX, 32, cz+rowZ, 8, 4, 4);
+                }
+            }
+
+            group.position.set(cx, 0, cz);
+            group.rotation.y = rotY;
+            scene.add(group);
+        }
+
+        // Build Massive Terminals
+        // T1: North
+        buildTerminal('T1', 0, -600, 300, 200, 0);
+        spawnProps(0, -600, 250, 150, 30, 'seats');
+        spawnProps(0, -600, 250, 150, 20, 'trolley');
+
+        // T2: East
+        buildTerminal('T2', 600, 0, 200, 400, 0);
+        spawnProps(600, 0, 150, 350, 40, 'seats');
+
+        // T3: West
+        buildTerminal('T3', -600, 0, 250, 500, 0);
+        spawnProps(-600, 0, 200, 450, 50, 'seats');
+
+        // --- CORRIDORS & TRAVELATORS ---
+        function buildCorridor(cx, cz, w, d, rotY) {
+            const group = new THREE.Group();
+            
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(w, d), floor0Mat); // Just use base tile
+            floor.rotation.x = -Math.PI/2; floor.position.y = 30; group.add(floor);
+            
+            const roof = new THREE.Mesh(new THREE.PlaneGeometry(w, d), darkWallMat);
+            roof.rotation.x = Math.PI/2; roof.position.y = 50; group.add(roof);
+
+            // Walls
+            const wE = new THREE.Mesh(new THREE.BoxGeometry(2, 20, d), wallMat); wE.position.set(w/2, 40, 0); group.add(wE); addAABB(cx+(rotY?0:w/2), 40, cz+(rotY?w/2:0), rotY?d:4, 20, rotY?4:d);
+            const wW = new THREE.Mesh(new THREE.BoxGeometry(2, 20, d), wallMat); wW.position.set(-w/2, 40, 0); group.add(wW); addAABB(cx-(rotY?0:w/2), 40, cz-(rotY?w/2:0), rotY?d:4, 20, rotY?4:d);
+
+            // Travelators
+            const tMat = new THREE.MeshLambertMaterial({map: travelatorTex.clone()}); tMat.map.repeat.set(1, d/10); tMat.map.needsUpdate = true;
+            travelators.push(tMat);
+            
+            const t1 = new THREE.Mesh(new THREE.BoxGeometry(10, 1, d-20), tMat); t1.position.set(-15, 30.5, 0); group.add(t1);
+            const t2 = new THREE.Mesh(new THREE.BoxGeometry(10, 1, d-20), tMat); t2.position.set(15, 30.5, 0); group.add(t2);
+
+            group.position.set(cx, 0, cz);
+            if(rotY) group.rotation.y = Math.PI/2;
+            scene.add(group);
+        }
+
+        buildCorridor(0, -325, 60, 350, false); // Jewel to T1
+        buildCorridor(350, 0, 60, 400, true);   // Jewel to T2
+        buildCorridor(-350, 0, 60, 400, true);  // Jewel to T3
+
+        // --- Ramps from Level 0 to Level 1 (At Jewel Connectors) ---
+        function createSimpleRamp(x, z, w, d, dirZ, rotY) {
+            const rampGeo = new THREE.BoxGeometry(w, 35, d);
+            const ramp = new THREE.Mesh(rampGeo, wallMat);
+            ramp.position.set(x, 15, z);
+            ramp.rotation.x = rotY ? 0 : (dirZ * Math.PI/6);
+            ramp.rotation.z = rotY ? (dirZ * Math.PI/6) : 0;
+            scene.add(ramp);
+            
+            const rMinX = x - (rotY ? d/2 : w/2); const rMaxX = x + (rotY ? d/2 : w/2);
+            const rMinZ = z - (rotY ? w/2 : d/2); const rMaxZ = z + (rotY ? w/2 : d/2);
+            
+            if(!rotY) addRamp(rMinX, rMaxX, rMinZ, rMaxZ, 0, 30, dirZ);
+            else addRamp(rMinX, rMaxX, rMinZ, rMaxZ, 0, 30, dirZ); // Simplified
+        }
+        
+        createSimpleRamp(0, -120, 20, 60, -1, false); // North ramp
+        createSimpleRamp(120, 0, 20, 60, 1, true);    // East ramp
+        createSimpleRamp(-120, 0, 20, 60, -1, true);   // West ramp
+    }
+
+    // --- THE ENTITY ---
+    function buildEntity() {
+        monster = new THREE.Group();
+        const mat = new THREE.MeshLambertMaterial({ color: 0x050505, flatShading: true }); 
+        
+        const body = new THREE.Mesh(new THREE.BoxGeometry(2, 6, 1.5), mat); body.position.y = 8;
+        const armGeo = new THREE.BoxGeometry(0.8, 7, 0.8); armGeo.translate(0, -3.5, 0);
+        const legGeo = new THREE.BoxGeometry(1, 8, 1); legGeo.translate(0, -4, 0);
+
+        monsterLimbs.armL = new THREE.Mesh(armGeo, mat); monsterLimbs.armL.position.set(-1.5, 11, 0);
+        monsterLimbs.armR = new THREE.Mesh(armGeo, mat); monsterLimbs.armR.position.set(1.5, 11, 0);
+        monsterLimbs.legL = new THREE.Mesh(legGeo, mat); monsterLimbs.legL.position.set(-0.6, 5, 0);
+        monsterLimbs.legR = new THREE.Mesh(legGeo, mat); monsterLimbs.legR.position.set(0.6, 5, 0);
+        
+        const head = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2, 1.5), mat); head.position.y = 12; 
+        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff }); // Pale white eyes are creepier in dark
+        const eyes = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.2), eyeMat); eyes.position.set(0, 12.2, 0.76); 
+        
+        monster.add(body, monsterLimbs.armL, monsterLimbs.armR, monsterLimbs.legL, monsterLimbs.legR, head, eyes);
+
+        // Spawn far away in T1
+        monster.position.set(0, 30, -600); 
+        setMonsterRandomWaypoint(30); 
+        scene.add(monster);
+    }
+
+    // --- POST PROCESSING (PS1 VHS) ---
+    function setupPostProcessing() {
+        postScene = new THREE.Scene(); postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        const vhsShader = {
+            uniforms: { tDiffuse: { value: renderTarget.texture }, time: { value: 0.0 } },
+            vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+            fragmentShader: `
+                uniform sampler2D tDiffuse; uniform float time; varying vec2 vUv;
+                float rand(vec2 co){ return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453); }
+                void main() {
+                    vec2 uv = vUv;
+                    float trackingAmt = max(0.0, sin(time * 3.0 + uv.y * 15.0) - 0.95) * 0.015;
+                    uv.x += trackingAmt * rand(vec2(time, uv.y));
+
+                    float shift = 0.004;
+                    float r = texture2D(tDiffuse, uv + vec2(shift, 0.0)).r;
+                    float g = texture2D(tDiffuse, uv).g;
+                    float b = texture2D(tDiffuse, uv - vec2(shift, 0.0)).b;
+                    vec4 color = vec4(r, g, b, 1.0);
+
+                    color.rgb += (rand(uv + time) - 0.5) * 0.12;
+                    color.rgb = clamp(color.rgb * 1.1 - 0.05, 0.0, 1.0);
+                    gl_FragColor = color;
+                }
+            `
+        };
+        postMaterial = new THREE.ShaderMaterial(vhsShader);
+        postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMaterial));
+    }
+
+    // --- AUDIO SYSTEM (Soft Reverberated Creepy Ambient) ---
+    function initAudio() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Build a massive feedback delay network to simulate a huge empty space (Reverb)
+        delayNode = audioCtx.createDelay(2.0); delayNode.delayTime.value = 0.8;
+        feedbackNode = audioCtx.createGain(); feedbackNode.gain.value = 0.65; // High feedback for long tails
+        filterNode = audioCtx.createBiquadFilter(); filterNode.type = 'lowpass'; filterNode.frequency.value = 1200;
+        
+        const masterGain = audioCtx.createGain(); masterGain.gain.value = 0.5;
+
+        // Routing: Input -> Delay -> Filter -> Feedback -> Delay
+        delayNode.connect(filterNode);
+        filterNode.connect(feedbackNode);
+        feedbackNode.connect(delayNode);
+        
+        // Output routing
+        delayNode.connect(masterGain);
+        masterGain.connect(audioCtx.destination);
+
+        // Start Generative Ambient Notes
+        playCreepyAmbientNote();
+
+        // Setup Chase Music (Starts silent)
+        chaseOsc = audioCtx.createOscillator(); chaseOsc.type = 'sawtooth'; chaseOsc.frequency.value = 60;
+        chaseGain = audioCtx.createGain(); chaseGain.gain.value = 0; 
+        chaseLfo = audioCtx.createOscillator(); chaseLfo.type = 'sine'; chaseLfo.frequency.value = 4;
+        const chaseLfoGain = audioCtx.createGain(); chaseLfoGain.gain.value = 1;
+        chaseLfo.connect(chaseLfoGain); chaseLfoGain.connect(chaseGain.gain);
+        chaseOsc.connect(chaseGain); chaseGain.connect(audioCtx.destination);
+        chaseOsc.start(); chaseLfo.start();
+    }
+
+    function playCreepyAmbientNote() {
+        if (!audioCtx || gameState !== 'PLAYING') return;
+        
+        const osc = audioCtx.createOscillator();
+        const noteGain = audioCtx.createGain();
+        
+        // Minor pentatonic + dissonant extensions
+        const freqs = [130.81, 146.83, 155.56, 196.00, 233.08, 261.63, 311.13, 349.23];
+        osc.frequency.value = freqs[Math.floor(Math.random() * freqs.length)];
+        osc.type = Math.random() > 0.5 ? 'sine' : 'triangle';
+        
+        osc.connect(noteGain);
+        noteGain.connect(delayNode); // Send to massive reverb network
+        noteGain.connect(audioCtx.destination); // Send dry signal too
+        
+        const now = audioCtx.currentTime;
+        noteGain.gain.setValueAtTime(0, now);
+        noteGain.gain.linearRampToValueAtTime(0.08, now + 3); // Slow attack
+        noteGain.gain.linearRampToValueAtTime(0, now + 10);   // Very slow release
+        
+        osc.start(now);
+        osc.stop(now + 10);
+        
+        // Schedule next note randomly between 3 to 8 seconds
+        setTimeout(playCreepyAmbientNote, Math.random() * 5000 + 3000);
+    }
+
+    function triggerJumpScareAudio() {
+        if(!audioCtx) return;
+        const osc = audioCtx.createOscillator(); const noiseGain = audioCtx.createGain();
+        osc.type = 'square'; osc.frequency.setValueAtTime(40, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.2);
+        noiseGain.gain.setValueAtTime(1.0, audioCtx.currentTime); noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
+        osc.connect(noiseGain); noiseGain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 1.0);
+    }
+
+    // --- GAME LOGIC ---
+
+    function updatePlayerMovement(dt) {
+        const lookSensitivity = 1.5 * dt;
+        camera.rotation.y -= joysticks.right.deltaX * lookSensitivity;
+        camera.rotation.x -= joysticks.right.deltaY * lookSensitivity;
+        camera.rotation.x = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, camera.rotation.x));
+        camera.rotation.order = 'YXZ';
+
+        const moveSpeed = 50 * dt; // Slightly faster to cross massive map
+        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion); forward.y = 0; forward.normalize();
+        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion); right.y = 0; right.normalize();
+
+        const moveX = forward.x * (-joysticks.left.deltaY * moveSpeed) + right.x * (joysticks.left.deltaX * moveSpeed);
+        const moveZ = forward.z * (-joysticks.left.deltaY * moveSpeed) + right.z * (joysticks.left.deltaX * moveSpeed);
+
+        const currentY = player.position.y;
+        let nextX = player.position.x + moveX;
+        let nextZ = player.position.z + moveZ;
+
+        if (!isColliding(nextX, currentY, player.position.z, PLAYER_RADIUS)) player.position.x = nextX;
+        if (!isColliding(player.position.x, currentY, nextZ, PLAYER_RADIUS)) player.position.z = nextZ;
+        
+        const targetFloorY = getFloorHeight(player.position.x, player.position.z);
+        const targetEyeLevel = targetFloorY + EYE_LEVEL;
+        
+        if (joysticks.left.deltaX !== 0 || joysticks.left.deltaY !== 0) {
+            player.position.y += (targetEyeLevel - player.position.y) * 10 * dt;
+            camera.position.y = Math.sin(clock.getElapsedTime() * 12) * 0.35;
+        } else {
+            player.position.y += (targetEyeLevel - player.position.y) * 10 * dt;
+            camera.position.y = 0;
+        }
+
+        // Location Update
+        let loc = "CHANGI JEWEL";
+        const px = player.position.x; const pz = player.position.z;
+        if(pz < -200) loc = "TERMINAL 1"; else if(px > 200) loc = "TERMINAL 2"; else if(px < -200) loc = "TERMINAL 3";
+        if(Math.abs(px) < 60 && Math.abs(pz) > 150) loc = "LINKBRIDGE";
+        
+        const levelText = targetFloorY > 15 ? "DEPARTURES" : "ARRIVALS";
+        document.getElementById('location-text').innerText = `${loc} - ${levelText} - 02:45 AM`;
+    }
+
+    function setMonsterRandomWaypoint(floorY) {
+        // Monster wanders the massive complex
+        const areas = [ {x:0, z:-600}, {x:600, z:0}, {x:-600, z:0}, {x:0, z:0} ];
+        const targetArea = areas[Math.floor(Math.random()*areas.length)];
+        targetWaypoint.set( targetArea.x + (Math.random()-0.5)*200, floorY, targetArea.z + (Math.random()-0.5)*200 );
+    }
+
+    function updateMonster(dt, time) {
+        const floorY = getFloorHeight(monster.position.x, monster.position.z);
+        monster.position.y += (floorY - monster.position.y) * 5 * dt;
+
+        const dirToTarget = new THREE.Vector3().subVectors(targetWaypoint, monster.position); dirToTarget.y = 0;
+        let isMoving = false;
+
+        if (monsterState === 'WANDER') {
+            if (dirToTarget.length() < 20) {
+                setMonsterRandomWaypoint(floorY);
+            } else {
+                dirToTarget.normalize();
+                const mx = dirToTarget.x * monsterSpeed * 0.4 * dt;
+                const mz = dirToTarget.z * monsterSpeed * 0.4 * dt;
+                if(!isColliding(monster.position.x + mx, monster.position.y, monster.position.z, 3)) monster.position.x += mx;
+                if(!isColliding(monster.position.x, monster.position.y, monster.position.z + mz, 3)) monster.position.z += mz;
+                monster.lookAt(monster.position.x + dirToTarget.x, monster.position.y, monster.position.z + dirToTarget.z);
+                isMoving = true;
+            }
+
+            const vecToPlayer = new THREE.Vector3().subVectors(player.position, monster.position);
+            if (vecToPlayer.length() < 120 && Math.abs(player.position.y - monster.position.y) < 15) {
+                monsterState = 'CHASE';
+                if(chaseGain) chaseGain.gain.setTargetAtTime(0.4, audioCtx.currentTime, 0.5);
+            }
+
+        } else if (monsterState === 'CHASE') {
+            targetWaypoint.copy(player.position);
+            dirToTarget.subVectors(targetWaypoint, monster.position); dirToTarget.y = 0;
+            const dist = dirToTarget.length();
+
+            if (dist < 5 && Math.abs(player.position.y - monster.position.y) < 10) { gameOver(); return; }
+
+            dirToTarget.normalize();
+            const mx = dirToTarget.x * monsterSpeed * dt;
+            const mz = dirToTarget.z * monsterSpeed * dt;
+            
+            // Allow monster to slide along walls better
+            if(!isColliding(monster.position.x + mx, monster.position.y, monster.position.z, 2)) monster.position.x += mx;
+            if(!isColliding(monster.position.x, monster.position.y, monster.position.z + mz, 2)) monster.position.z += mz;
+            
+            monster.lookAt(player.position.x, monster.position.y, player.position.z);
+            isMoving = true;
+            
+            if(new THREE.Vector3().subVectors(player.position, monster.position).length() > 200) {
+                monsterState = 'WANDER';
+                setMonsterRandomWaypoint(getFloorHeight(monster.position.x, monster.position.z));
+                if(chaseGain) chaseGain.gain.setTargetAtTime(0, audioCtx.currentTime, 1.0);
+            }
+        }
+
+        if (isMoving) {
+            const swing = Math.sin(time * (monsterState === 'CHASE' ? 12 : 5));
+            monsterLimbs.armL.rotation.x = swing * 0.8; monsterLimbs.armR.rotation.x = -swing * 0.8;
+            monsterLimbs.legL.rotation.x = -swing * 0.8; monsterLimbs.legR.rotation.x = swing * 0.8;
+        } else {
+            monsterLimbs.armL.rotation.x = 0; monsterLimbs.armR.rotation.x = 0;
+            monsterLimbs.legL.rotation.x = 0; monsterLimbs.legR.rotation.x = 0;
+        }
+    }
+
+    function updateEnvironment(dt, time) {
+        animatedMaterials.forEach(mat => { if(mat.map) mat.map.offset.y -= 0.5 * dt; });
+        travelators.forEach(mat => { if(mat.map) mat.map.offset.y -= 1.5 * dt; });
+        
+        // Animate T1 Kinetic Rain drops
+        rainDrops.forEach((drop, i) => {
+            drop.position.y = 50 + Math.sin(time * 0.5 + i) * 15;
+        });
+    }
+
+    function gameOver() {
+        gameState = 'GAMEOVER';
+        document.getElementById('ui-layer').style.display = 'none'; document.getElementById('hud').style.display = 'none';
+        camera.lookAt(monster.position.clone().add(new THREE.Vector3(0, 10, 0)));
+        setTimeout(() => {
+            document.getElementById('game-over-screen').style.display = 'flex'; triggerJumpScareAudio();
+        }, 300);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        const dt = clock.getDelta(); const time = clock.getElapsedTime();
+
+        if (gameState === 'PLAYING') {
+            updatePlayerMovement(dt); updateMonster(dt, time); updateEnvironment(dt, time);
+        }
+
+        postMaterial.uniforms.time.value = time;
+        renderer.setRenderTarget(renderTarget); renderer.render(scene, camera);
+        renderer.setRenderTarget(null); renderer.render(postScene, postCamera);
+    }
+
+    document.getElementById('start-btn').addEventListener('click', () => {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('ui-layer').style.display = 'flex';
+        document.getElementById('hud').style.display = 'block';
+        initAudio(); if (audioCtx.state === 'suspended') audioCtx.resume();
+        gameState = 'PLAYING'; clock.start();
+    });
+
+    initThreeJS();
+    setupControls();
+    animate();
 
 </script>
 </body>
