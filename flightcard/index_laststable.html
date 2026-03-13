@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flight Card v2.2</title>
+  <title>Flight Card v2.3</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     /* --- CORE STYLES --- */
@@ -12,6 +12,8 @@
       margin: 0; padding: 0; font-family: monospace; font-size: 10px;
       width: 100%; height: 100%;
       transition: background-color 0.3s, color 0.3s;
+      /* Prevent Pull-to-Refresh on Mobile/iPad Safari */
+      overscroll-behavior-y: none; 
     }
     body {
       display: flex; justify-content: center; align-items: flex-start;
@@ -132,10 +134,10 @@
     
     input#plan { width: 25px !important; }
     input#reg, input#fl, input#dest, input#flightNo, input#pdc { width: 35px !important; }
-    input#gate, input#bi, input#v2, input#v2_plus_15, input#qnh, input#aus_sqwk, input#opti_climb, input#opti_desc1, input#opti_desc2 { width: 45px !important; }
+    input#gate, input#india_gate, input#bi, input#v2, input#v2_plus_15, input#qnh, input#aus_sqwk, input#opti_climb, input#opti_desc1, input#opti_desc2 { width: 45px !important; }
     input#opti_mach { width: 30px !important; }
     input#pob, input#india_pob { width: 40px !important; }
-    select#info { width: 35px !important; }
+    select#info, select#india_info { width: 35px !important; }
     input#pzfw, input#ezfw, input#pfit, input#exs, input#bo, input#res, input#fzfw, input#ezfw_du, input#fzfw_du, input#percent_mac, input#aus_climb_alt { width: 55px !important; }
     input#bw { width: 65px !important; }
     input#sid, input#star, input#aus_cleared_sid, input#aus_cleared_wpt { width: 100px !important; }
@@ -177,6 +179,18 @@
     .format-selector-row { padding: 5px; background-color: #eeeeee; border-bottom: 1px solid black; box-sizing: border-box; }
     .format-selector-row select { font-size: 10px; padding: 2px; }
 
+    /* Audio Recording Button */
+    .record-btn {
+        background-color: transparent; border: 1px solid #ccc; color: #cc3300; 
+        border-radius: 50%; width: 22px; height: 22px; display: flex; 
+        justify-content: center; align-items: center; cursor: pointer; font-size: 10px;
+    }
+    .record-btn.recording {
+        background-color: #cc3300; color: white; border-color: #cc3300;
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
     /* Toggle Switch */
     .switch { position: relative; display: inline-block; width: 40px; height: 20px; vertical-align: middle; }
     .switch input { opacity: 0; width: 0; height: 0; }
@@ -208,12 +222,11 @@
     }
     
     /* Australia Format Fields */
-    #australia-format-row .cell input, #card-australia-format-row .cell .data-display {
-        text-align: center;
-    }
-    #aus_cleared_fpr, #aus_departure { width: 50px !important; }
-    #aus_cvs_ft { width: 45px !important; }
+    #aus_cleared_fpr { width: 45px !important; }
+    #aus_departure { width: 55px !important; }
+    #aus_cvs_ft { width: 40px !important; }
     #aus_sqwk { width: 40px !important; }
+    #aus_dep_freq { width: 50px !important; }
 
     /* NIGHT MODE */
     body.night-mode { background-color: #1a1a1a; color: #e0e0e0; }
@@ -268,6 +281,7 @@
         </div>
         <div class="heading-controls">
             <button id="purgeButton" class="button">Purge</button>
+            <button id="recordBtn" class="record-btn" title="Record Voice Memo"><i class="fas fa-microphone"></i></button>
             <label class="switch" title="Toggle Day/Night Mode">
               <input type="checkbox" id="darkModeToggle">
               <span class="slider round"></span>
@@ -332,7 +346,7 @@
                <option value="">GMT</option>
                <option value="+14">+14</option><option value="+13.75">+13.75</option><option value="+13">+13</option><option value="+12.75">+12.75</option><option value="+12">+12</option>
                <option value="+11">+11</option><option value="+10.5">+10.5</option><option value="+10">+10</option><option value="+9.5">+9.5</option><option value="+9">+9</option>
-               <option value="+8.75">+8.75</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6.5">+6.5</option><option value="+6">+6</option>
+               <option value="+8.75">+8.75</option><option value="+8" selected>+8</option><option value="+7">+7</option><option value="+6.5">+6.5</option><option value="+6">+6</option>
                <option value="+5.75">+5.75</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4.5">+4.5</option><option value="+4">+4</option>
                <option value="+3.5">+3.5</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option>
                <option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-3.5">-3.5</option><option value="-4">-4</option>
@@ -364,7 +378,7 @@
               <option value="">GMT</option>
                <option value="+14">+14</option><option value="+13.75">+13.75</option><option value="+13">+13</option><option value="+12.75">+12.75</option><option value="+12">+12</option>
                <option value="+11">+11</option><option value="+10.5">+10.5</option><option value="+10">+10</option><option value="+9.5">+9.5</option><option value="+9">+9</option>
-               <option value="+8.75">+8.75</option><option value="+8">+8</option><option value="+7">+7</option><option value="+6.5">+6.5</option><option value="+6">+6</option>
+               <option value="+8.75">+8.75</option><option value="+8" selected>+8</option><option value="+7">+7</option><option value="+6.5">+6.5</option><option value="+6">+6</option>
                <option value="+5.75">+5.75</option><option value="+5.5">+5.5</option><option value="+5">+5</option><option value="+4.5">+4.5</option><option value="+4">+4</option>
                <option value="+3.5">+3.5</option><option value="+3">+3</option><option value="+2">+2</option><option value="+1">+1</option><option value="0">0</option>
                <option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-3.5">-3.5</option><option value="-4">-4</option>
@@ -407,32 +421,34 @@
 
        <div class="row seamless-row format-row" id="india-format-row">
             <div class="cell"> <label for="pdc">PDC</label> <input type="text" id="pdc" maxlength="3" pattern="[0-9]*" inputmode="numeric"> </div>
-            <div class="cell"> <label class="label-right-aligned" for="gate">GATE</label> <input type="text" id="gate" maxlength="4"> </div>
-            <div class="cell"> <label class="label-right-aligned" for="info">ATIS</label> <select id="info"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option><option value="G">G</option><option value="H">H</option><option value="I">I</option><option value="J">J</option><option value="K">K</option><option value="L">L</option><option value="M">M</option><option value="N">N</option><option value="O">O</option><option value="P">P</option><option value="Q">Q</option><option value="R">R</option><option value="S">S</option><option value="T">T</option><option value="U">U</option><option value="V">V</option><option value="W">W</option><option value="X">X</option><option value="Y">Y</option><option value="Z">Z</option></select> </div>
+            <div class="cell"> <label class="label-right-aligned" for="india_gate">GATE</label> <input type="text" id="india_gate" maxlength="4"> </div>
+            <div class="cell"> <label class="label-right-aligned" for="india_info">ATIS</label> <select id="india_info"><option value="">-</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option><option value="G">G</option><option value="H">H</option><option value="I">I</option><option value="J">J</option><option value="K">K</option><option value="L">L</option><option value="M">M</option><option value="N">N</option><option value="O">O</option><option value="P">P</option><option value="Q">Q</option><option value="R">R</option><option value="S">S</option><option value="T">T</option><option value="U">U</option><option value="V">V</option><option value="W">W</option><option value="X">X</option><option value="Y">Y</option><option value="Z">Z</option></select> </div>
              <div class="cell"> <label for="qnh">QNH</label> <input type="text" id="qnh" maxlength="4" pattern="[0-9]*" inputmode="numeric"> </div>
-             <div class="cell"> <label for="india_pob">POB</label> <input type="text" id="india_pob" readonly> </div>
+             <div class="cell"> <input type="text" id="india_pob" readonly> <label for="india_pob">POB, ALL THROUGH SECURITY.</label> </div>
             <div class="cell filler-cell"></div>
        </div>
 
         <!-- UPDATED AUSTRALIA ROW -->
         <div class="row seamless-row format-row" id="australia-format-row">
              <div class="cell"> 
-                 <label>Cleared</label> 
-                 <input type="text" id="aus_cleared_fpr" id="aus_cleared_fpr"> 
+                 <label>CLRD</label> 
+                 <input type="text" id="aus_cleared_fpr"> 
                  <label>FPR</label> 
              </div>
              <div class="cell"> 
                  <input type="text" id="aus_departure"> 
-                 <label>departure</label> 
+                 <label>DEPARTURE CVS TO</label> 
              </div>
              <div class="cell"> 
-                 <label>CVS to</label> 
                  <input type="text" id="aus_cvs_ft" maxlength="5" pattern="[0-9]*" inputmode="numeric"> 
-                 <label>ft</label> 
+                 <label>FT SQWK</label> 
              </div>
             <div class="cell"> 
-                <label>SQWK</label> 
                 <input type="text" id="aus_sqwk" maxlength="4" pattern="[0-9]*" inputmode="numeric"> 
+            </div>
+            <div class="cell">
+                <label>DEP FREQ</label>
+                <input type="text" id="aus_dep_freq">
             </div>
             <div class="cell filler-cell"></div>
         </div>
@@ -552,19 +568,20 @@
 
        <div class="row seamless-row format-row" id="card-india-format-row">
             <div class="cell"> <label>PDC</label> <span class="data-display" id="card-pdc"></span> </div>
-            <div class="cell"> <label class="label-right-aligned">GATE</label> <span class="data-display text-blue" id="card-gate-india"></span> </div>
-            <div class="cell"> <label class="label-right-aligned">ATIS</label> <span class="data-display text-blue" id="card-info-india"></span> </div>
+            <div class="cell"> <label class="label-right-aligned">GATE</label> <span class="data-display text-blue" id="card-india_gate"></span> </div>
+            <div class="cell"> <label class="label-right-aligned">ATIS</label> <span class="data-display text-blue" id="card-india_info"></span> </div>
              <div class="cell"> <label>QNH</label> <span class="data-display" id="card-qnh"></span> </div>
-             <div class="cell"> <label>POB</label> <span class="data-display" id="card-india_pob"></span> </div>
+             <div class="cell"> <span class="data-display" id="card-india_pob"></span> <label>POB, ALL THROUGH SECURITY.</label> </div>
             <div class="cell filler-cell"></div>
        </div>
 
         <!-- CARD VIEW AUSTRALIA -->
         <div class="row seamless-row format-row" id="card-australia-format-row">
-             <div class="cell"> <label>Cleared</label> <span class="data-display text-blue" id="card-aus_cleared_fpr"></span> <label>FPR</label> </div>
-             <div class="cell"> <span class="data-display text-blue" id="card-aus_departure"></span> <label>departure</label> </div>
-             <div class="cell"> <label>CVS to</label> <span class="data-display" id="card-aus_cvs_ft"></span> <label>ft</label> </div>
-            <div class="cell"> <label>SQWK</label> <span class="data-display" id="card-aus_sqwk"></span> </div>
+             <div class="cell"> <label>CLRD</label> <span class="data-display text-blue" id="card-aus_cleared_fpr"></span> <label>FPR</label> </div>
+             <div class="cell"> <span class="data-display text-blue" id="card-aus_departure"></span> <label>DEPARTURE CVS TO</label> </div>
+             <div class="cell"> <span class="data-display" id="card-aus_cvs_ft"></span> <label>FT SQWK</label> </div>
+            <div class="cell"> <span class="data-display" id="card-aus_sqwk"></span> </div>
+            <div class="cell"> <label>DEP FREQ</label> <span class="data-display" id="card-aus_dep_freq"></span> </div>
             <div class="cell filler-cell"></div>
         </div>
 
@@ -618,8 +635,8 @@
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbymVVoJU0wZkPrXgFAE_McA_pf_ttj5GdvA_tklrolGEPkw0WB1rVg0xLDFgXGVH7zg/exec'; 
 
     // --- ID LISTS ---
-    const savableInputIds = ['flightNo', 'capt', 'staffNo', 'crew', 'pax', 'm2000', 'p1000', 'm1000', 'std-hours', 'std-minutes', 'std-gmt', 'flt-t-hours', 'flt-t-minutes', 'sta-hours', 'sta-minutes', 'sta-gmt', 'plan', 'reg', 'gate', 'info', 'fl', 'dest', 'bw', 'bi', 'pzfw', 'ezfw', 'pfit', 'exs', 'bo', 'res', 'fzfw', 'percent_mac', 'sid', 'star', 'v2', 'remarks', 'formatSelector', 'pdc', 'qnh', 
-    'aus_cleared_fpr', 'aus_departure', 'aus_cvs_ft', 'aus_sqwk', 
+    const savableInputIds = ['flightNo', 'capt', 'staffNo', 'crew', 'pax', 'm2000', 'p1000', 'm1000', 'std-hours', 'std-minutes', 'std-gmt', 'flt-t-hours', 'flt-t-minutes', 'sta-hours', 'sta-minutes', 'sta-gmt', 'plan', 'reg', 'gate', 'info', 'india_gate', 'india_info', 'fl', 'dest', 'bw', 'bi', 'pzfw', 'ezfw', 'pfit', 'exs', 'bo', 'res', 'fzfw', 'percent_mac', 'sid', 'star', 'v2', 'remarks', 'formatSelector', 'pdc', 'qnh', 
+    'aus_cleared_fpr', 'aus_departure', 'aus_cvs_ft', 'aus_sqwk', 'aus_dep_freq',
     'opti_climb', 'opti_mach', 'opti_desc1', 'opti_desc2', 'crz_check'];
     const calculatedIds = ['pob', 'india_pob', 'ezfw_du', 'fzfw_du', 'v2_plus_15', 'std-lt-hours', 'std-lt-minutes', 'sta-lt-hours', 'sta-lt-minutes', 'blk-t-hours', 'blk-t-minutes'];
     
@@ -641,9 +658,20 @@
     };
     let aircraftData = aircraftDataFallback;
 
+    // --- Prevent Accidental Refresh/Navigation ---
+    window.addEventListener('beforeunload', function (e) {
+        e.preventDefault();
+        e.returnValue = 'Are you sure you want to leave? Unsaved changes may be lost.';
+    });
+
+    // --- Audio Recording Variables ---
+    let mediaRecorder;
+    let audioChunks = [];
+
     document.addEventListener('DOMContentLoaded', function() {
         loadFromLocalStorage();
         setupEventListeners();
+        setupAudioRecorder();
         checkConnection(); // Initial ping
         setInterval(checkConnection, 60000); // Check every 60s
         if(navigator.onLine) fetchAircraftDB();
@@ -934,7 +962,6 @@
 
     function addCrewRow(data = { type: 'FZ', name: '' }) {
         const div = document.createElement('div'); div.className = 'crew-row';
-        // Note: Classes crew-type-select and crew-name-input now have strict widths in CSS to match top row
         div.innerHTML = `<select class="crew-type-select"><option value="FZ">FZ</option><option value="SCO">SCO</option><option value="OBS">OBS</option><option value="IFM">IFM</option><option value="WIA">WIA</option><option value="CSS/CS">CSS/CS</option><option value="LSS/LS">LSS/LS</option><option value="FSS/FS">FSS/FS</option></select>
                          <input type="text" class="crew-name-input" placeholder="Name" value="${data.name}">
                          <button type="button" class="crew-control-btn remove-crew-btn" onclick="this.parentElement.remove()">-</button>
@@ -960,15 +987,11 @@
     function generateCard() {
         const data = getAllFormData();
         ['flightNo','capt','staffNo','crew','pax','m2000','p1000','m1000','bw','bi','pzfw','ezfw','ezfw_du','pfit','exs','bo','res','fzfw','fzfw_du','percent_mac','v2','v2_plus_15','sid','star','remarks','opti_climb','opti_mach','opti_desc1','opti_desc2','plan','reg','gate','info','fl','dest','pob','pdc','qnh',
-        'aus_cleared_fpr', 'aus_departure', 'aus_cvs_ft', 'aus_sqwk'].forEach(id => {
+        'aus_cleared_fpr', 'aus_departure', 'aus_cvs_ft', 'aus_sqwk', 'aus_dep_freq', 'india_gate', 'india_info', 'india_pob'].forEach(id => {
             const el = document.getElementById('card-'+id);
-            if(el) { const val = data[id.replace('india_','')] || data[id] || ''; el.textContent = val; }
+            if(el) { const val = data[id] || ''; el.textContent = val; }
         });
         
-        const indiaGate = document.getElementById('card-gate-india'); if(indiaGate) indiaGate.textContent = data.gate;
-        const indiaInfo = document.getElementById('card-info-india'); if(indiaInfo) indiaInfo.textContent = data.info;
-        const indiaPob = document.getElementById('card-india_pob'); if(indiaPob) indiaPob.textContent = data.pob;
-
         const fmt = (h, m) => (h && m) ? `${h}:${m}` : '';
         document.getElementById('card-std-time').textContent = fmt(data['std-hours'], data['std-minutes']);
         document.getElementById('card-std-gmt').textContent = data['std-gmt'] ? `(GMT${data['std-gmt']})` : '';
@@ -1004,6 +1027,53 @@
         else { machInput.style.display = 'inline-block'; dotText.style.display = 'inline'; crzText.style.display = 'none'; }
     }
 
+    function setupAudioRecorder() {
+        const recordBtn = document.getElementById('recordBtn');
+        recordBtn.addEventListener('click', async () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                recordBtn.classList.remove('recording');
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = e => {
+                    if (e.data.size > 0) audioChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const a = document.createElement('a');
+                    a.href = audioUrl;
+                    
+                    // Naming standard with date
+                    const now = new Date();
+                    const dStr = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}`;
+                    const tStr = `${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}`;
+                    a.download = `Audio_Memo_${dStr}_${tStr}.webm`;
+                    
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    // Stop tracks to release microphone access
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                recordBtn.classList.add('recording');
+            } catch (err) {
+                console.error("Microphone error:", err);
+                alert("Microphone access denied or unavailable.");
+            }
+        });
+    }
+
     function setupEventListeners() {
         function autoTab(currentElId, nextElId) {
           const currentEl = document.getElementById(currentElId);
@@ -1019,8 +1089,6 @@
         autoTab('plan', 'reg'); autoTab('reg', 'gate');
         autoTab('gate', 'info'); autoTab('fl', 'dest');
         autoTab('pdc', 'qnh');
-        autoTab('aus_sqwk', 'aus_cleared_fpr'); // Note: SQWK is last in row but first in mental tab order? Or loop back?
-        // Tab order for Aus: Cleared -> Departure -> CVS -> SQWK
         autoTab('aus_cleared_fpr', 'aus_departure');
         autoTab('opti_climb', 'opti_mach'); autoTab('opti_desc1', 'opti_desc2');
         autoTab('std-hours', 'std-minutes'); autoTab('flt-t-hours', 'flt-t-minutes'); autoTab('sta-hours', 'sta-minutes');
@@ -1029,7 +1097,7 @@
             if(el.id.includes('hours') || el.id.includes('minutes') || el.id === 'flightNo' || el.id === 'plan' || el.id === 'bw' || el.id === 'fl' || el.id === 'v2') {
                 el.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); });
             }
-            if(el.id === 'reg' || el.id === 'sid' || el.id === 'star' || el.id === 'dest' || el.id.includes('aus_cleared') || el.id === 'aus_departure' || el.id === 'gate') {
+            if(el.id === 'reg' || el.id === 'sid' || el.id === 'star' || el.id === 'dest' || el.id.includes('aus_cleared') || el.id === 'aus_departure' || el.id === 'gate' || el.id === 'india_gate') {
                 el.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
             }
         });
