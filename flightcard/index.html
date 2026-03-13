@@ -2,8 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flight Card v2.3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <!-- Apple iOS Standalone/Offline Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Flight Card">
+  <meta name="theme-color" content="#ffffff">
+  
+  <title>Flight Card v2.4 (Offline Protected)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     /* --- CORE STYLES --- */
@@ -12,14 +19,27 @@
       margin: 0; padding: 0; font-family: monospace; font-size: 10px;
       width: 100%; height: 100%;
       transition: background-color 0.3s, color 0.3s;
-      /* Prevent Pull-to-Refresh on Mobile/iPad Safari */
-      overscroll-behavior-y: none; 
+      
+      /* Aggressive Swipe and Refresh Prevention */
+      overscroll-behavior: none; 
+      -webkit-touch-callout: none;
     }
     body {
       display: flex; justify-content: center; align-items: flex-start;
       padding: 10px; transform-origin: top left;
       background-color: #ffffff; color: #000000;
     }
+    
+    /* Allow selection only on inputs, prevent accidental UI selection that causes dragging */
+    .page:not(input):not(textarea) {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    input, textarea, select, .data-display {
+        -webkit-user-select: auto;
+        user-select: auto;
+    }
+
     .page {
       display: none; width: 750px; max-width: 750px;
       background-color: #ffffff; color: #000000;
@@ -199,7 +219,7 @@
     input:checked + .slider { background-color: #0066cc; }
     input:checked + .slider:before { transform: translateX(20px); }
 
-    .footer-text { font-size: 8px; margin-top: 15px; text-align: left; color: #555555; }
+    .footer-text { font-size: 11px; margin-top: 15px; text-align: left; color: #4CAF50; font-weight: bold; background: #e8f5e9; padding: 8px; border-radius: 4px;}
     #fileInput { display: none; }
 
     /* Card Page Display */
@@ -242,6 +262,7 @@
     .night-mode #sync-status { background: #333; color: #aaa; }
     .night-mode #sync-status.synced { color: #66bb6a; background: #1b5e20; }
     .night-mode #sync-status.error { color: #ef5350; background: #3c1515; }
+    .night-mode .footer-text { background-color: #1b5e20; color: #a5d6a7;}
     
     @media print {
         body { background: #fff !important; color: #000 !important; transform: none !important; padding: 0 !important; }
@@ -274,7 +295,7 @@
   <div id="formPage" class="page active">
     <div class="heading-container">
         <div class="heading-left">
-            <h3>Flight Card Entry</h3>
+            <h3>Flight Card Entry <i class="fas fa-shield-alt" style="color: #4CAF50; font-size: 12px;" title="Offline Protection Active"></i></h3>
             <div id="sync-status" class="offline" title="Check Connection" onclick="checkConnection()">
                 <i class="fas fa-circle-notch"></i> <span>Check</span>
             </div>
@@ -513,12 +534,13 @@
         <button id="loadFileBtn" class="button btn-grey"><i class="fas fa-file-upload"></i> Load File</button>
         <button onclick="generateCard()" class="button">Generate Flight Card</button>
     </div>
-    <p class="footer-text">Note to User: Add to "Reading List" on Safari for offline use. Syncs automatically when online.</p>
+    
+    <p class="footer-text"><i class="fas fa-info-circle"></i> FOR MAXIMUM OFFLINE RELIABILITY: Do not use "Reading List". Tap the Share icon (<i class="fas fa-share-square"></i>) and select "Add to Home Screen". Launch from your Home Screen for a persistent, offline app experience.</p>
   </div>
 
   <div id="cardPage" class="page">
     <div class="heading-container">
-        <h3>Flight Card</h3>
+        <h3>Flight Card <i class="fas fa-shield-alt" style="color: #4CAF50; font-size: 12px;" title="Offline Protection Active"></i></h3>
          <div class="heading-controls">
              <label class="switch" title="Toggle Day/Night Mode">
                <input type="checkbox" id="darkModeToggleCard"> <span class="slider round"></span>
@@ -658,26 +680,73 @@
     };
     let aircraftData = aircraftDataFallback;
 
-    // --- Prevent Accidental Refresh/Navigation ---
-    window.addEventListener('beforeunload', function (e) {
-        e.preventDefault();
-        e.returnValue = 'Are you sure you want to leave? Unsaved changes may be lost.';
-    });
-
     // --- Audio Recording Variables ---
     let mediaRecorder;
     let audioChunks = [];
+    
+    // --- Anti-Suspend Background Audio ---
+    let heartbeatAudio = null;
+
+    // ==========================================
+    // PULL OUT ALL THE STOPS: ANTI-REFRESH LOGIC
+    // ==========================================
+    function initAntiRefreshDefenses() {
+        // 1. History Trap: Prevents Accidental Back/Forward Swipe Navigations
+        window.history.pushState({page: 1}, "", "");
+        window.addEventListener("popstate", function(event) {
+            window.history.pushState({page: 1}, "", "");
+        });
+
+        // 2. Unload Warning (Already present but enforced)
+        window.addEventListener('beforeunload', function (e) {
+            e.preventDefault();
+            e.returnValue = 'Are you sure you want to leave? Unsaved changes may be lost.';
+        });
+
+        // 3. Audio Heartbeat (Tricks iOS into keeping Safari tab alive in background)
+        // Starts on very first user interaction
+        const startHeartbeat = () => {
+            if(!heartbeatAudio) {
+                heartbeatAudio = document.createElement('audio');
+                // Extremely tiny, silent looping audio track (1 sample)
+                heartbeatAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+                heartbeatAudio.loop = true;
+                heartbeatAudio.play().catch(e => console.log("Heartbeat waiting..."));
+            }
+            document.removeEventListener('touchstart', startHeartbeat);
+            document.removeEventListener('click', startHeartbeat);
+        };
+        document.addEventListener('touchstart', startHeartbeat, {once: true});
+        document.addEventListener('click', startHeartbeat, {once: true});
+
+        // 4. Wake Lock API: Ask device not to dim/sleep the screen
+        let wakeLock = null;
+        const requestWakeLock = async () => {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                } catch (err) { console.log("WakeLock prevented"); }
+            }
+        };
+        document.addEventListener('visibilitychange', () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                requestWakeLock();
+            }
+            // Auto-save EVERYTHING immediately before going to background to freeze state
+            if(document.visibilityState === 'hidden') saveAllToLocalStorage();
+        });
+        requestWakeLock(); // Try initially
+    }
+    // ==========================================
 
     document.addEventListener('DOMContentLoaded', function() {
+        initAntiRefreshDefenses();
         loadFromLocalStorage();
         setupEventListeners();
         setupAudioRecorder();
         checkConnection(); // Initial ping
         setInterval(checkConnection, 60000); // Check every 60s
         if(navigator.onLine) fetchAircraftDB();
-        
-        // Initial state for CRZ
-        toggleCrz(document.getElementById('crz_check').checked);
     });
 
     async function checkConnection() {
@@ -694,11 +763,11 @@
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
             
-            // Ping the backend. Even a 404/error html response means we hit the server vs network error
+            // Ping the backend.
             await fetch(`${WEB_APP_URL}?action=PING`, { 
                 method: 'GET', 
                 signal: controller.signal,
-                mode: 'no-cors' // We just need to know if it reaches the server, opaque response is fine
+                mode: 'no-cors'
             });
             clearTimeout(timeoutId);
             
@@ -727,12 +796,10 @@
 
         const data = getAllFormData();
         
-        // Update aircraft DB if needed
         if(data.reg && data.bw && data.bi) {
             const existing = aircraftData[data.reg];
             if(!existing || existing.bw != data.bw || existing.bi != data.bi) {
                 aircraftData[data.reg] = { bw: data.bw, bi: data.bi };
-                 // Fire and forget update
                  fetch(WEB_APP_URL, { 
                      method: 'POST', 
                      body: new URLSearchParams({ action: 'UPDATE_AIRCRAFT', reg: data.reg, bw: data.bw, bi: data.bi }) 
@@ -744,7 +811,7 @@
             const payload = new URLSearchParams({ action: 'SAVE_FLIGHT', data: JSON.stringify(data) });
             await fetch(WEB_APP_URL, { method: 'POST', body: payload });
             alert("Flight Log Saved to Cloud!");
-            checkConnection(); // Update status
+            checkConnection(); 
         } catch(e) { 
             alert("Save Failed. Check internet connection."); 
             checkConnection();
@@ -885,14 +952,20 @@
     }
 
     function saveAllToLocalStorage() {
+        // Freeze everything so a reload drops us exactly here.
         const data = getAllFormData();
         savableInputIds.forEach(id => {
             if(data[id] !== undefined) localStorage.setItem(id, data[id]);
         });
         localStorage.setItem('crewMembers', JSON.stringify(data.crewMembers));
+        
+        // Also save UI state
+        localStorage.setItem('isCardPageVisible', document.getElementById('cardPage').classList.contains('active'));
+        localStorage.setItem('isDarkMode', document.getElementById('darkModeToggle').checked);
     }
 
     function loadFromLocalStorage() {
+        // Restore all text inputs
         savableInputIds.forEach(id => {
             const val = localStorage.getItem(id);
             const el = document.getElementById(id);
@@ -901,11 +974,26 @@
                 else el.value = val;
             }
         });
+        
+        // Restore crew rows
         const savedCrew = localStorage.getItem('crewMembers');
         try { 
             const parsed = JSON.parse(savedCrew);
             if(parsed && parsed.length > 0) parsed.forEach(addCrewRow); else addCrewRow();
         } catch(e) { addCrewRow(); }
+        
+        // Restore CRZ toggle state
+        toggleCrz(document.getElementById('crz_check').checked);
+        updateAllCalculatedFields();
+        document.getElementById('formatSelector').dispatchEvent(new Event('change'));
+
+        // Restore Dark Mode
+        const isDark = localStorage.getItem('isDarkMode') === 'true';
+        if(isDark) toggleDarkMode(true);
+
+        // Restore active page (if they were on the card page when it crashed, drop them right back)
+        const isCardActive = localStorage.getItem('isCardPageVisible') === 'true';
+        if(isCardActive) generateCard();
     }
 
     function updateAllCalculatedFields() {
@@ -964,24 +1052,29 @@
         const div = document.createElement('div'); div.className = 'crew-row';
         div.innerHTML = `<select class="crew-type-select"><option value="FZ">FZ</option><option value="SCO">SCO</option><option value="OBS">OBS</option><option value="IFM">IFM</option><option value="WIA">WIA</option><option value="CSS/CS">CSS/CS</option><option value="LSS/LS">LSS/LS</option><option value="FSS/FS">FSS/FS</option></select>
                          <input type="text" class="crew-name-input" placeholder="Name" value="${data.name}">
-                         <button type="button" class="crew-control-btn remove-crew-btn" onclick="this.parentElement.remove()">-</button>
-                         <button type="button" class="crew-control-btn add-crew-btn" onclick="addCrewRow()">+</button>`;
+                         <button type="button" class="crew-control-btn remove-crew-btn" onclick="this.parentElement.remove(); saveAllToLocalStorage();">-</button>
+                         <button type="button" class="crew-control-btn add-crew-btn" onclick="addCrewRow(); saveAllToLocalStorage();">+</button>`;
         div.querySelector('select').value = data.type;
+        div.querySelectorAll('input, select').forEach(el => el.addEventListener('input', saveAllToLocalStorage));
         document.getElementById('additional-crew-container').appendChild(div);
     }
     
     function closeModal() { document.getElementById('loadModal').style.display = 'none'; }
+    
     function goBack() { 
         document.getElementById("cardPage").classList.remove("active"); 
         document.getElementById("formPage").classList.add("active");
         if(document.getElementById('darkModeToggleCard').checked != document.getElementById('darkModeToggle').checked) {
             document.getElementById('darkModeToggle').checked = document.getElementById('darkModeToggleCard').checked;
         }
+        saveAllToLocalStorage(); // freeze state change
     }
+    
     function toggleDarkMode(isNight) {
         document.body.classList.toggle('night-mode', isNight);
         document.getElementById('darkModeToggle').checked = isNight;
         document.getElementById('darkModeToggleCard').checked = isNight;
+        saveAllToLocalStorage();
     }
     
     function generateCard() {
@@ -1017,6 +1110,7 @@
 
         document.getElementById("formPage").classList.remove("active");
         document.getElementById("cardPage").classList.add("active");
+        saveAllToLocalStorage(); // freeze state change
     }
 
     function toggleCrz(isChecked) {
@@ -1033,10 +1127,13 @@
             if (mediaRecorder && mediaRecorder.state === 'recording') {
                 mediaRecorder.stop();
                 recordBtn.classList.remove('recording');
+                if(heartbeatAudio) heartbeatAudio.play(); // resume background hack
                 return;
             }
 
             try {
+                if(heartbeatAudio) heartbeatAudio.pause(); // prevent interference
+                
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
@@ -1051,7 +1148,6 @@
                     const a = document.createElement('a');
                     a.href = audioUrl;
                     
-                    // Naming standard with date
                     const now = new Date();
                     const dStr = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}`;
                     const tStr = `${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}`;
@@ -1061,7 +1157,6 @@
                     a.click();
                     document.body.removeChild(a);
                     
-                    // Stop tracks to release microphone access
                     stream.getTracks().forEach(track => track.stop());
                 };
 
@@ -1070,6 +1165,7 @@
             } catch (err) {
                 console.error("Microphone error:", err);
                 alert("Microphone access denied or unavailable.");
+                if(heartbeatAudio) heartbeatAudio.play(); // resume if failed
             }
         });
     }
@@ -1138,10 +1234,11 @@
                     if(el.type === 'checkbox') el.checked = false;
                     else el.value = ''; 
                 }});
-                localStorage.clear();
+                localStorage.removeItem('activePage');
                 document.getElementById('additional-crew-container').innerHTML = ''; addCrewRow();
                 toggleCrz(false);
                 updateAllCalculatedFields();
+                saveAllToLocalStorage();
             }
         });
         
@@ -1151,6 +1248,7 @@
         document.getElementById('formatSelector').addEventListener('change', function() {
             document.querySelectorAll('#formPage .format-row').forEach(r => r.classList.remove('active'));
             document.getElementById(`${this.value}-format-row`).classList.add('active');
+            saveAllToLocalStorage();
         });
     }
   </script>
