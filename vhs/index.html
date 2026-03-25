@@ -115,6 +115,7 @@
             uniform float u_chromaBlur;
             uniform vec2 u_chromaShift;
             uniform float u_noiseAmount;
+            uniform float u_noiseSize;
             uniform float u_trackingError;
             uniform float u_jitterAmount;
             uniform float u_headSwitching;
@@ -198,8 +199,8 @@
                 vec3 finalYIQ = vec3(y_final, iq_final.x, iq_final.y);
 
                 // 5. Tape Noise
-                // Create a chunky noise layer to simulate noise-preprocess.avi
-                vec2 chunkyUV = floor(uv * vec2(150.0, 100.0)) / vec2(150.0, 100.0);
+                // Modified to use u_noiseSize with a horizontal bias (x0.6) for realistic tape magnetic particle clumping
+                vec2 chunkyUV = floor(uv * vec2(u_noiseSize, u_noiseSize * 0.6)) / vec2(u_noiseSize, u_noiseSize * 0.6);
                 float chunkyNoise = (rand(chunkyUV + u_time * 0.5) - 0.5) * u_noiseAmount * 0.8;
                 float tapeNoise = (rand(uv * vec2(1.0, 10.0) + u_time) - 0.5) * u_noiseAmount * 0.5;
                 
@@ -243,10 +244,10 @@
 
         // --- PROFILES & CONFIG ---
         const TAPE_PROFILES = {
-            SVHS: { name: 'Super-VHS', params: { lumaSmear: 0.2, chromaBlur: 0.5, chromaShiftX: 0.1, chromaShiftY: 0.0, noiseAmount: 0.03, trackingError: 0.0, jitterAmount: 0.02, headSwitching: 0.02, colorSaturation: 1.0, bloomThreshold: 0.85, bloomIntensity: 0.2, bloomRadius: 0.5, blackLevel: 0.05, whiteLevel: 0.98, ntscTint: 1.0 } },
-            SP: { name: 'Standard Play (SP)', params: { lumaSmear: 1.0, chromaBlur: 2.0, chromaShiftX: 0.4, chromaShiftY: 0.1, noiseAmount: 0.08, trackingError: 0.03, jitterAmount: 0.05, headSwitching: 0.04, colorSaturation: 0.9, bloomThreshold: 0.8, bloomIntensity: 0.4, bloomRadius: 1.0, blackLevel: 0.10, whiteLevel: 0.95, ntscTint: 0.8 } },
-            EP: { name: 'Extended Play (EP)', params: { lumaSmear: 2.5, chromaBlur: 5.0, chromaShiftX: 1.0, chromaShiftY: 0.2, noiseAmount: 0.15, trackingError: 0.06, jitterAmount: 0.15, headSwitching: 0.06, colorSaturation: 0.75, bloomThreshold: 0.75, bloomIntensity: 0.5, bloomRadius: 1.5, blackLevel: 0.15, whiteLevel: 0.92, ntscTint: 0.6 } },
-            DEGRADED: { name: '10th Gen Dub', params: { lumaSmear: 4.0, chromaBlur: 8.0, chromaShiftX: -1.5, chromaShiftY: 0.5, noiseAmount: 0.3, trackingError: 0.08, jitterAmount: 0.4, headSwitching: 0.12, colorSaturation: 0.5, bloomThreshold: 0.6, bloomIntensity: 0.8, bloomRadius: 2.5, blackLevel: 0.22, whiteLevel: 0.88, ntscTint: 0.4 } },
+            SVHS: { name: 'Super-VHS', params: { lumaSmear: 0.2, chromaBlur: 0.5, chromaShiftX: 0.1, chromaShiftY: 0.0, noiseAmount: 0.03, noiseSize: 500, trackingError: 0.0, jitterAmount: 0.02, headSwitching: 0.02, colorSaturation: 1.0, bloomThreshold: 0.85, bloomIntensity: 0.2, bloomRadius: 0.5, blackLevel: 0.05, whiteLevel: 0.98, ntscTint: 1.0 } },
+            SP: { name: 'Standard Play (SP)', params: { lumaSmear: 1.0, chromaBlur: 2.0, chromaShiftX: 0.4, chromaShiftY: 0.1, noiseAmount: 0.08, noiseSize: 350, trackingError: 0.03, jitterAmount: 0.05, headSwitching: 0.04, colorSaturation: 0.9, bloomThreshold: 0.8, bloomIntensity: 0.4, bloomRadius: 1.0, blackLevel: 0.10, whiteLevel: 0.95, ntscTint: 0.8 } },
+            EP: { name: 'Extended Play (EP)', params: { lumaSmear: 2.5, chromaBlur: 5.0, chromaShiftX: 1.0, chromaShiftY: 0.2, noiseAmount: 0.15, noiseSize: 250, trackingError: 0.06, jitterAmount: 0.15, headSwitching: 0.06, colorSaturation: 0.75, bloomThreshold: 0.75, bloomIntensity: 0.5, bloomRadius: 1.5, blackLevel: 0.15, whiteLevel: 0.92, ntscTint: 0.6 } },
+            DEGRADED: { name: '10th Gen Dub', params: { lumaSmear: 4.0, chromaBlur: 8.0, chromaShiftX: -1.5, chromaShiftY: 0.5, noiseAmount: 0.3, noiseSize: 150, trackingError: 0.08, jitterAmount: 0.4, headSwitching: 0.12, colorSaturation: 0.5, bloomThreshold: 0.6, bloomIntensity: 0.8, bloomRadius: 2.5, blackLevel: 0.22, whiteLevel: 0.88, ntscTint: 0.4 } },
         };
 
         const SLIDER_SECTIONS = [
@@ -268,6 +269,7 @@
                     { id: 'whiteLevel', label: 'Crushed Whites', min: 0.5, max: 1.0, step: 0.01 },
                     { id: 'jitterAmount', label: 'TBC Jitter', min: 0, max: 1, step: 0.01 },
                     { id: 'noiseAmount', label: 'Tape Noise', min: 0, max: 1, step: 0.01 },
+                    { id: 'noiseSize', label: 'Noise Size', min: 50, max: 800, step: 10 },
                     { id: 'trackingError', label: 'Tracking Error', min: 0, max: 0.08, step: 0.01 },
                     { id: 'headSwitching', label: 'Head Switch', min: 0, max: 0.3, step: 0.01 }
                 ]
