@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SIA FDL Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIA Latest COT Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -45,17 +45,27 @@
         .toggle-checkbox:checked + .toggle-label {
             background-color: #10b981;
         }
+        
+        /* Hide arrows on number inputs */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-slate-900 text-gray-800 transition-colors duration-300 min-h-screen flex flex-col font-sans antialiased overflow-hidden">
+<body class="bg-gray-100 dark:bg-slate-900 text-gray-800 transition-colors duration-300 min-h-screen font-sans antialiased flex flex-col">
 
     <!-- Navbar -->
-    <nav class="bg-white dark:bg-slate-850 shadow-sm z-20 transition-colors duration-300 flex-none">
+    <nav class="bg-white dark:bg-slate-850 shadow-sm z-20 transition-colors duration-300 sticky top-0">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center gap-3">
                     <span class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-                        SIA FDL Calculator
+                        Latest COT Calculator
                     </span>
                     <span class="hidden sm:inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                         Acclimatised
@@ -70,15 +80,15 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-4rem)] overflow-hidden">
+    <div class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pb-20">
         
-        <!-- Left Column: Inputs (Scrollable) -->
-        <div class="lg:col-span-5 flex flex-col gap-4 overflow-y-auto pr-1 pb-20 lg:pb-0 scroll-smooth">
+        <!-- Left Column: Inputs (Naturally scrolling) -->
+        <div class="lg:col-span-6 flex flex-col gap-5">
             
-            <!-- Core Parameters -->
+            <!-- Flight Rules & Report Time -->
             <div class="bg-white dark:bg-slate-850 rounded-2xl shadow-sm p-5 transition-colors duration-300">
                 <div class="flex justify-between items-end mb-4">
-                    <h2 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold">Core Parameters</h2>
+                    <h2 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold">Duty Details</h2>
                 </div>
 
                 <!-- Flight Type Toggle -->
@@ -91,13 +101,20 @@
                 </div>
                 
                 <!-- Report Time -->
-                <div class="mb-5">
+                <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Report Time (Local)</label>
                     <input type="time" id="reportTime" class="block w-full text-3xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 shadow-sm transition-colors" value="06:00">
                 </div>
+            </div>
 
-                <!-- Sectors (Non-ULR Only) -->
-                <div id="sectSectors" class="mb-5">
+            <!-- Dynamic Sectors Configuration -->
+            <div class="bg-white dark:bg-slate-850 rounded-2xl shadow-sm p-5 transition-colors duration-300">
+                <div class="flex justify-between items-end mb-4">
+                    <h2 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold">Sector Configuration</h2>
+                </div>
+
+                <!-- Sectors Toggle (Non-ULR Only) -->
+                <div id="sectSectorsToggle" class="mb-5">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Number of Sectors</label>
                     <div class="grid grid-cols-4 gap-2">
                         <button onclick="setSectors(1)" class="sector-btn bg-blue-600 text-white py-3 rounded-lg font-bold shadow-md hover:bg-blue-700 transition-all active:scale-95" data-val="1">1</button>
@@ -109,48 +126,52 @@
                 </div>
 
                 <!-- Scheduled FDP (ULR Only) -->
-                <div id="sectUlr" class="hidden mb-5">
+                <div id="sectUlrConfig" class="hidden mb-5">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex justify-between">
                         <span>Scheduled FDP</span>
                         <span class="text-xs text-blue-500 dark:text-blue-400 font-normal mt-0.5">Base = max(Scheduled, 18h)</span>
                     </label>
-                    <div class="flex gap-3">
+                    <div class="flex gap-3 mb-6">
                         <div class="relative w-1/2">
-                            <input type="number" id="schedFDPHours" min="0" max="30" class="block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 text-center shadow-sm" value="18">
+                            <input type="number" id="schedFDPHours" min="0" max="30" class="global-input block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 text-center shadow-sm" value="18">
                             <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold">HRS</span>
                         </div>
                         <div class="relative w-1/2">
-                            <input type="number" id="schedFDPMins" min="0" max="59" class="block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 text-center shadow-sm" value="00">
+                            <input type="number" id="schedFDPMins" min="0" max="59" class="global-input block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 text-center shadow-sm" value="00">
                             <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold">MIN</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                        <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">ULR Flight Details</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Flight Time (EET)</label>
+                                <div class="flex gap-2">
+                                    <div class="relative w-1/2">
+                                        <input type="number" id="flightH_ulr" min="0" max="25" class="global-input block w-full text-lg font-mono bg-white dark:bg-slate-800 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:border-blue-500 dark:text-white p-2 text-center shadow-sm" value="16">
+                                        <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[9px] font-bold">HR</span>
+                                    </div>
+                                    <div class="relative w-1/2">
+                                        <input type="number" id="flightM_ulr" min="0" max="59" class="global-input block w-full text-lg font-mono bg-white dark:bg-slate-800 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:border-blue-500 dark:text-white p-2 text-center shadow-sm" value="30">
+                                        <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[9px] font-bold">MIN</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Ground Time (Taxi)</label>
+                                <div class="relative w-full">
+                                    <input type="number" id="groundM_ulr" min="0" max="300" class="global-input block w-full text-lg font-mono bg-white dark:bg-slate-800 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:border-blue-500 dark:text-white p-2 text-center shadow-sm" value="18">
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-[9px] font-bold">MIN</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Flight Time (EET) -->
-                <div class="mb-5">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Remaining EET (Flight Time)</label>
-                    <div class="flex gap-3">
-                        <div class="relative w-1/2">
-                            <input type="number" id="flightHours" min="0" max="25" class="block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 text-center shadow-sm" value="04">
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold">HRS</span>
-                        </div>
-                        <div class="relative w-1/2">
-                            <input type="number" id="flightMins" min="0" max="59" class="block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 text-center shadow-sm" value="30">
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold">MIN</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Ground Time -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex justify-between">
-                        <span>Expected Ground Time</span>
-                        <span class="text-xs text-gray-400 font-normal mt-0.5">Incl. transits & taxi</span>
-                    </label>
-                    <div class="relative w-full">
-                        <input type="number" id="groundTimeMins" min="0" max="300" class="block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 text-center shadow-sm" value="18">
-                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold">MINS</span>
-                    </div>
+                <!-- Dynamic Container for Multiple Sectors (Non-ULR) -->
+                <div id="dynamicSectorsContainer" class="flex flex-col gap-2 mt-2">
+                    <!-- Javascript will inject sectors and transit inputs here -->
                 </div>
             </div>
 
@@ -161,7 +182,7 @@
                 <!-- Crew Complement (Non-ULR Only) -->
                 <div id="sectCrew" class="mb-5">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Crew Complement</label>
-                    <select id="crewComplement" class="block w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 p-3">
+                    <select id="crewComplement" class="global-input block w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 p-3">
                         <option value="std">Standard (2 Pilots)</option>
                         <option value="aug3">3 Pilots (Augmented)</option>
                         <option value="aug4">4 Pilots (Double Crew)</option>
@@ -176,7 +197,7 @@
                     </label>
                     <div class="flex gap-3 items-center">
                         <div class="relative w-full">
-                            <input type="number" id="breakHours" min="0" max="12" step="0.5" class="block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 pl-4 shadow-sm" placeholder="0">
+                            <input type="number" id="breakHours" min="0" max="12" step="0.5" class="global-input block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 pl-4 shadow-sm" placeholder="0">
                             <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">HOURS</span>
                         </div>
                     </div>
@@ -191,27 +212,27 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Extend max FDP by 3 hours</p>
                     </div>
                     <div class="relative inline-block w-12 align-middle select-none">
-                        <input type="checkbox" id="discretionToggle" class="toggle-checkbox absolute block w-7 h-7 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 transition-all duration-300"/>
+                        <input type="checkbox" id="discretionToggle" class="global-input toggle-checkbox absolute block w-7 h-7 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 transition-all duration-300"/>
                         <label for="discretionToggle" class="toggle-label block overflow-hidden h-7 rounded-full bg-gray-300 cursor-pointer transition-colors duration-300"></label>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right Column: Results -->
-        <div class="lg:col-span-7 flex flex-col gap-5 h-full overflow-y-auto">
+        <!-- Right Column: Results (Sticky on Large Screens) -->
+        <div class="lg:col-span-6 lg:sticky lg:top-24 flex flex-col gap-5">
             
             <!-- Latest COT Card -->
-            <div class="bg-blue-600 dark:bg-blue-800 rounded-2xl shadow-xl p-6 lg:p-10 text-white flex flex-col justify-center items-center relative overflow-hidden transition-colors duration-300 min-h-[250px] lg:flex-grow">
+            <div class="bg-blue-600 dark:bg-blue-800 rounded-2xl shadow-xl p-6 lg:p-10 text-white flex flex-col justify-center items-center relative overflow-hidden transition-colors duration-300 min-h-[250px]">
                 <!-- Background Pattern -->
                 <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
                 
-                <h2 class="text-blue-200 uppercase tracking-widest text-xs lg:text-sm font-bold mb-3 z-10">Latest Permissible</h2>
+                <h2 class="text-blue-200 uppercase tracking-widest text-xs lg:text-sm font-bold mb-3 z-10 text-center">Latest Permissible</h2>
                 <h1 class="text-6xl lg:text-8xl font-mono font-bold tracking-tighter mb-3 z-10" id="latestCotDisplay">--:--</h1>
-                <p class="text-blue-100 font-medium text-lg z-10">Chocks Off Time (COT)</p>
+                <p class="text-blue-100 font-medium text-lg z-10 text-center">Chocks Off Time (Sector 1)</p>
 
                 <!-- Status Badges -->
-                <div class="absolute top-4 right-4 flex flex-col gap-2 items-end">
+                <div class="absolute top-4 right-4 flex flex-col gap-2 items-end z-20">
                     <div id="ulrBadge" class="hidden bg-purple-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide shadow-sm border border-purple-400">
                         ULR Flight
                     </div>
@@ -228,25 +249,25 @@
             </div>
 
             <!-- Secondary Metrics -->
-            <div class="grid grid-cols-2 gap-4 h-auto lg:h-40 flex-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 
                 <!-- Max Duty End -->
-                <div class="bg-white dark:bg-slate-850 rounded-2xl shadow-sm p-4 flex flex-col justify-center items-center border-l-[6px] border-orange-500">
+                <div class="bg-white dark:bg-slate-850 rounded-2xl shadow-sm p-4 flex flex-col justify-center items-center border-l-[6px] border-orange-500 py-6 transition-colors duration-300">
                     <p class="text-gray-400 dark:text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Max Duty End</p>
                     <div class="text-3xl lg:text-4xl font-mono font-bold text-gray-900 dark:text-white" id="dutyEndDisplay">--:--</div>
-                    <p class="text-gray-400 text-xs mt-1">Latest On Chocks</p>
+                    <p class="text-gray-400 text-xs mt-1">Final On Chocks</p>
                 </div>
 
                 <!-- Max FDP Limit -->
-                <div class="bg-white dark:bg-slate-850 rounded-2xl shadow-sm p-4 flex flex-col justify-center items-center border-l-[6px] border-emerald-500">
+                <div class="bg-white dark:bg-slate-850 rounded-2xl shadow-sm p-4 flex flex-col justify-center items-center border-l-[6px] border-emerald-500 py-6 transition-colors duration-300">
                     <p class="text-gray-400 dark:text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Permissible FDP</p>
                     <div class="text-3xl lg:text-4xl font-mono font-bold text-gray-900 dark:text-white" id="maxFdpDisplay">--:--</div>
-                    <p class="text-emerald-600 dark:text-emerald-400 text-xs mt-1 font-medium text-center leading-tight" id="fdpDetailText">Standard</p>
+                    <p class="text-emerald-600 dark:text-emerald-400 text-xs mt-1 font-medium text-center leading-tight px-2" id="fdpDetailText">Standard</p>
                 </div>
             </div>
 
             <p class="text-[10px] text-center text-gray-400 dark:text-gray-600 mt-2 px-4">
-                Reflects latest FSI 25-32 limits (18 mins standard planning ground time, 15H/17H base augmented).
+                Reflects latest FSI 25-32 limits. 18 mins planning ground time pre-populated per sector.
             </p>
         </div>
     </div>
@@ -269,17 +290,16 @@
         const els = {
             btnNonUlr: document.getElementById('btnNonUlr'),
             btnUlr: document.getElementById('btnUlr'),
-            sectSectors: document.getElementById('sectSectors'),
-            sectUlr: document.getElementById('sectUlr'),
+            sectSectorsToggle: document.getElementById('sectSectorsToggle'),
+            sectUlrConfig: document.getElementById('sectUlrConfig'),
             sectCrew: document.getElementById('sectCrew'),
+            dynamicSectorsContainer: document.getElementById('dynamicSectorsContainer'),
             
             reportTime: document.getElementById('reportTime'),
             schedFDPHours: document.getElementById('schedFDPHours'),
             schedFDPMins: document.getElementById('schedFDPMins'),
-            flightH: document.getElementById('flightHours'),
-            flightM: document.getElementById('flightMins'),
-            groundMins: document.getElementById('groundTimeMins'),
-            sectors: document.getElementById('sectors'),
+            
+            sectorsInput: document.getElementById('sectors'),
             crew: document.getElementById('crewComplement'),
             breakH: document.getElementById('breakHours'),
             discretion: document.getElementById('discretionToggle'),
@@ -311,35 +331,104 @@
         };
         const decToDur = (d) => `${Math.floor(d)}h ${Math.round((d - Math.floor(d)) * 60)}m`;
 
+        // --- DYNAMIC HTML INJECTION ---
+        function renderSectors(count) {
+            els.dynamicSectorsContainer.innerHTML = '';
+            
+            for (let i = 1; i <= count; i++) {
+                // Sector Panel
+                let html = `
+                <div class="bg-gray-50 dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-gray-700 transition-colors duration-300">
+                    <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">Sector ${i} Details</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Flight Time (EET)</label>
+                            <div class="flex gap-2">
+                                <div class="relative w-1/2">
+                                    <input type="number" id="flightH_${i}" min="0" max="25" class="flight-input block w-full text-lg font-mono bg-white dark:bg-slate-800 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:border-blue-500 dark:text-white p-2 text-center shadow-sm" value="03">
+                                    <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[9px] font-bold">HR</span>
+                                </div>
+                                <div class="relative w-1/2">
+                                    <input type="number" id="flightM_${i}" min="0" max="59" class="flight-input block w-full text-lg font-mono bg-white dark:bg-slate-800 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:border-blue-500 dark:text-white p-2 text-center shadow-sm" value="30">
+                                    <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[9px] font-bold">MIN</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Ground Time (Taxi)</label>
+                            <div class="relative w-full">
+                                <input type="number" id="groundM_${i}" min="0" max="300" class="flight-input block w-full text-lg font-mono bg-white dark:bg-slate-800 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:border-blue-500 dark:text-white p-2 text-center shadow-sm" value="18">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-[9px] font-bold">MIN</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                els.dynamicSectorsContainer.insertAdjacentHTML('beforeend', html);
+
+                // Transit Duration Panel (Only shown between sectors)
+                if (i < count) {
+                    let transitHtml = `
+                    <div class="flex flex-col items-center justify-center -my-1 relative z-10">
+                        <div class="bg-gray-200 dark:bg-slate-700 h-6 w-0.5"></div>
+                        <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-600 rounded-full px-4 py-1.5 shadow-sm flex items-center gap-3 transition-colors duration-300">
+                            <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Transit ${i}</span>
+                            <div class="flex gap-1 w-32">
+                                <div class="relative w-1/2">
+                                    <input type="number" id="transitH_${i}" min="0" max="12" class="flight-input block w-full text-sm font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:border-blue-500 dark:text-white p-1 text-center" value="01">
+                                    <span class="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 text-[8px] font-bold">H</span>
+                                </div>
+                                <span class="text-gray-400 text-xs self-center font-bold">:</span>
+                                <div class="relative w-1/2">
+                                    <input type="number" id="transitM_${i}" min="0" max="59" class="flight-input block w-full text-sm font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:border-blue-500 dark:text-white p-1 text-center" value="00">
+                                    <span class="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 text-[8px] font-bold">M</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-200 dark:bg-slate-700 h-6 w-0.5"></div>
+                    </div>`;
+                    els.dynamicSectorsContainer.insertAdjacentHTML('beforeend', transitHtml);
+                }
+            }
+            
+            // Re-attach listeners for the dynamically generated elements
+            document.querySelectorAll('.flight-input').forEach(el => {
+                el.addEventListener('input', calculate);
+                el.addEventListener('change', calculate);
+            });
+        }
+
         // --- UI TOGGLES ---
         function setFlightType(isUlr) {
             isUlrMode = isUlr;
             if (isUlr) {
                 els.btnUlr.className = "w-1/2 py-2 text-sm font-bold rounded-r-lg bg-blue-600 text-white shadow-md focus:outline-none transition-colors";
                 els.btnNonUlr.className = "w-1/2 py-2 text-sm font-bold rounded-l-lg bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 focus:outline-none transition-colors";
-                els.sectSectors.classList.add('hidden');
+                els.sectSectorsToggle.classList.add('hidden');
                 els.sectCrew.classList.add('hidden');
-                els.sectUlr.classList.remove('hidden');
+                els.dynamicSectorsContainer.classList.add('hidden');
+                els.sectUlrConfig.classList.remove('hidden');
                 els.badges.ulr.classList.remove('hidden');
             } else {
                 els.btnNonUlr.className = "w-1/2 py-2 text-sm font-bold rounded-l-lg bg-blue-600 text-white shadow-md focus:outline-none transition-colors";
                 els.btnUlr.className = "w-1/2 py-2 text-sm font-bold rounded-r-lg bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 focus:outline-none transition-colors";
-                els.sectSectors.classList.remove('hidden');
+                els.sectSectorsToggle.classList.remove('hidden');
                 els.sectCrew.classList.remove('hidden');
-                els.sectUlr.classList.add('hidden');
+                els.dynamicSectorsContainer.classList.remove('hidden');
+                els.sectUlrConfig.classList.add('hidden');
                 els.badges.ulr.classList.add('hidden');
             }
             calculate();
         }
 
         function setSectors(val) {
-            els.sectors.value = val;
+            els.sectorsInput.value = val;
             els.sectorBtns.forEach(btn => {
                 const active = parseInt(btn.dataset.val) === val;
                 btn.className = `sector-btn py-3 rounded-lg font-bold transition-all ${active 
                     ? 'bg-blue-600 text-white shadow-md transform scale-105' 
                     : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-slate-600'}`;
             });
+            renderSectors(val);
             calculate();
         }
 
@@ -349,11 +438,7 @@
             const breakHours = parseFloat(els.breakH.value) || 0;
             const useDiscretion = els.discretion.checked;
             
-            // Expected Block Time (EET + Ground Time)
-            const flightDur = (parseInt(els.flightH.value)||0) + ((parseInt(els.flightM.value)||0)/60);
-            const groundDur = (parseInt(els.groundMins.value)||0) / 60;
-            const totalBlockReq = flightDur + groundDur;
-
+            let totalDutyReqDec = 0;
             let maxFdp = 0;
             let fdpType = "Standard";
 
@@ -362,13 +447,19 @@
                 els.badges.aug.classList.add('hidden');
                 const schedFDP = (parseInt(els.schedFDPHours.value)||0) + ((parseInt(els.schedFDPMins.value)||0)/60);
                 
-                // ULR FDP is Scheduled FDP or 18h, whichever is higher.
+                // ULR FDP is Scheduled FDP or 18h, whichever is higher
                 maxFdp = Math.max(schedFDP, 18.00);
                 fdpType = "ULR Operations";
 
+                // Total Continuous block for ULR
+                const fh = parseInt(document.getElementById('flightH_ulr').value) || 0;
+                const fm = parseInt(document.getElementById('flightM_ulr').value) || 0;
+                const gm = parseInt(document.getElementById('groundM_ulr').value) || 0;
+                totalDutyReqDec = fh + (fm / 60) + (gm / 60);
+
             } else {
                 // Non-ULR FDP Logic
-                const sectors = parseInt(els.sectors.value);
+                const sectors = parseInt(els.sectorsInput.value);
                 const crewMode = els.crew.value;
 
                 if (crewMode === 'std') {
@@ -384,6 +475,21 @@
                     maxFdp = 17.00; // Base augmented 4-pilot limit
                     fdpType = "Augmented (4 Crew)";
                     els.badges.aug.classList.remove('hidden');
+                }
+
+                // Sum all flight times, ground times, and transits sequentially
+                for(let i = 1; i <= sectors; i++) {
+                    const fh = parseInt(document.getElementById(`flightH_${i}`)?.value) || 0;
+                    const fm = parseInt(document.getElementById(`flightM_${i}`)?.value) || 0;
+                    const gm = parseInt(document.getElementById(`groundM_${i}`)?.value) || 0;
+                    
+                    totalDutyReqDec += fh + (fm / 60) + (gm / 60);
+                    
+                    if (i < sectors) {
+                        const th = parseInt(document.getElementById(`transitH_${i}`)?.value) || 0;
+                        const tm = parseInt(document.getElementById(`transitM_${i}`)?.value) || 0;
+                        totalDutyReqDec += th + (tm / 60);
+                    }
                 }
             }
 
@@ -408,19 +514,19 @@
             // Calculate End Times
             const dutyEndDec = reportDec + maxFdp;
             
-            // Latest Chocks Off = Latest On-Chocks (dutyEndDec) - Total Block (flightDur + groundDur)
-            const cotDec = dutyEndDec - totalBlockReq;
+            // Latest Chocks Off = Latest On-Chocks (dutyEndDec) - Total Continous Block (totalDutyReqDec)
+            const cotDec = dutyEndDec - totalDutyReqDec;
 
             // Update UI
             els.displayMaxFDP.textContent = decToDur(maxFdp);
             els.displayFDPDetail.textContent = fdpType;
             els.displayDutyEnd.textContent = decToTime(dutyEndDec);
 
-            if (totalBlockReq > maxFdp) {
+            if (totalDutyReqDec > maxFdp) {
                 els.displayCOT.textContent = "N/A";
                 els.displayCOT.classList.add('text-red-300');
                 els.displayCOT.classList.remove('text-blue-100');
-                els.displayFDPDetail.textContent = "FDP Exceeded by required Block";
+                els.displayFDPDetail.textContent = "Exceeds Permissible FDP";
                 els.displayFDPDetail.classList.add('text-red-500');
                 els.displayFDPDetail.classList.remove('text-emerald-600', 'dark:text-emerald-400');
             } else {
@@ -433,15 +539,14 @@
         }
 
         // --- EVENTS & INIT ---
-        ['input', 'change'].forEach(evt => {
-            [
-                els.reportTime, els.schedFDPHours, els.schedFDPMins, 
-                els.flightH, els.flightM, els.groundMins, 
-                els.crew, els.breakH, els.discretion
-            ].forEach(el => el.addEventListener(evt, calculate));
+        document.querySelectorAll('.global-input').forEach(el => {
+            el.addEventListener('input', calculate);
+            el.addEventListener('change', calculate);
         });
+        
+        els.reportTime.addEventListener('input', calculate);
 
-        // Theme
+        // Theme Toggle
         els.themeToggle.addEventListener('click', () => {
             document.documentElement.classList.toggle('dark');
             const isDark = document.documentElement.classList.contains('dark');
@@ -450,13 +555,16 @@
             els.icons.moon.classList.toggle('hidden', isDark);
         });
 
-        // Init
+        // Initialize App
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
             els.icons.sun.classList.remove('hidden');
             els.icons.moon.classList.add('hidden');
         }
-        setFlightType(false); // initializes UI and calls calculate()
+        
+        // Initial setup
+        setFlightType(false);
+        setSectors(2); // Pre-fill with a 2-sector example (e.g. SIN-MNL MNL-SIN)
     </script>
 </body>
 </html>
