@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FDL Calculator</title>
+    <title>SIA FDL Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -55,7 +55,7 @@
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center gap-3">
                     <span class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-                        FDL Calculator
+                        SIA FDL Calculator
                     </span>
                     <span class="hidden sm:inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                         Acclimatised
@@ -77,7 +77,18 @@
             
             <!-- Core Parameters -->
             <div class="bg-white dark:bg-slate-850 rounded-2xl shadow-sm p-5 transition-colors duration-300">
-                <h2 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-4">Core Parameters</h2>
+                <div class="flex justify-between items-end mb-4">
+                    <h2 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold">Core Parameters</h2>
+                </div>
+
+                <!-- Flight Type Toggle -->
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Flight Type</label>
+                    <div class="flex rounded-lg shadow-sm">
+                        <button id="btnNonUlr" onclick="setFlightType(false)" class="w-1/2 py-2 text-sm font-bold rounded-l-lg bg-blue-600 text-white shadow-md focus:outline-none transition-colors">Non-ULR</button>
+                        <button id="btnUlr" onclick="setFlightType(true)" class="w-1/2 py-2 text-sm font-bold rounded-r-lg bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 focus:outline-none transition-colors">ULR</button>
+                    </div>
+                </div>
                 
                 <!-- Report Time -->
                 <div class="mb-5">
@@ -85,8 +96,8 @@
                     <input type="time" id="reportTime" class="block w-full text-3xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 shadow-sm transition-colors" value="06:00">
                 </div>
 
-                <!-- Sectors -->
-                <div class="mb-5">
+                <!-- Sectors (Non-ULR Only) -->
+                <div id="sectSectors" class="mb-5">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Number of Sectors</label>
                     <div class="grid grid-cols-4 gap-2">
                         <button onclick="setSectors(1)" class="sector-btn bg-blue-600 text-white py-3 rounded-lg font-bold shadow-md hover:bg-blue-700 transition-all active:scale-95" data-val="1">1</button>
@@ -97,12 +108,30 @@
                     <input type="hidden" id="sectors" value="1">
                 </div>
 
-                <!-- Flight Time -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Planned Flight Time</label>
+                <!-- Scheduled FDP (ULR Only) -->
+                <div id="sectUlr" class="hidden mb-5">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex justify-between">
+                        <span>Scheduled FDP</span>
+                        <span class="text-xs text-blue-500 dark:text-blue-400 font-normal mt-0.5">Base = max(Scheduled, 18h)</span>
+                    </label>
                     <div class="flex gap-3">
                         <div class="relative w-1/2">
-                            <input type="number" id="flightHours" min="0" max="20" class="block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 text-center shadow-sm" value="04">
+                            <input type="number" id="schedFDPHours" min="0" max="30" class="block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 text-center shadow-sm" value="18">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold">HRS</span>
+                        </div>
+                        <div class="relative w-1/2">
+                            <input type="number" id="schedFDPMins" min="0" max="59" class="block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 text-center shadow-sm" value="00">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold">MIN</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flight Time (EET) -->
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Remaining EET (Flight Time)</label>
+                    <div class="flex gap-3">
+                        <div class="relative w-1/2">
+                            <input type="number" id="flightHours" min="0" max="25" class="block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 text-center shadow-sm" value="04">
                             <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold">HRS</span>
                         </div>
                         <div class="relative w-1/2">
@@ -111,19 +140,31 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Ground Time -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex justify-between">
+                        <span>Expected Ground Time</span>
+                        <span class="text-xs text-gray-400 font-normal mt-0.5">Incl. transits & taxi</span>
+                    </label>
+                    <div class="relative w-full">
+                        <input type="number" id="groundTimeMins" min="0" max="300" class="block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 text-center shadow-sm" value="18">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold">MINS</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Crew & Rest Options -->
-            <div class="bg-white dark:bg-slate-850 rounded-2xl shadow-sm p-5 transition-colors duration-300">
+            <div id="sectCrewRest" class="bg-white dark:bg-slate-850 rounded-2xl shadow-sm p-5 transition-colors duration-300">
                 <h2 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-4">Rest & Complement</h2>
                 
-                <!-- Crew Complement -->
-                <div class="mb-5">
+                <!-- Crew Complement (Non-ULR Only) -->
+                <div id="sectCrew" class="mb-5">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Crew Complement</label>
                     <select id="crewComplement" class="block w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 p-3">
                         <option value="std">Standard (2 Pilots)</option>
-                        <option value="aug3">3 Pilots (Class 1 Rest)</option>
-                        <option value="aug4">4 Pilots (Class 1 Rest)</option>
+                        <option value="aug3">3 Pilots (Augmented)</option>
+                        <option value="aug4">4 Pilots (Double Crew)</option>
                     </select>
                 </div>
 
@@ -136,7 +177,7 @@
                     <div class="flex gap-3 items-center">
                         <div class="relative w-full">
                             <input type="number" id="breakHours" min="0" max="12" step="0.5" class="block w-full text-xl font-mono bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-white p-3 pl-4 shadow-sm" placeholder="0">
-                            <span class="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400 text-xs">HOURS</span>
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">HOURS</span>
                         </div>
                     </div>
                 </div>
@@ -171,6 +212,9 @@
 
                 <!-- Status Badges -->
                 <div class="absolute top-4 right-4 flex flex-col gap-2 items-end">
+                    <div id="ulrBadge" class="hidden bg-purple-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide shadow-sm border border-purple-400">
+                        ULR Flight
+                    </div>
                     <div id="discretionBadge" class="hidden bg-red-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide shadow-sm border border-red-400">
                         +3H Discretion
                     </div>
@@ -197,19 +241,19 @@
                 <div class="bg-white dark:bg-slate-850 rounded-2xl shadow-sm p-4 flex flex-col justify-center items-center border-l-[6px] border-emerald-500">
                     <p class="text-gray-400 dark:text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Permissible FDP</p>
                     <div class="text-3xl lg:text-4xl font-mono font-bold text-gray-900 dark:text-white" id="maxFdpDisplay">--:--</div>
-                    <p class="text-emerald-600 dark:text-emerald-400 text-xs mt-1 font-medium" id="fdpDetailText">Standard</p>
+                    <p class="text-emerald-600 dark:text-emerald-400 text-xs mt-1 font-medium text-center leading-tight" id="fdpDetailText">Standard</p>
                 </div>
             </div>
 
-            <p class="text-[10px] text-center text-gray-400 dark:text-gray-600 mt-2">
-                Calculations based on standard CAAS FDP tables. Verify against specific OM tables.
+            <p class="text-[10px] text-center text-gray-400 dark:text-gray-600 mt-2 px-4">
+                Reflects latest FSI 25-32 limits (18 mins standard planning ground time, 15H/17H base augmented).
             </p>
         </div>
     </div>
 
     <script>
         // --- DATA ---
-        // Standard unaugmented limits (Start Time -> Limits for Sectors 1, 2, 3, 4+)
+        // Standard unaugmented limits CAAS (Start Time -> Limits for Sectors 1, 2, 3, 4+)
         const standardTable = [
             { start: 0, end: 6,     limits: [11.00, 10.25, 9.50, 9.00] },
             { start: 6, end: 8,     limits: [13.00, 12.25, 11.50, 10.75] },
@@ -218,11 +262,23 @@
             { start: 22, end: 24,   limits: [11.00, 10.25, 9.50, 9.00] } 
         ];
 
+        // --- STATE ---
+        let isUlrMode = false;
+
         // --- DOM ELEMENTS ---
         const els = {
+            btnNonUlr: document.getElementById('btnNonUlr'),
+            btnUlr: document.getElementById('btnUlr'),
+            sectSectors: document.getElementById('sectSectors'),
+            sectUlr: document.getElementById('sectUlr'),
+            sectCrew: document.getElementById('sectCrew'),
+            
             reportTime: document.getElementById('reportTime'),
+            schedFDPHours: document.getElementById('schedFDPHours'),
+            schedFDPMins: document.getElementById('schedFDPMins'),
             flightH: document.getElementById('flightHours'),
             flightM: document.getElementById('flightMins'),
+            groundMins: document.getElementById('groundTimeMins'),
             sectors: document.getElementById('sectors'),
             crew: document.getElementById('crewComplement'),
             breakH: document.getElementById('breakHours'),
@@ -234,6 +290,7 @@
             displayFDPDetail: document.getElementById('fdpDetailText'),
             
             badges: {
+                ulr: document.getElementById('ulrBadge'),
                 disc: document.getElementById('discretionBadge'),
                 aug: document.getElementById('augmentedBadge'),
                 split: document.getElementById('splitBadge')
@@ -254,78 +311,27 @@
         };
         const decToDur = (d) => `${Math.floor(d)}h ${Math.round((d - Math.floor(d)) * 60)}m`;
 
-        // --- CALCULATION ---
-        function calculate() {
-            const reportDec = timeToDec(els.reportTime.value || "00:00");
-            const sectors = parseInt(els.sectors.value);
-            const crewMode = els.crew.value;
-            const breakHours = parseFloat(els.breakH.value) || 0;
-            const useDiscretion = els.discretion.checked;
-            const flightDur = (parseInt(els.flightH.value)||0) + ((parseInt(els.flightM.value)||0)/60);
-
-            // 1. Determine Base FDP
-            let maxFdp = 0;
-            let fdpType = "Standard";
-
-            if (crewMode === 'std') {
-                // Use Table
-                const row = standardTable.find(r => reportDec >= r.start && reportDec < r.end) || standardTable[0];
-                const idx = Math.min(sectors - 1, 3);
-                maxFdp = row.limits[idx];
-                els.badges.aug.classList.add('hidden');
-            } else if (crewMode === 'aug3') {
-                maxFdp = 16.00; // Standard 3-pilot limit
-                fdpType = "Augmented (3 Crew)";
-                els.badges.aug.classList.remove('hidden');
-            } else if (crewMode === 'aug4') {
-                maxFdp = 18.00; // Standard 4-pilot limit
-                fdpType = "Augmented (4 Crew)";
-                els.badges.aug.classList.remove('hidden');
-            }
-
-            // 2. Apply Split Duty (Ground Break)
-            // Rule: Add 50% of break duration to FDP
-            if (breakHours > 0) {
-                const extension = breakHours * 0.5;
-                maxFdp += extension;
-                els.badges.split.classList.remove('hidden');
-                fdpType += ` + ${extension}h Split`;
+        // --- UI TOGGLES ---
+        function setFlightType(isUlr) {
+            isUlrMode = isUlr;
+            if (isUlr) {
+                els.btnUlr.className = "w-1/2 py-2 text-sm font-bold rounded-r-lg bg-blue-600 text-white shadow-md focus:outline-none transition-colors";
+                els.btnNonUlr.className = "w-1/2 py-2 text-sm font-bold rounded-l-lg bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 focus:outline-none transition-colors";
+                els.sectSectors.classList.add('hidden');
+                els.sectCrew.classList.add('hidden');
+                els.sectUlr.classList.remove('hidden');
+                els.badges.ulr.classList.remove('hidden');
             } else {
-                els.badges.split.classList.add('hidden');
+                els.btnNonUlr.className = "w-1/2 py-2 text-sm font-bold rounded-l-lg bg-blue-600 text-white shadow-md focus:outline-none transition-colors";
+                els.btnUlr.className = "w-1/2 py-2 text-sm font-bold rounded-r-lg bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 focus:outline-none transition-colors";
+                els.sectSectors.classList.remove('hidden');
+                els.sectCrew.classList.remove('hidden');
+                els.sectUlr.classList.add('hidden');
+                els.badges.ulr.classList.add('hidden');
             }
-
-            // 3. Apply Discretion
-            if (useDiscretion) {
-                maxFdp += 3;
-                els.badges.disc.classList.remove('hidden');
-            } else {
-                els.badges.disc.classList.add('hidden');
-            }
-
-            // 4. Calculate End Times
-            const dutyEndDec = reportDec + maxFdp;
-            const cotDec = dutyEndDec - flightDur;
-
-            // 5. Update UI
-            els.displayMaxFDP.textContent = decToDur(maxFdp);
-            els.displayFDPDetail.textContent = fdpType;
-            els.displayDutyEnd.textContent = decToTime(dutyEndDec);
-
-            if (flightDur > maxFdp) {
-                els.displayCOT.textContent = "N/A";
-                els.displayCOT.classList.add('text-red-300');
-                els.displayCOT.classList.remove('text-blue-100');
-            } else {
-                els.displayCOT.textContent = decToTime(cotDec);
-                els.displayCOT.classList.remove('text-red-300');
-                els.displayCOT.classList.add('text-blue-100'); // Reset color
-                
-                // Warn if COT is close (within 30 mins)
-                // (Optional visual logic could go here)
-            }
+            calculate();
         }
 
-        // --- EVENTS & INIT ---
         function setSectors(val) {
             els.sectors.value = val;
             els.sectorBtns.forEach(btn => {
@@ -337,10 +343,102 @@
             calculate();
         }
 
+        // --- CALCULATION ---
+        function calculate() {
+            const reportDec = timeToDec(els.reportTime.value || "00:00");
+            const breakHours = parseFloat(els.breakH.value) || 0;
+            const useDiscretion = els.discretion.checked;
+            
+            // Expected Block Time (EET + Ground Time)
+            const flightDur = (parseInt(els.flightH.value)||0) + ((parseInt(els.flightM.value)||0)/60);
+            const groundDur = (parseInt(els.groundMins.value)||0) / 60;
+            const totalBlockReq = flightDur + groundDur;
+
+            let maxFdp = 0;
+            let fdpType = "Standard";
+
+            if (isUlrMode) {
+                // ULR FDP Logic
+                els.badges.aug.classList.add('hidden');
+                const schedFDP = (parseInt(els.schedFDPHours.value)||0) + ((parseInt(els.schedFDPMins.value)||0)/60);
+                
+                // ULR FDP is Scheduled FDP or 18h, whichever is higher.
+                maxFdp = Math.max(schedFDP, 18.00);
+                fdpType = "ULR Operations";
+
+            } else {
+                // Non-ULR FDP Logic
+                const sectors = parseInt(els.sectors.value);
+                const crewMode = els.crew.value;
+
+                if (crewMode === 'std') {
+                    const row = standardTable.find(r => reportDec >= r.start && reportDec < r.end) || standardTable[0];
+                    const idx = Math.min(sectors - 1, 3);
+                    maxFdp = row.limits[idx];
+                    els.badges.aug.classList.add('hidden');
+                } else if (crewMode === 'aug3') {
+                    maxFdp = 15.00; // Base augmented 3-pilot limit
+                    fdpType = "Augmented (3 Crew)";
+                    els.badges.aug.classList.remove('hidden');
+                } else if (crewMode === 'aug4') {
+                    maxFdp = 17.00; // Base augmented 4-pilot limit
+                    fdpType = "Augmented (4 Crew)";
+                    els.badges.aug.classList.remove('hidden');
+                }
+            }
+
+            // Apply Split Duty (Ground Break)
+            if (breakHours > 0) {
+                const extension = breakHours * 0.5;
+                maxFdp += extension;
+                els.badges.split.classList.remove('hidden');
+                fdpType += ` + ${extension}h Split`;
+            } else {
+                els.badges.split.classList.add('hidden');
+            }
+
+            // Apply Discretion
+            if (useDiscretion) {
+                maxFdp += 3;
+                els.badges.disc.classList.remove('hidden');
+            } else {
+                els.badges.disc.classList.add('hidden');
+            }
+
+            // Calculate End Times
+            const dutyEndDec = reportDec + maxFdp;
+            
+            // Latest Chocks Off = Latest On-Chocks (dutyEndDec) - Total Block (flightDur + groundDur)
+            const cotDec = dutyEndDec - totalBlockReq;
+
+            // Update UI
+            els.displayMaxFDP.textContent = decToDur(maxFdp);
+            els.displayFDPDetail.textContent = fdpType;
+            els.displayDutyEnd.textContent = decToTime(dutyEndDec);
+
+            if (totalBlockReq > maxFdp) {
+                els.displayCOT.textContent = "N/A";
+                els.displayCOT.classList.add('text-red-300');
+                els.displayCOT.classList.remove('text-blue-100');
+                els.displayFDPDetail.textContent = "FDP Exceeded by required Block";
+                els.displayFDPDetail.classList.add('text-red-500');
+                els.displayFDPDetail.classList.remove('text-emerald-600', 'dark:text-emerald-400');
+            } else {
+                els.displayCOT.textContent = decToTime(cotDec);
+                els.displayCOT.classList.remove('text-red-300');
+                els.displayCOT.classList.add('text-blue-100');
+                els.displayFDPDetail.classList.remove('text-red-500');
+                els.displayFDPDetail.classList.add('text-emerald-600', 'dark:text-emerald-400');
+            }
+        }
+
+        // --- EVENTS & INIT ---
         ['input', 'change'].forEach(evt => {
-            [els.reportTime, els.flightH, els.flightM, els.crew, els.breakH, els.discretion].forEach(el => {
-                el.addEventListener(evt, calculate);
-            });
+            [
+                els.reportTime, els.schedFDPHours, els.schedFDPMins, 
+                els.flightH, els.flightM, els.groundMins, 
+                els.crew, els.breakH, els.discretion
+            ].forEach(el => el.addEventListener(evt, calculate));
         });
 
         // Theme
@@ -358,7 +456,7 @@
             els.icons.sun.classList.remove('hidden');
             els.icons.moon.classList.add('hidden');
         }
-        calculate();
+        setFlightType(false); // initializes UI and calls calculate()
     </script>
 </body>
 </html>
