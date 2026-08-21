@@ -3,110 +3,345 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Captain Database</title>
+    <title>Command Center</title>
+    <!-- Font Awesome for Icons (Optional, using CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* General Styles */
+        /* --- CSS VARIABLES & THEMES --- */
         :root {
-            --bg-color-day: #f4f4f4; --container-bg-day: #ffffff; --text-color-day: #333; --heading-color-day: #0056b3;
-            --border-color-day: #eee; --input-border-day: #ccc; --input-focus-border-day: #007bff; --input-focus-shadow-day: rgba(0, 123, 255, 0.5);
-            --placeholder-bg-day: #e9ecef; --placeholder-border-day: #ced4da; --placeholder-text-day: #6c757d; --qa-bg-day: #f9f9f9;
-            --qa-border-day: #ddd; --link-color-day: #0056b3;
+            /* SCI-FI THEME (Default/Night) */
+            --bg-grad-start-night: #05070a;
+            --bg-grad-mid-night: #0b1021;
+            --bg-grad-end-night: #05070a;
+            --glass-bg-night: rgba(10, 15, 30, 0.75);
+            --glass-border-night: rgba(0, 229, 255, 0.15); /* Faint Cyan border */
+            --text-main-night: #cdd6f4;
+            --text-heading-night: #00e5ff; /* Neon Cyan */
+            --accent-night: #00bcd4; /* Cyan */
+            --card-bg-night: rgba(0, 0, 0, 0.5);
+            --card-shadow-night: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+            --btn-text-night: #000;
+            --input-bg-night: rgba(255, 255, 255, 0.05);
+            --input-border-night: rgba(0, 229, 255, 0.2);
+            
+            /* SOPHISTICATED DAY THEME */
+            --bg-grad-start-day: #e0eafc;
+            --bg-grad-end-day: #cfdef3; /* Cool Grey-Blue */
+            --glass-bg-day: rgba(255, 255, 255, 0.95);
+            --glass-border-day: rgba(44, 62, 80, 0.1);
+            --text-main-day: #34495e;
+            --text-heading-day: #2c3e50; /* Dark Slate Blue */
+            --accent-day: #2c3e50; /* Deep Navy/Slate - Serious */
+            --card-bg-day: #ffffff;
+            --card-shadow-day: 0 4px 15px rgba(0, 0, 0, 0.05);
+            --btn-text-day: #ffffff;
+            --input-bg-day: #f8f9fa;
+            --input-border-day: #b0bec5;
 
-            --bg-color-night: #121212; --container-bg-night: #1e1e1e; --text-color-night: #e0e0e0; --heading-color-night: #FCB130;
-            --border-color-night: #444; --input-border-night: #555; --input-focus-border-night: #FCB130; --input-focus-shadow-night: rgba(252, 177, 48, 0.5);
-            --placeholder-bg-night: #2a2a2a; --placeholder-border-night: #555; --placeholder-text-night: #888; --qa-bg-night: #252525;
-            --qa-border-night: #444; --link-color-night: #ffcc66;
-
-            /* Theme Colors */
-            --primary-bg: #1D4886; --accent-color: #FCB130; --button-text-day: #fff; --button-text-night: #e0e0e0; --button-bg-night: #5a6268;
+            /* Current active variables (Default to Night) */
+            --bg-grad-start: var(--bg-grad-start-night);
+            --bg-grad-end: var(--bg-grad-end-night);
+            --glass-bg: var(--glass-bg-night);
+            --glass-border: var(--glass-border-night);
+            --text-main: var(--text-main-night);
+            --text-heading: var(--text-heading-night);
+            --accent: var(--accent-night);
+            --card-bg: var(--card-bg-night);
+            --card-shadow: var(--card-shadow-night);
+            --input-bg: var(--input-bg-night);
+            --input-border: var(--input-border-night);
+            --btn-text: var(--btn-text-night);
+            
+            /* Planet Opacity Control */
+            --planet-opacity: 0.6;
         }
-        html, body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 14px; box-sizing: border-box; width: 100%; min-height: 100vh; background-color: var(--primary-bg); color: var(--text-color-day); transition: background-color 0.3s, color 0.3s; }
-        body.night-mode { background-color: var(--primary-bg); color: var(--text-color-night); }
-        .header-controls { position: fixed; top: 10px; right: 10px; z-index: 100; }
-        .container { width: 90%; max-width: 850px; background-color: var(--container-bg-day); color: var(--text-color-day); padding: 25px; margin-top: 60px; margin-bottom: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: background-color 0.3s, color 0.3s; display: none; }
-        body.night-mode .container { background-color: var(--container-bg-night); color: var(--text-color-night); }
-        body.unlocked .container { display: block; }
-        .view { display: none; animation: fadeIn 0.5s ease-in-out; }
-        .view.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        h2, h3 { color: var(--heading-color-day); margin-top: 0; border-bottom: 1px solid var(--border-color-day); padding-bottom: 10px; margin-bottom: 20px; transition: color 0.3s, border-color 0.3s; }
-        body.night-mode h2, body.night-mode h3 { color: var(--heading-color-night); border-bottom-color: var(--border-color-night); }
-        .button { padding: 10px 20px; font-size: 15px; cursor: pointer; border: none; border-radius: 5px; transition: background-color 0.3s ease, color 0.3s ease; margin-right: 10px; margin-top: 5px; margin-bottom: 5px; background-color: var(--accent-color); color: var(--button-text-day); font-weight: bold; }
-        .button:hover { opacity: 0.85; }
-        body.night-mode .button { background-color: var(--button-bg-night); color: var(--button-text-night); }
-        .button-secondary { background-color: #6c757d; color: white; }
-        body.night-mode .button-secondary { background-color: #5a6268; color: var(--text-color-night); }
-        .button-back { background-color: #6c757d; color: white; }
-        body.night-mode .button-back { background-color: #5a6268; color: var(--text-color-night); }
-        .button-delete { background-color: #dc3545; color: white; padding: 3px 8px; font-size: 12px; margin-left: 10px; vertical-align: middle; }
-        body.night-mode .button-delete { background-color: #c82333; color: white;}
-        button:disabled { background-color: #adb5bd; cursor: not-allowed; opacity: 0.7; }
-        body.night-mode button:disabled { background-color: #5a6268; }
-        .menu-buttons button { display: block; width: 100%; padding: 15px; margin-bottom: 10px; font-size: 16px; }
-        .form-section { margin-bottom: 20px; }
-        .form-section label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color-day); }
-        body.night-mode .form-section label { color: var(--text-color-night); }
-        .form-section input[type="text"], .form-section select, .form-section textarea { width: 100%; padding: 10px; border: 1px solid var(--input-border-day); border-radius: 4px; box-sizing: border-box; font-size: 14px; margin-bottom: 10px; background-color: var(--container-bg-day); color: var(--text-color-day); transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
-        body.night-mode .form-section input[type="text"], body.night-mode .form-section select, body.night-mode .form-section textarea { background-color: #333; color: var(--text-color-night); border-color: var(--input-border-night); }
-        .form-section input[type="text"]:focus, .form-section select:focus, .form-section textarea:focus { border-color: var(--input-focus-border-day); outline: none; box-shadow: 0 0 5px var(--input-focus-shadow-day); }
-        body.night-mode .form-section input[type="text"]:focus, body.night-mode .form-section select:focus, body.night-mode .form-section textarea:focus { border-color: var(--input-focus-border-night); box-shadow: 0 0 5px var(--input-focus-shadow-night); }
-        .form-section textarea { min-height: 80px; resize: vertical; font-family: inherit; }
-        #add-captain-field { display: none; margin-top: -5px; margin-bottom: 10px; }
-        #add-captain-field input { margin-bottom: 0; }
-        .captain-select-container { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .captain-select-container select { flex-grow: 1; margin-bottom: 0; }
-        .qa-pair { background-color: var(--qa-bg-day); border: 1px dashed var(--qa-border-day); padding: 15px; margin-bottom: 15px; border-radius: 4px; position: relative; transition: background-color 0.3s, border-color 0.3s; }
-        body.night-mode .qa-pair { background-color: var(--qa-bg-night); border-color: var(--qa-border-night); }
-        .qa-pair label { font-weight: bold; color: var(--text-color-day); }
-        body.night-mode .qa-pair label { color: var(--text-color-night); }
-        .qa-pair textarea { width: 100%; padding: 8px; border: 1px solid var(--input-border-day); border-radius: 4px; box-sizing: border-box; font-size: 13px; margin-bottom: 10px; background-color: var(--container-bg-day); color: var(--text-color-day); transition: background-color 0.3s, color 0.3s, border-color 0.3s; min-height: 50px; resize: vertical; font-family: inherit;}
-        body.night-mode .qa-pair textarea { background-color: #333; color: var(--text-color-night); border-color: var(--input-border-night); }
-        .qa-pair textarea:last-child { margin-bottom: 0; }
-        .qa-pair .button-delete { position: absolute; top: 5px; right: 5px; }
-        .radio-group { margin-bottom: 20px; }
-        .radio-group label { display: inline-block; margin-right: 20px; font-weight: normal; cursor: pointer; }
-        .radio-group input[type="radio"] { margin-right: 5px; vertical-align: middle; }
-        .placeholder-content, .data-list, .profile-display { padding: 20px; background-color: var(--placeholder-bg-day); border: 1px solid var(--placeholder-border-day); border-radius: 5px; color: var(--placeholder-text-day); margin-top: 15px; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
-        body.night-mode .placeholder-content, body.night-mode .data-list, body.night-mode .profile-display { background-color: var(--placeholder-bg-night); border-color: var(--placeholder-border-night); color: var(--text-color-night); }
-        .data-list ul { list-style: none; padding: 0; margin: 0; }
-        .data-list li { padding: 10px; border-bottom: 1px solid var(--border-color-day); transition: border-color 0.3s; }
-        body.night-mode .data-list li { border-bottom-color: var(--border-color-night); }
-        .data-list li:last-child { border-bottom: none; }
-        .captain-name { font-weight: bold; font-size: 1.1em; color: var(--link-color-day); cursor: pointer; text-decoration: underline; }
-        .captain-name:hover { opacity: 0.8; }
-        body.night-mode .captain-name { color: var(--link-color-night); }
-        .captain-details { font-size: 0.9em; color: #555; margin-left: 5px; }
-        body.night-mode .captain-details { color: #bbb; }
-        .profile-section { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed var(--border-color-day); }
-        body.night-mode .profile-section { border-bottom-color: var(--border-color-night); }
-        .profile-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .profile-section h4 { margin-top: 0; margin-bottom: 8px; color: var(--heading-color-day); }
-        body.night-mode .profile-section h4 { color: var(--heading-color-night); }
-        .profile-section pre { white-space: pre-wrap; word-wrap: break-word; background-color: rgba(0,0,0,0.03); padding: 8px; border-radius: 4px; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; font-size: 0.95em; max-height: 250px; overflow-y: auto; }
-        body.night-mode .profile-section pre { background-color: rgba(255,255,255,0.05); color: #eee; }
-        .profile-section .qa-item { margin-bottom: 8px; font-size: 0.95em; }
-        .profile-section .qa-item strong { display: block; margin-bottom: 2px; color: #333; }
-        body.night-mode .profile-section .qa-item strong { color: #ddd; }
-        #search-container label { margin-bottom: 10px; }
-        #search-box { width: 100%; padding: 10px; font-size: 15px; margin-bottom: 10px; }
-        body.night-mode #search-box { background-color: #333; color: var(--text-color-night); border-color: var(--input-border-night); }
-        #search-results-list { max-height: 200px; overflow-y: auto; border: 1px solid var(--border-color-day); border-radius: 4px; margin-bottom: 20px; }
-        body.night-mode #search-results-list { border-color: var(--border-color-night); }
-        #search-results-list div { padding: 8px 10px; cursor: pointer; border-bottom: 1px solid var(--border-color-day); }
-        #search-results-list div:last-child { border-bottom: none; }
-        #search-results-list div:hover { background-color: #eee; }
-        body.night-mode #search-results-list div:hover { background-color: #333; }
-        .switch { position: relative; display: inline-block; width: 50px; height: 24px; vertical-align: middle; }
+
+        body.day-mode {
+            --bg-grad-start: var(--bg-grad-start-day);
+            --bg-grad-end: var(--bg-grad-end-day);
+            --glass-bg: var(--glass-bg-day);
+            --glass-border: var(--glass-border-day);
+            --text-main: var(--text-main-day);
+            --text-heading: var(--text-heading-day);
+            --accent: var(--accent-day);
+            --card-bg: var(--card-bg-day);
+            --card-shadow: var(--card-shadow-day);
+            --input-bg: var(--input-bg-day);
+            --input-border: var(--input-border-day);
+            --btn-text: var(--btn-text-day);
+            --planet-opacity: 0; /* Hide space planets in day mode */
+        }
+
+        /* --- GLOBAL STYLES --- */
+        html, body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            width: 100%; min-height: 100vh;
+            color: var(--text-main);
+            overflow-x: hidden;
+            background-color: #05070a; /* Fallback */
+            transition: all 0.5s ease;
+        }
+
+        /* --- BACKGROUND LAYERS --- */
+        .bg-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
+        }
+
+        /* Layer 1: The Gradient */
+        #bg-gradient {
+            z-index: -10;
+            background: radial-gradient(circle at center, var(--bg-grad-mid-night, #0b1021) 0%, var(--bg-grad-start) 100%);
+            transition: background 0.5s ease;
+        }
+        body.day-mode #bg-gradient {
+            background: linear-gradient(135deg, var(--bg-grad-start-day), var(--bg-grad-end-day));
+        }
+
+        /* Layer 2: The Planets & Stars (Visible in Night Mode) */
+        #space-elements {
+            z-index: -5;
+            transition: opacity 0.5s ease;
+        }
+        
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkle linear infinite; opacity: 0;
+        }
+        @keyframes twinkle { 0% { opacity: 0; } 50% { opacity: 0.8; } 100% { opacity: 0; } }
+
+        .planet {
+            position: absolute; border-radius: 50%;
+            box-shadow: inset -10px -10px 40px rgba(0,0,0,0.5);
+            animation: floatPlanet linear infinite;
+            opacity: var(--planet-opacity);
+            transition: opacity 0.5s ease;
+        }
+        
+        /* Planet 1: Large Gas Giant (Purple/Blue) */
+        .planet-1 {
+            width: 400px; height: 400px; top: -100px; left: -100px;
+            background: radial-gradient(circle at 30% 30%, rgba(79, 172, 254, 0.4), rgba(0, 242, 254, 0.1));
+            animation-duration: 200s;
+        }
+        /* Planet 2: Rocky World (Red/Grey) */
+        .planet-2 {
+            width: 150px; height: 150px; bottom: 15%; right: -50px;
+            background: radial-gradient(circle at 30% 30%, rgba(142, 142, 142, 0.5), rgba(43, 43, 43, 0.8));
+            animation-duration: 150s; animation-direction: reverse;
+        }
+        /* Planet 3: Distant Moon */
+        .planet-3 {
+            width: 60px; height: 60px; top: 30%; right: 20%;
+            background: rgba(200, 200, 200, 0.3);
+            animation-duration: 100s;
+        }
+
+        @keyframes floatPlanet {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(30px, 40px) rotate(5deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        /* --- LAYOUT & CONTAINER --- */
+        .container {
+            width: 90%; max-width: 900px;
+            margin: 80px auto 40px auto;
+            padding: 30px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 2px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--card-shadow);
+            clip-path: polygon(0 0, 100% 0, 100% 98%, 98% 100%, 0 100%); /* Tech corner cut */
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+        body.day-mode .container { 
+            border-radius: 12px; 
+            clip-path: none; 
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .header-controls { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; align-items: center; gap: 10px; }
+        
+        h2, h3, h4 { color: var(--text-heading); margin-top: 0; text-transform: uppercase; letter-spacing: 1.5px; }
+        h2 { border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 25px; font-weight: 700; }
+        body.day-mode h2, body.day-mode h3 { text-transform: none; letter-spacing: 0.5px; }
+
+        /* --- BUTTONS --- */
+        .button {
+            padding: 12px 24px; font-size: 15px; cursor: pointer; border: none; border-radius: 2px;
+            background: var(--accent); color: var(--btn-text); font-weight: bold;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+            transition: all 0.2s;
+            margin: 5px; text-transform: uppercase; letter-spacing: 1px;
+            box-sizing: border-box; /* Ensure padding doesn't increase width beyond 100% */
+        }
+        body.day-mode .button { 
+            border-radius: 6px; 
+            box-shadow: none; 
+            text-transform: none; 
+            letter-spacing: normal;
+        }
+        
+        .button:hover { 
+            filter: brightness(1.2);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.4); 
+        }
+        body.day-mode .button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            filter: brightness(1.1);
+        }
+        
+        .button-secondary, .button-back { background: #37474f; color: #eceff1; }
+        body.day-mode .button-secondary, body.day-mode .button-back { background: #78909c; color: #fff; }
+
+        .button-delete { padding: 4px 10px; font-size: 12px; background: #c62828; border-radius: 2px; margin-left: auto; color: white; }
+        .menu-buttons button { display: block; width: 100%; margin-bottom: 15px; text-align: center; font-size: 1.1em; }
+
+        /* --- FORMS & INPUTS --- */
+        .form-section { margin-bottom: 25px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-heading); letter-spacing: 0.5px; }
+        
+        input[type="text"], select, textarea, input[type="password"] {
+            width: 100%; padding: 12px; border-radius: 2px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-size: 15px; box-sizing: border-box;
+            transition: all 0.3s; font-family: 'Consolas', 'Courier New', monospace; /* Tech font for inputs */
+        }
+        body.day-mode input[type="text"], body.day-mode select, body.day-mode textarea { 
+            font-family: 'Segoe UI', sans-serif; 
+            border-radius: 6px; 
+            background: #fff;
+            color: #333;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none; border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            background: rgba(0, 229, 255, 0.05);
+        }
+        body.day-mode input:focus, body.day-mode textarea:focus { 
+            background: #fff; 
+            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+        }
+
+        /* Select Options */
+        select option { background-color: #0b1021; color: #e0e0e0; }
+        body.day-mode select option { background-color: #ffffff; color: #2c3e50; }
+
+        /* --- RICH TEXT TOOLBAR --- */
+        .rich-text-container { border: 1px solid var(--input-border); border-radius: 2px; overflow: hidden; background: var(--input-bg); }
+        body.day-mode .rich-text-container { background: #fff; border-radius: 6px; }
+        
+        .toolbar { padding: 5px 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--input-border); display: flex; gap: 5px; }
+        body.day-mode .toolbar { background: #eceff1; }
+        
+        .toolbar button { background: none; border: none; color: var(--text-main); cursor: pointer; padding: 5px; border-radius: 4px; font-weight: bold; }
+        .toolbar button:hover { background: rgba(0,229,255,0.2); color: var(--accent); }
+        body.day-mode .toolbar button:hover { background: #cfd8dc; color: #333; }
+        
+        .rich-input { 
+            width: 100%; min-height: 100px; padding: 12px; 
+            background: transparent; color: var(--text-main); 
+            border: none; outline: none; resize: vertical; overflow-y: auto; font-family: inherit;
+        }
+        body.day-mode .rich-input { color: #333; font-family: sans-serif; }
+
+        /* --- DATA LISTS & CARDS --- */
+        .data-list ul { list-style: none; padding: 0; }
+        .data-list li {
+            padding: 15px; margin-bottom: 10px;
+            background: var(--card-bg); border-radius: 2px;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; transition: all 0.2s;
+        }
+        body.day-mode .data-list li {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        .data-list li:hover { transform: translateX(5px); border-color: var(--accent); box-shadow: 0 0 10px rgba(0,229,255,0.1); }
+        body.day-mode .data-list li:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.05); border-color: #2c3e50; }
+        
+        .entry-card {
+            background: var(--card-bg);
+            padding: 20px; border-radius: 4px;
+            margin-bottom: 20px; border-left: 4px solid var(--accent);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        body.day-mode .entry-card { border: 1px solid #eee; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border-radius: 8px; }
+        .entry-meta { font-size: 0.85em; color: #888; margin-bottom: 10px; font-style: italic; display: flex; justify-content: space-between; font-family: monospace; }
+        body.day-mode .entry-meta { font-family: sans-serif; color: #607d8b; }
+        
+        /* --- STATS BARS --- */
+        .stats-container { margin-bottom: 30px; }
+        .stat-bar-row { display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; }
+        .stat-label { width: 120px; font-weight: bold; text-align: right; margin-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .stat-track { flex-grow: 1; background: rgba(255,255,255,0.1); height: 20px; border-radius: 2px; overflow: hidden; position: relative; }
+        body.day-mode .stat-track { background: #eceff1; border-radius: 4px; }
+        .stat-fill { height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 5px; font-size: 12px; color: white; font-weight: bold; transition: width 1s ease-in-out; }
+        .fill-good { background: linear-gradient(90deg, #00695c, #00bfa5); }
+        .fill-bad { background: linear-gradient(90deg, #c62828, #ff5252); }
+
+        /* --- VIEWS --- */
+        .view { display: none; opacity: 0; transition: opacity 0.4s ease; }
+        .view.active { display: block; opacity: 1; }
+        
+        /* --- PASSWORD PAGE --- */
+        #password-view { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            display: flex; align-items: center; justify-content: center; z-index: 2000;
+        }
+        #password-card {
+            background: var(--glass-bg);
+            padding: 40px; border-radius: 2px; text-align: center;
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.1);
+            backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
+            width: 90%; max-width: 400px;
+        }
+        body.day-mode #password-card {
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid #eee;
+        }
+
+        /* --- TOGGLE SWITCH --- */
+        .switch { position: relative; display: inline-block; width: 60px; height: 30px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent-color); }
-        input:focus + .slider { box-shadow: 0 0 1px var(--accent-color); }
-        input:checked + .slider:before { transform: translateX(26px); }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid #555; }
+        .slider:before { position: absolute; content: "🌙"; display:flex; align-items: center; justify-content: center; height: 24px; width: 24px; left: 3px; bottom: 2px; background-color: #1a1a1a; transition: .4s; border-radius: 50%; font-size: 14px; }
+        
+        input:checked + .slider { background-color: #cfd8dc; border-color: #b0bec5; }
+        input:checked + .slider:before { transform: translateX(28px); content: "☀️"; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 600px) {
+            .container { margin-top: 60px; padding: 15px; width: 95%; }
+            .header-controls { top: 10px; right: 10px; }
+            .menu-buttons button { font-size: 1em; padding: 12px; }
+        }
     </style>
 </head>
 <body>
 
+    <!-- Background Layers -->
+    <div id="bg-gradient" class="bg-layer"></div>
+    
+    <div id="space-elements" class="bg-layer">
+        <div id="stars-container"></div>
+        <div class="planet planet-1"></div>
+        <div class="planet planet-2"></div>
+        <div class="planet planet-3"></div>
+    </div>
+
+    <!-- Header / Mode Toggle -->
     <div class="header-controls">
         <label class="switch" title="Toggle Day/Night Mode">
             <input type="checkbox" id="darkModeToggle">
@@ -114,232 +349,676 @@
         </label>
     </div>
 
-    <div class="container"> <div id="menu-view" class="view active">
-             <h2>Captain Database</h2>
+    <!-- Password Page (Overlay) -->
+    <div id="password-view" style="display: flex;">
+        <div id="password-card">
+            <h2><i class="fas fa-user-shield"></i> Free Abba</h2>
+            <p style="margin-bottom: 20px;">Restricted Access. Identity Confirmation Required.</p>
+            <form id="password-form">
+                <input type="password" id="password-input" placeholder="Enter Access Code" style="margin-bottom: 15px; text-align: center;">
+                <button type="submit" class="button" style="width: 100%; margin: 0;">Authenticate</button>
+            </form>
+            <p id="password-error" style="color: #ff5252; display: none; margin-top: 10px;">Access Denied.</p>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="container" id="main-container" style="display: none;">
+        
+        <!-- Menu View -->
+        <div id="menu-view" class="view">
+             <h2><i class="fas fa-rocket"></i> Command Center</h2>
              <div class="menu-buttons">
-                 <button class="button" onclick="showView('submit-view')">Submit New Entry</button>
-                 <button class="button" onclick="showView('good-guys-view')">View Good Guys</button>
-                 <button class="button" onclick="showView('bad-guys-view')">View Bad Guys</button>
-                 <button class="button" onclick="showView('search-view')">Search Captains</button>
-                 <button class="button" onclick="showView('abba-view')">ABBA Q&A Compilation</button>
+                 <button class="button" onclick="navigateTo('submit-view')"><i class="fas fa-plus-circle"></i> Submit New Entry</button>
+                 <button class="button" onclick="navigateTo('stats-view')"><i class="fas fa-chart-bar"></i> Hall of Fame / Stats</button>
+                 <button class="button" onclick="navigateTo('good-guys-view')"><i class="fas fa-user-astronaut"></i> View Good Guys</button>
+                 <button class="button" onclick="navigateTo('mid-guys-view')"><i class="fas fa-user-tie"></i> View Mid Guys</button>
+                 <button class="button" onclick="navigateTo('bad-guys-view')"><i class="fas fa-user-ninja"></i> View Bad Guys</button>
+                 <button class="button" onclick="navigateTo('search-view')"><i class="fas fa-search"></i> Search Captains</button>
+                 <button class="button" onclick="navigateTo('abba-view')"><i class="fas fa-question-circle"></i> ABBA Q&A Compilation</button>
              </div>
         </div>
 
+        <!-- Submit View -->
         <div id="submit-view" class="view">
-             <h2>Submit New Entry</h2>
+             <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>New Log Entry</h2>
+                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
+             </div>
+             
              <form id="entry-form">
-                 <div class="form-section"> <label for="captain-name-select">Captain Name</label> <div class="captain-select-container"> <select id="captain-name-select" name="captainNameSelect" required> <option value="" selected disabled>-- Select Existing or Add New --</option> <option value="__add_new__">-- Add New Captain --</option> </select> </div> <div id="add-captain-field"> <label for="captain-name-new">New Captain Name:</label> <input type="text" id="captain-name-new" name="captainNameNew"> </div> </div>
-                 <div class="form-section"> <label for="appointment">Appointment</label> <select id="appointment" name="appointment" required> <option value="" selected disabled>-- Select Appointment --</option> <option value="Line">Line</option> <option value="SUC">SUC</option> <option value="LIP">LIP</option> <option value="MGMT">MGMT</option> </select> </div>
-                 <div class="form-section"> <label for="experience">Experience / Remarks</label> <textarea id="experience" name="experience" placeholder="Share your overall experience, notable events, or general remarks..."></textarea> </div>
-                 <div class="form-section"> <label for="dos">Do's</label> <textarea id="dos" name="dos" placeholder="What behaviours, techniques, or preferences are encouraged?"></textarea> </div>
-                 <div class="form-section"> <label for="donts">Don'ts</label> <textarea id="donts" name="donts" placeholder="What behaviours, actions, or topics should be avoided?"></textarea> </div>
-                 <div class="form-section"> <h3>Captain Specific Q&A</h3> <div id="qa-container"></div> <button type="button" class="button button-secondary" onclick="addQaPair()">Add Question</button> </div>
-                 <div class="form-section radio-group"> <label>Rate This Interaction:</label> <label for="good-guy"><input type="radio" id="good-guy" name="rating" value="good" required> Good Guy</label> <label for="bad-guy"><input type="radio" id="bad-guy" name="rating" value="bad"> Bad Guy</label> </div>
-                 <div class="form-section"> <button type="submit" class="button button-primary">Submit Entry</button> <button type="button" class="button button-back" onclick="showView('menu-view')">Back to Menu</button> </div>
+                 <div class="form-section"> 
+                     <label for="captain-name-select">Captain Identity</label> 
+                     <div style="display: flex; gap: 10px;"> 
+                        <select id="captain-name-select" name="captainNameSelect" required> <option value="" selected disabled>-- Select or Add New --</option> <option value="__add_new__">+ Add New Captain</option> </select> 
+                     </div> 
+                     <div id="add-captain-field" style="display:none; margin-top: 10px;"> 
+                        <input type="text" id="captain-name-new" name="captainNameNew" placeholder="Enter New Captain's Name"> 
+                     </div> 
+                 </div>
+                 
+                 <div class="form-section"> 
+                    <label for="appointment">Appointment</label> 
+                    <select id="appointment" name="appointment" required> <option value="" selected disabled>-- Select Appointment --</option> <option value="Line">Line</option> <option value="SUC">SUC</option> <option value="LIP">LIP</option> <option value="MGMT">MGMT</option> </select> 
+                 </div>
+
+                 <!-- Rich Text Field -->
+                 <div class="form-section"> 
+                    <label>Experience / Remarks</label> 
+                    <div class="rich-text-container">
+                        <div class="toolbar">
+                            <button type="button" onclick="formatText('experience', 'bold')" title="Bold">B</button>
+                            <button type="button" onclick="formatText('experience', 'italic')" title="Italic">I</button>
+                            <button type="button" onclick="formatText('experience', 'underline')" title="Underline">U</button>
+                            <button type="button" onclick="formatText('experience', 'insertUnorderedList')" title="Bullet List"><i class="fas fa-list-ul"></i></button>
+                        </div>
+                        <div id="experience" class="rich-input" contenteditable="true"></div>
+                    </div>
+                 </div>
+
+                 <!-- Plain Text Fields -->
+                 <div class="form-section"> 
+                    <label>Do's</label> 
+                    <textarea id="dos" name="dos" rows="4" placeholder=""></textarea>
+                 </div>
+
+                 <div class="form-section"> 
+                    <label>Don'ts</label> 
+                    <textarea id="donts" name="donts" rows="4" placeholder=""></textarea>
+                 </div>
+
+                 <div class="form-section"> 
+                    <h3>Specific Q&A</h3> 
+                    <div id="qa-container"></div> 
+                    <button type="button" class="button button-secondary" onclick="addQaPair()">+ Add Question</button> 
+                 </div>
+
+                 <div class="form-section">
+                    <label>Assessment:</label>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                        <label><input type="radio" name="rating" value="good" required> Good Guy</label>
+                        <label><input type="radio" name="rating" value="mid"> Mid Guy</label>
+                        <label><input type="radio" name="rating" value="bad"> Bad Guy</label>
+                    </div>
+                 </div>
+
+                 <div class="form-section"> 
+                    <button type="submit" class="button">Submit</button> 
+                    <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back to Menu</button> 
+                 </div>
              </form>
         </div>
 
+        <!-- Stats View -->
+        <div id="stats-view" class="view">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Mission Statistics</h2>
+                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
+            </div>
+            
+            <div class="stats-container">
+                <h3 style="color: #00bfa5;"><i class="fas fa-crown"></i> Top 3 Good Guys</h3>
+                <div id="top-good-list">Loading...</div>
+            </div>
+
+            <div class="stats-container">
+                <h3 style="color: #ff5252;"><i class="fas fa-skull"></i> Top 3 Bad Guys</h3>
+                <div id="top-bad-list">Loading...</div>
+            </div>
+
+            <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back to Menu</button>
+        </div>
+
+        <!-- Good Guys View -->
         <div id="good-guys-view" class="view">
-              <h2>Good Guys List</h2>
-              <div id="good-guys-list-content" class="data-list"><div class="placeholder-content">Loading data...</div></div>
-              <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Good Guys</h2>
+                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
+              </div>
+              <div id="good-guys-list-content" class="data-list">Loading...</div>
+              <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
         </div>
 
+        <!-- Mid Guys View -->
+        <div id="mid-guys-view" class="view">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Mid Guys</h2>
+                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
+              </div>
+              <div id="mid-guys-list-content" class="data-list">Loading...</div>
+              <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
+        </div>
+
+        <!-- Bad Guys View -->
         <div id="bad-guys-view" class="view">
-              <h2>Bad Guys List</h2>
-              <div id="bad-guys-list-content" class="data-list"><div class="placeholder-content">Loading data...</div></div>
-              <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Bad Guys</h2>
+                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
+              </div>
+              <div id="bad-guys-list-content" class="data-list">Loading...</div>
+              <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
         </div>
 
+        <!-- Search View -->
         <div id="search-view" class="view">
-             <h2>Search Captains</h2>
-             <div id="search-container" class="form-section">
-                 <label for="search-box">Search by Captain Name:</label>
-                 <input type="text" id="search-box" placeholder="Start typing a name...">
-                 <div id="search-results-list" class="data-list" style="display: none;"> </div>
+             <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Database Search</h2>
+                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
              </div>
-              <div id="search-profile-content" class="profile-display" style="display: none;"></div>
-              <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
+             <div id="search-container" class="form-section">
+                 <input type="text" id="search-box" placeholder="Start typing a captain's name...">
+                 <div id="search-results-list" class="data-list" style="display: none; margin-top: 10px;"></div>
+             </div>
+              <div id="search-profile-content" style="display: none;"></div>
+              <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
         </div>
 
+        <!-- ABBA View -->
         <div id="abba-view" class="view">
-             <h2>ABBA Q&A Compilation</h2>
-             <div id="abba-list-content" class="data-list"><div class="placeholder-content">Loading data...</div></div>
-             <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
+             <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>ABBA Q&A Archive</h2>
+                <button type="button" class="button button-back" onclick="navigateTo('menu-view')">Back</button>
+             </div>
+             <div id="abba-list-content" class="data-list">Loading...</div>
+             <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
         </div>
 
+        <!-- Profile View -->
         <div id="profile-view" class="view">
-              <h2 id="profile-view-captain-name">Captain Profile</h2>
-              <div id="profile-view-content" class="profile-display"><div class="placeholder-content">Loading profile...</div></div>
-              <button type="button" class="button button-back" onclick="showView('menu-view')" style="margin-top: 15px;">Back to Menu</button>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 id="profile-view-captain-name">Captain Profile</h2>
+                <button type="button" class="button button-back" onclick="window.history.back()">Back</button>
+              </div>
+              <div id="profile-view-content"></div>
+              <button type="button" class="button button-back" onclick="navigateTo('menu-view')" style="margin-top: 15px;">Back to Menu</button>
         </div>
 
-    </div> <script>
-        // --- Credentials & Password Location ---
-        const API_KEY = 'AIzaSyA0JGGJAYg_xY8EpR-cVn4hVFKkZyji5ck'; // Replace
-        const SPREADSHEET_ID = '1JNwm0Tl2HpaDW6MJdrF_0bcTL7imtwvYldt1UDx1r3Q'; // Replace
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzS42fKFx8_A2XL1Aa1nOAOpeelyz1w02T_nl1zF-cGXR1CwOvJSYaCiy06IKWTzBDPWA/exec'; // Replace
+    </div> 
+
+    <script>
+        // --- CONFIGURATION ---
+        const API_KEY = 'AIzaSyA0JGGJAYg_xY8EpR-cVn4hVFKkZyji5ck'; // Replace if needed
+        const SPREADSHEET_ID = '1JNwm0Tl2HpaDW6MJdrF_0bcTL7imtwvYldt1UDx1r3Q'; // Replace if needed
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzS42fKFx8_A2XL1Aa1nOAOpeelyz1w02T_nl1zF-cGXR1CwOvJSYaCiy06IKWTzBDPWA/exec'; // Replace if needed
         const PASSWORD_SHEET_NAME = 'Sheet2';
         const PASSWORD_CELL = 'A1';
 
-        // --- Global Cache & State ---
+        // --- STATE ---
         let allSheetData = null;
         let captainProfiles = {};
         let isFetching = false;
-        let lastView = 'menu-view';
         let isAuthenticated = false;
 
-        // --- Night Mode ---
+        // --- ANIMATIONS (STARS) ---
+        function createStars() {
+            const container = document.getElementById('stars-container');
+            const count = 70;
+            for(let i=0; i<count; i++){
+                const star = document.createElement('div');
+                star.className = 'star';
+                const duration = Math.random() * 3 + 2;
+                const size = Math.random() * 2 + 1;
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.animationDuration = duration + 's';
+                star.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(star);
+            }
+        }
+        createStars();
+
+        // --- NIGHT MODE TOGGLE ---
         const darkModeToggle = document.getElementById('darkModeToggle');
-        function setDarkMode(isNight) {
-             if (isNight) { document.body.classList.add('night-mode'); localStorage.setItem('darkModePref', 'true'); if(darkModeToggle) darkModeToggle.checked = true; }
-             else { document.body.classList.remove('night-mode'); localStorage.setItem('darkModePref', 'false'); if(darkModeToggle) darkModeToggle.checked = false; }
-         }
-        if (darkModeToggle) { darkModeToggle.addEventListener('change', () => setDarkMode(darkModeToggle.checked)); }
-
-        // --- Utility Functions ---
-        function findMode(arr) {
-            if (!arr || arr.length === 0) return 'N/A';
-            return arr.sort((a,b) => arr.filter(v => v===a).length - arr.filter(v => v===b).length).pop();
+        function setDarkMode(isDay) {
+            if (isDay) { 
+                document.body.classList.add('day-mode'); 
+                localStorage.setItem('dayMode', 'true');
+            } else { 
+                document.body.classList.remove('day-mode'); 
+                localStorage.setItem('dayMode', 'false');
+            }
         }
-        function escapeHtml(unsafe) {
-             if (!unsafe) return '';
-             return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-         }
-
-        // --- Data Fetching & Processing ---
-        async function fetchAllData() {
-            if (isFetching) { console.log("Fetch already in progress..."); return false; }
-            if (!API_KEY || API_KEY === 'YOUR_NEW_PRIVATE_API_KEY' || !SPREADSHEET_ID || SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID') { console.warn("API Key or Spreadsheet ID is not set correctly."); alert("Configuration incomplete. Please set your NEW API Key and Spreadsheet ID in the script."); return false; }
-            console.log("Fetching all data from sheet..."); isFetching = true; document.body.style.cursor = 'wait';
-            const range = 'Sheet1!A2:I'; const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?key=${API_KEY}&valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER`;
-            try {
-                const response = await fetch(apiUrl); const responseData = await response.json();
-                if (!response.ok) { console.error('Error response from API:', responseData); const error = responseData.error || {}; const status = error.status || response.status; const message = error.message || response.statusText; alert(`Error fetching data: ${status} - ${message}`); throw new Error(`HTTP error! status: ${status}`); }
-                console.log("All data fetched successfully."); allSheetData = responseData.values || []; processAllData(); return true;
-            } catch (error) { console.error('Could not fetch all data:', error); alert(`Failed to fetch data from sheet: ${error.message}. Check console (F12) and API Key/Sheet settings.`); allSheetData = null; captainProfiles = {}; populateSubmitDropdown(); /* Removed populateSearchDropdown */ displayList('good'); displayList('bad'); displayAbba(); return false;
-            } finally { isFetching = false; document.body.style.cursor = 'default'; }
-         }
-
-        function processAllData() {
-             if (!allSheetData) return; console.log("Processing fetched data..."); captainProfiles = {};
-             allSheetData.forEach(row => { const name = row[1]; if (!name || name.trim() === '') return; if (!captainProfiles[name]) { captainProfiles[name] = { name: name, submissions: [], appointments: [], ratings: [], goodCount: 0, badCount: 0, aggregate: { appointment: 'N/A', status: 'Neutral' } }; } const submission = { timestamp: row[0] ? new Date(Math.round((row[0] - 25569) * 86400 * 1000)) : null, appointment: row[2] || '', experience: row[3] || '', dos: row[4] || '', donts: row[5] || '', questions: [], rating: row[7] || '', id: row[8] || '' }; try { if(row[6]) { submission.questions = JSON.parse(row[6]); if (!Array.isArray(submission.questions)) submission.questions = []; } } catch(e) { console.warn(`Could not parse questions JSON for ${name}, submission ID ${submission.id}: ${row[6]}`); submission.questions = []; } captainProfiles[name].submissions.push(submission); if (submission.appointment) captainProfiles[name].appointments.push(submission.appointment); if (submission.rating === 'good') captainProfiles[name].goodCount++; if (submission.rating === 'bad') captainProfiles[name].badCount++; if (submission.rating) captainProfiles[name].ratings.push(submission.rating); });
-             Object.values(captainProfiles).forEach(profile => { if (profile.goodCount > profile.badCount) { profile.aggregate.status = 'Good'; } else if (profile.badCount > profile.goodCount) { profile.aggregate.status = 'Bad'; } else { if (profile.goodCount === 0) { profile.aggregate.status = 'Neutral'; } else { profile.aggregate.status = 'Bad'; } } profile.aggregate.appointment = findMode(profile.appointments) || 'N/A'; });
-             console.log("Data processed:", captainProfiles); populateSubmitDropdown(); /* Removed populateSearchDropdown */
+        if (darkModeToggle) {
+            // Check pref
+            const savedMode = localStorage.getItem('dayMode');
+            if(savedMode === 'true') { darkModeToggle.checked = true; setDarkMode(true); }
+            
+            darkModeToggle.addEventListener('change', () => setDarkMode(darkModeToggle.checked));
         }
 
-        function populateSubmitDropdown() {
-            const selectElement = document.getElementById('captain-name-select'); if (!selectElement) return; const currentSelection = selectElement.value;
-            // Clear existing (keep placeholder)
-            while (selectElement.options.length > 1) { selectElement.remove(1); }
-            // Add "Add New" first
-            const addNewOption = document.createElement('option'); addNewOption.value = '__add_new__'; addNewOption.textContent = '-- Add New Captain --'; selectElement.appendChild(addNewOption);
-            // Add sorted names
-            const names = Object.keys(captainProfiles).sort(); names.forEach(name => { const option = document.createElement('option'); option.value = name; option.textContent = name; selectElement.appendChild(option); });
-            if (names.includes(currentSelection) || currentSelection === '__add_new__') { selectElement.value = currentSelection; } else { selectElement.value = ""; }
+        // --- NAVIGATION & HISTORY (BACK BUTTON SUPPORT) ---
+        function navigateTo(viewId) {
+            if (!isAuthenticated && viewId !== 'password-view') return;
+            
+            // Push state to history
+            window.history.pushState({ view: viewId }, "", `#${viewId}`);
+            renderView(viewId);
         }
-        // Removed populateSearchDropdown
 
-        // --- Display Logic for Views ---
-        function displayList(type) {
-            const targetDivId = type === 'good' ? 'good-guys-list-content' : 'bad-guys-list-content'; const listDiv = document.getElementById(targetDivId); if (!listDiv) return; if (!allSheetData) { listDiv.innerHTML = '<div class="placeholder-content">Data not loaded. Please check configuration or refresh.</div>'; return; } if (Object.keys(captainProfiles).length === 0 && allSheetData.length > 0) { listDiv.innerHTML = '<div class="placeholder-content">Processing data... Please wait.</div>'; return; } if (Object.keys(captainProfiles).length === 0 && allSheetData.length === 0) { listDiv.innerHTML = '<div class="placeholder-content">No data found in sheet.</div>'; return; } const statusFilter = type === 'good' ? 'Good' : 'Bad'; const filteredCaptains = Object.values(captainProfiles).filter(p => p.aggregate.status === statusFilter); if (filteredCaptains.length === 0) { listDiv.innerHTML = `<div class="placeholder-content">No captains currently classified as '${statusFilter}'.</div>`; return; } let html = '<ul>'; filteredCaptains.sort((a, b) => a.name.localeCompare(b.name)).forEach(profile => { html += `<li><span class="captain-name" onclick="showProfileView('${escapeHtml(profile.name)}')">${escapeHtml(profile.name)}</span> <span class="captain-details">(Appt: ${escapeHtml(profile.aggregate.appointment)})</span></li>`; }); html += '</ul>'; listDiv.innerHTML = html;
-         }
-        function displayAbba() {
-              const listDiv = document.getElementById('abba-list-content'); if (!listDiv) return; if (!allSheetData) { listDiv.innerHTML = '<div class="placeholder-content">Data not loaded. Please check configuration or refresh.</div>'; return; } let allQuestions = []; Object.values(captainProfiles).forEach(profile => { profile.submissions.forEach(sub => { if (sub.questions && Array.isArray(sub.questions)) { sub.questions.forEach(qa => { if (qa.q && qa.q.trim() !== '') { allQuestions.push({ captain: profile.name, q: qa.q.trim(), a: (qa.a || '').trim() }); } }); } }); }); if (allQuestions.length === 0) { listDiv.innerHTML = '<div class="placeholder-content">No questions submitted yet.</div>'; return; } let html = '<ul>'; allQuestions.sort((a,b) => a.q.localeCompare(b.q) || a.captain.localeCompare(b.captain)).forEach(item => { html += `<li><strong>Q: ${escapeHtml(item.q)}</strong> (For ${escapeHtml(item.captain)}) <br> A: ${item.a ? escapeHtml(item.a) : '<i>No answer provided</i>'}</li>`; }); html += '</ul>'; listDiv.innerHTML = html;
-         }
-         // Modified displayCaptainProfile for compiled view
-        function displayCaptainProfile(captainName, targetDivId = 'search-profile-content') {
-              const profileDiv = document.getElementById(targetDivId); const profile = captainProfiles[captainName]; if (!profileDiv || !profile) { console.error(`Profile or target div not found for ${captainName} in #${targetDivId}`); if(profileDiv) profileDiv.innerHTML = `<div class="placeholder-content">Could not load profile for ${escapeHtml(captainName)}.</div>`; return; }
-              if (targetDivId === 'profile-view-content') { const profileTitle = document.getElementById('profile-view-captain-name'); if (profileTitle) profileTitle.textContent = `Profile: ${profile.name}`; }
-              profileDiv.style.display = 'block';
-              let compiledExperience = []; let compiledDos = []; let compiledDonts = []; let compiledQuestions = [];
-              profile.submissions.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-              profile.submissions.forEach(sub => { if (sub.experience?.trim()) compiledExperience.push(sub.experience.trim()); if (sub.dos?.trim()) compiledDos.push(sub.dos.trim()); if (sub.donts?.trim()) compiledDonts.push(sub.donts.trim()); if (sub.questions && Array.isArray(sub.questions)) { sub.questions.forEach(qa => { if(qa.q?.trim()) { compiledQuestions.push({ q: qa.q.trim(), a: (qa.a || '').trim() }); } }); } });
-              let html = `<p><strong>Calculated Status:</strong> ${profile.aggregate.status} (Good: ${profile.goodCount}, Bad: ${profile.badCount})</p><p><strong>Most Common Appointment:</strong> ${profile.aggregate.appointment}</p><hr>`;
-              if (compiledExperience.length > 0) { html += `<div class="profile-section"><h4>Experience / Remarks (Compiled):</h4><pre>${escapeHtml(compiledExperience.join('\n\n---\n\n'))}</pre></div>`; } else { html += `<div class="profile-section"><h4>Experience / Remarks:</h4><p><i>No entries found.</i></p></div>`; }
-              if (compiledDos.length > 0) { html += `<div class="profile-section"><h4>Do's (Compiled):</h4><pre>${escapeHtml(compiledDos.join('\n\n---\n\n'))}</pre></div>`; } else { html += `<div class="profile-section"><h4>Do's:</h4><p><i>No entries found.</i></p></div>`; }
-              if (compiledDonts.length > 0) { html += `<div class="profile-section"><h4>Don'ts (Compiled):</h4><pre>${escapeHtml(compiledDonts.join('\n\n---\n\n'))}</pre></div>`; } else { html += `<div class="profile-section"><h4>Don'ts:</h4><p><i>No entries found.</i></p></div>`; }
-              if (compiledQuestions.length > 0) { html += `<div class="profile-section"><h4>Q&A (Compiled):</h4>`; compiledQuestions.forEach(qa => { html += `<div class="qa-item"><strong>Q: ${escapeHtml(qa.q)}</strong><br>A: ${escapeHtml(qa.a || 'N/A')}</div>`; }); html += `</div>`; } else { html += `<div class="profile-section"><h4>Q&A:</h4><p><i>No entries found.</i></p></div>`; }
-              profileDiv.innerHTML = html;
-          }
-
-        // --- View Switching & Control ---
-        async function showView(viewId) {
-            if (!isAuthenticated) { return; } const currentActive = document.querySelector('.view.active'); if(currentActive) previousView = currentActive.id; console.log(`Switching view to: ${viewId}, Previous: ${previousView}`); const dataViews = ['good-guys-view', 'bad-guys-view', 'search-view', 'abba-view', 'profile-view']; const requiresLoad = dataViews.includes(viewId) && viewId !== 'profile-view'; let targetContentArea = document.getElementById(viewId)?.querySelector('.data-list, .profile-display, #profile-view-content, #search-results-list');
-            if (requiresLoad || (viewId === 'search-view')) { if (targetContentArea && viewId !== 'search-view' && viewId !== 'profile-view') { targetContentArea.innerHTML = '<div class="placeholder-content">Loading data...</div>'; } else if (viewId === 'search-view') { const searchBox = document.getElementById('search-box'); const resultsList = document.getElementById('search-results-list'); const profileDiv = document.getElementById('search-profile-content'); if (searchBox) searchBox.value = ''; if (resultsList) { resultsList.style.display = 'none'; resultsList.innerHTML = ''; } if (profileDiv) { profileDiv.style.display = 'none'; profileDiv.innerHTML = ''; } } }
-            if (requiresLoad) { if (!allSheetData && !isFetching) { const fetchSuccess = await fetchAllData(); if (!fetchSuccess && targetContentArea) { targetContentArea.innerHTML = '<div class="placeholder-content" style="color: red;">Failed to load data.</div>'; } } else if (isFetching && targetContentArea) { /* Loading */ } }
-            document.querySelectorAll('.view').forEach(view => view.classList.remove('active')); if (allSheetData || !dataViews.includes(viewId) || viewId === 'search-view') { if (viewId === 'good-guys-view') { displayList('good'); } else if (viewId === 'bad-guys-view') { displayList('bad'); } else if (viewId === 'abba-view') { displayAbba(); } else if (viewId === 'search-view') { /* Search handled by input */ } else if (viewId === 'submit-view') { populateSubmitDropdown(); } } const activeView = document.getElementById(viewId); if (activeView) { activeView.classList.add('active'); } else { console.error(`View with ID ${viewId} not found!`); }
-            if (previousView === 'submit-view' && viewId !== 'submit-view') { const qaContainer = document.getElementById('qa-container'); if(qaContainer) qaContainer.innerHTML = ''; qaCounter = 0; const addCaptainField = document.getElementById('add-captain-field'); if(addCaptainField) addCaptainField.style.display = 'none'; const entryForm = document.getElementById('entry-form'); if(entryForm) entryForm.reset(); }
-         }
-        function showProfileView(captainName) {
-            if (!isAuthenticated) return; if (!captainName) return; console.log(`Showing profile for: ${captainName}`); if (!captainProfiles[captainName]) { alert("Captain data not found. Please refresh data."); return; } displayCaptainProfile(captainName, 'profile-view-content'); showView('profile-view');
-         }
-
-        // --- Handle Captain Selection (Submit Form) ---
-        const captainSelect = document.getElementById('captain-name-select');
-        const newCaptainField = document.getElementById('add-captain-field');
-        const newCaptainInput = document.getElementById('captain-name-new');
-        if (captainSelect && newCaptainField && newCaptainInput) { captainSelect.addEventListener('change', function() { console.log('Captain dropdown changed. Selected value:', this.value); if (this.value === '__add_new__') { console.log('Add New selected. Showing input field.'); newCaptainField.style.display = 'block'; newCaptainInput.required = true; newCaptainInput.focus(); } else { console.log('Existing captain selected (or placeholder). Hiding input field.'); newCaptainField.style.display = 'none'; newCaptainInput.required = false; newCaptainInput.value = ''; } }); }
-        else { console.error("Error setting up captain selection: One or more elements (select, field div, input) not found."); }
-
-        // --- Handle Search Input ---
-         const searchBox = document.getElementById('search-box');
-         const searchResultsList = document.getElementById('search-results-list');
-         if (searchBox && searchResultsList) {
-              searchBox.addEventListener('input', function() {
-                   const searchTerm = this.value.trim().toLowerCase();
-                   const profileDiv = document.getElementById('search-profile-content');
-                   if (profileDiv) profileDiv.style.display = 'none';
-
-                   if (searchTerm.length < 1) { // Show results even for 1 char
-                       searchResultsList.innerHTML = ''; searchResultsList.style.display = 'none'; return;
-                   }
-                   if (!allSheetData) { searchResultsList.innerHTML = '<div>Data not loaded yet...</div>'; searchResultsList.style.display = 'block'; return; }
-
-                   const matchingNames = Object.keys(captainProfiles).filter(name => name.toLowerCase().includes(searchTerm)).sort();
-                   if (matchingNames.length > 0) {
-                        let resultsHtml = ''; matchingNames.forEach(name => { resultsHtml += `<div onclick="showProfileView('${escapeHtml(name)}')">${escapeHtml(name)}</div>`; });
-                        searchResultsList.innerHTML = resultsHtml; searchResultsList.style.display = 'block';
-                   } else { searchResultsList.innerHTML = '<div>No matching captains found.</div>'; searchResultsList.style.display = 'block'; }
-              });
-         } else { console.error("Search box or results list not found!"); }
-
-        // --- Dynamic Q&A Pairs ---
-        let qaCounter = 0;
-         function addQaPair() {
-             qaCounter++; const qaContainer = document.getElementById('qa-container'); if (!qaContainer) { console.error("Q&A container not found!"); return; } const newPair = document.createElement('div'); newPair.classList.add('qa-pair'); newPair.id = `qa-pair-${qaCounter}`;
-             newPair.innerHTML = ` <button type="button" class="button button-delete" onclick="deleteQaPair(${qaCounter})">X</button> <label for="question-${qaCounter}">Q${qaCounter}:</label> <textarea id="question-${qaCounter}" name="question_${qaCounter}" placeholder="Enter question..." rows="2"></textarea> <label for="answer-${qaCounter}">A${qaCounter}:</label> <textarea id="answer-${qaCounter}" name="answer_${qaCounter}" placeholder="Enter answer..." rows="3"></textarea>`;
-             qaContainer.appendChild(newPair);
-         }
-         function deleteQaPair(pairId) {
-              const pairElement = document.getElementById(`qa-pair-${pairId}`); if (pairElement) { pairElement.remove(); }
-          }
-
-        // --- Form Submission ---
-        const entryForm = document.getElementById('entry-form');
-        if (entryForm) {
-            entryForm.addEventListener('submit', async function(event) {
-                 event.preventDefault(); const submitButton = entryForm.querySelector('button[type="submit"]'); const originalButtonText = submitButton.textContent; submitButton.disabled = true; submitButton.textContent = 'Submitting...'; const formData = new FormData(entryForm); const data = { timestamp: new Date().toISOString(), captainName: '', appointment: formData.get('appointment') || '', experience: formData.get('experience') || '', dos: formData.get('dos') || '', donts: formData.get('donts') || '', rating: formData.get('rating') || '', questions: '' }; const questions = []; const selectedName = formData.get('captainNameSelect'); const newName = formData.get('captainNameNew')?.trim(); if (selectedName === '__add_new__') { if (!newName) { alert("Please enter the new Captain's Name."); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; } data.captainName = newName; } else if (selectedName) { data.captainName = selectedName; } else { alert("Please select or add a Captain Name."); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; } if (!data.appointment) { alert("Please select an Appointment."); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; } if (!data.rating) { alert("Please select a Rating (Good Guy / Bad Guy)."); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; }
-                 const qaPairs = document.querySelectorAll('#qa-container .qa-pair'); qaPairs.forEach(pairDiv => { const qInput = pairDiv.querySelector('textarea[name^="question_"]'); const aInput = pairDiv.querySelector('textarea[name^="answer_"]'); if (qInput && aInput) { const q = qInput.value.trim(); const a = aInput.value.trim(); if (q || a) { questions.push({ q: q || '', a: a || '' }); } } }); data.questions = JSON.stringify(questions); console.log("Collected Form Data for POST:", data);
-                 try { if (!WEB_APP_URL || WEB_APP_URL === 'YOUR_WEB_APP_URL_HERE') { throw new Error("Web App URL is not set correctly at the top of the script."); } const urlEncodedData = new URLSearchParams(data); const response = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', }, body: urlEncodedData }); const result = await response.json(); console.log("Response from Web App:", result); if (result.status === 'success') { alert("Entry submitted successfully!"); allSheetData = null; captainProfiles = {}; await fetchAllData(); entryForm.reset(); const qaContainer = document.getElementById('qa-container'); if(qaContainer) qaContainer.innerHTML = ''; qaCounter = 0; if(newCaptainField) newCaptainField.style.display = 'none'; showView('menu-view'); } else { throw new Error(result.message || "Unknown error from Apps Script."); } } catch (error) { console.error("Error submitting data:", error); alert(`Submission failed: ${error.message}`); } finally { submitButton.disabled = false; submitButton.textContent = originalButtonText; }
+        function renderView(viewId) {
+            console.log("Rendering view:", viewId);
+            document.querySelectorAll('.view').forEach(v => {
+                v.classList.remove('active');
+                setTimeout(() => { if(!v.classList.contains('active')) v.style.display = 'none'; }, 400); // Fade out
             });
-         } else { console.error("Entry form not found!"); }
 
-        // --- Authentication (Fetching Password from Sheet) ---
-        async function checkPassword() {
-            const enteredPassword = prompt("Enter Password:"); if (enteredPassword === null) { alert("Password entry cancelled."); return; } console.log("Attempting to fetch password from sheet..."); document.body.style.cursor = 'wait'; const passwordRange = `${PASSWORD_SHEET_NAME}!${PASSWORD_CELL}`; const passwordApiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${passwordRange}?key=${API_KEY}`;
-            try { const response = await fetch(passwordApiUrl); const responseData = await response.json(); if (!response.ok) { console.error("Error fetching password:", responseData); const error = responseData.error || {}; const message = error.message || response.statusText; throw new Error(`Could not fetch password from sheet: ${message}`); } const correctPasswordFromSheet = responseData.values?.[0]?.[0]; if (correctPasswordFromSheet === undefined || correctPasswordFromSheet === null) { throw new Error(`Password not found in ${PASSWORD_SHEET_NAME}!${PASSWORD_CELL}. Make sure it's set.`); } if (enteredPassword === correctPasswordFromSheet) { console.log("Password correct. Initializing app."); isAuthenticated = true; document.body.classList.add('unlocked'); await fetchAllData(); showView('menu-view'); } else { alert("Incorrect password."); } } catch (error) { console.error("Password check failed:", error); alert(`Authentication failed: ${error.message}`); } finally { document.body.style.cursor = 'default'; }
+            const active = document.getElementById(viewId);
+            if(active) {
+                active.style.display = 'block';
+                // Small delay to allow display:block to apply before opacity transition
+                setTimeout(() => active.classList.add('active'), 10);
+            }
+
+            // View specific logic
+            if (viewId === 'good-guys-view') displayList('good');
+            if (viewId === 'mid-guys-view') displayList('mid');
+            if (viewId === 'bad-guys-view') displayList('bad');
+            if (viewId === 'abba-view') displayAbba();
+            if (viewId === 'submit-view') populateSubmitDropdown();
+            if (viewId === 'stats-view') displayStats();
+            if (viewId === 'search-view') {
+                document.getElementById('search-box').value = '';
+                document.getElementById('search-results-list').style.display = 'none';
+                document.getElementById('search-profile-content').style.display = 'none';
+            }
         }
 
-        // --- Initial Setup ---
-        document.addEventListener('DOMContentLoaded', () => {
-             console.log("DOM fully loaded and parsed. Checking password...");
-             const savedDarkMode = localStorage.getItem('darkModePref');
-             setDarkMode(savedDarkMode === 'true');
-             checkPassword();
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.view) {
+                renderView(event.state.view);
+            } else {
+                // Default if no state (e.g., initial load)
+                if (isAuthenticated) renderView('menu-view');
+                else renderView('password-view');
+            }
         });
 
-    </script>
+        // --- AUTHENTICATION ---
+        const passwordForm = document.getElementById('password-form');
+        passwordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('password-input').value;
+            const btn = passwordForm.querySelector('button');
+            const err = document.getElementById('password-error');
+            
+            btn.textContent = 'Authenticating...';
+            btn.disabled = true;
+            err.style.display = 'none';
 
+            try {
+                // Fetch password from sheet
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${PASSWORD_SHEET_NAME}!${PASSWORD_CELL}?key=${API_KEY}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                if(!res.ok) throw new Error("API Error");
+                
+                const correctPass = data.values?.[0]?.[0];
+                
+                if(String(input) === String(correctPass)) {
+                    isAuthenticated = true;
+                    document.getElementById('password-view').style.display = 'none';
+                    document.getElementById('main-container').style.display = 'block';
+                    await fetchAllData();
+                    // Initial History State
+                    window.history.replaceState({ view: 'menu-view' }, "", "#menu-view");
+                    renderView('menu-view');
+                } else {
+                    err.style.display = 'block';
+                    err.textContent = "Incorrect Access Code.";
+                }
+            } catch (error) {
+                console.error(error);
+                err.style.display = 'block';
+                err.textContent = "System Offline or Config Error.";
+            } finally {
+                btn.textContent = 'Authenticate';
+                btn.disabled = false;
+            }
+        });
+
+        // --- DATA LOGIC ---
+        async function fetchAllData() {
+            if (isFetching) return;
+            isFetching = true;
+            try {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Sheet1!A2:I?key=${API_KEY}&valueRenderOption=UNFORMATTED_VALUE`;
+                const res = await fetch(url);
+                const data = await res.json();
+                allSheetData = data.values || [];
+                processData();
+            } catch(e) {
+                console.error("Data fetch error", e);
+                alert("Could not load database.");
+            } finally {
+                isFetching = false;
+            }
+        }
+
+        function processData() {
+            captainProfiles = {};
+            allSheetData.forEach(row => {
+                const name = row[1];
+                if (!name) return;
+                
+                if (!captainProfiles[name]) {
+                    captainProfiles[name] = { 
+                        name: name, submissions: [], goodCount: 0, midCount: 0, badCount: 0, 
+                        appointments: [], status: 'Neutral' 
+                    };
+                }
+
+                const sub = {
+                    timestamp: row[0],
+                    appointment: row[2],
+                    experience: row[3], // Raw HTML/Text
+                    dos: row[4],
+                    donts: row[5],
+                    questions: parseJSON(row[6]),
+                    rating: row[7]
+                };
+
+                captainProfiles[name].submissions.push(sub);
+                if (sub.appointment) captainProfiles[name].appointments.push(sub.appointment);
+                
+                if (sub.rating === 'good') captainProfiles[name].goodCount++;
+                else if (sub.rating === 'bad') captainProfiles[name].badCount++;
+                else if (sub.rating === 'mid') captainProfiles[name].midCount++;
+            });
+
+            // Calculate Status
+            Object.values(captainProfiles).forEach(p => {
+                const max = Math.max(p.goodCount, p.midCount, p.badCount);
+                
+                if (max === 0) {
+                     p.status = 'Neutral';
+                } else if (p.badCount === max) {
+                     // Priority 1: If Bad is highest OR tied for highest with anything, classify as Bad.
+                     // (Covers: Strict Bad, Bad==Mid, Bad==Good, Bad==Mid==Good)
+                     p.status = 'Bad';
+                } else if (p.midCount === max) {
+                     // Priority 2: If Mid is highest OR tied for highest (implied with Good only, since Bad checked above), classify as Mid.
+                     // (Covers: Strict Mid, Mid==Good)
+                     p.status = 'Mid';
+                } else {
+                     // Priority 3: Good is strictly highest.
+                     p.status = 'Good';
+                }
+                
+                p.modeAppointment = findMode(p.appointments);
+            });
+        }
+
+        function findMode(arr) {
+            if(!arr.length) return "N/A";
+            return arr.sort((a,b) => arr.filter(v => v===a).length - arr.filter(v => v===b).length).pop();
+        }
+
+        function parseJSON(str) {
+            try { return JSON.parse(str); } catch(e) { return []; }
+        }
+
+        // --- DISPLAY LOGIC ---
+        function displayList(type) {
+            const listDiv = document.getElementById(`${type}-guys-list-content`);
+            
+            let statusTarget = '';
+            if (type === 'good') statusTarget = 'Good';
+            else if (type === 'bad') statusTarget = 'Bad';
+            else if (type === 'mid') statusTarget = 'Mid';
+            
+            const filtered = Object.values(captainProfiles).filter(p => p.status === statusTarget);
+            
+            if(filtered.length === 0) {
+                listDiv.innerHTML = `<div style="text-align:center; padding:20px;">No captains classified as ${statusTarget}.</div>`;
+                return;
+            }
+
+            let html = '<ul>';
+            filtered.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
+                html += `<li onclick="showProfile('${p.name}')">
+                            <span style="font-weight:bold; font-size:1.1em;">${p.name}</span>
+                            <span style="font-size:0.9em; opacity:0.8;">${p.modeAppointment} (${p.goodCount}G / ${p.midCount}M / ${p.badCount}B)</span>
+                         </li>`;
+            });
+            html += '</ul>';
+            listDiv.innerHTML = html;
+        }
+
+        function displayStats() {
+            const goodList = document.getElementById('top-good-list');
+            const badList = document.getElementById('top-bad-list');
+
+            const all = Object.values(captainProfiles);
+            
+            // Top 3 Good
+            const topGood = [...all].sort((a,b) => b.goodCount - a.goodCount).slice(0, 3).filter(p => p.goodCount > 0);
+            renderBarChart(goodList, topGood, 'goodCount', 'good');
+
+            // Top 3 Bad
+            const topBad = [...all].sort((a,b) => b.badCount - a.badCount).slice(0, 3).filter(p => p.badCount > 0);
+            renderBarChart(badList, topBad, 'badCount', 'bad');
+        }
+
+        function renderBarChart(container, data, metric, styleType) {
+            if(data.length === 0) { container.innerHTML = "No data available."; return; }
+            let html = '';
+            const maxVal = data[0][metric]; // Highest value for scaling
+            
+            data.forEach(p => {
+                const widthPct = (p[metric] / maxVal) * 100;
+                html += `<div class="stat-bar-row" onclick="showProfile('${p.name}')">
+                            <div class="stat-label">${p.name}</div>
+                            <div class="stat-track">
+                                <div class="stat-fill fill-${styleType}" style="width: ${widthPct}%;">${p[metric]}</div>
+                            </div>
+                         </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function showProfile(name) {
+            const p = captainProfiles[name];
+            if(!p) return;
+            
+            document.getElementById('profile-view-captain-name').textContent = p.name;
+            const container = document.getElementById('profile-view-content');
+            
+            let statusColor = p.status === 'Good' ? '#00bfa5' : (p.status === 'Bad' ? '#ff5252' : '#FFD700');
+            
+            let html = `<div class="entry-card" style="border-left-color: ${statusColor};">
+                            <h3>Summary</h3>
+                            <p><strong>Status:</strong> <span style="color:${statusColor}; font-weight:bold; font-size:1.2em;">${p.status}</span></p>
+                            <p><strong>Appointment:</strong> ${p.modeAppointment}</p>
+                            <p><strong>Votes:</strong> ${p.goodCount} Good | ${p.midCount} Mid | ${p.badCount} Bad</p>
+                        </div>`;
+
+            // Render Segregated Entries
+            // Sort by newest first (assuming timestamp exists)
+            p.submissions.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+            p.submissions.forEach((sub, index) => {
+                let ratingIcon = sub.rating === 'good' ? '😇' : (sub.rating === 'bad' ? '👿' : '😐');
+                let dateStr = sub.timestamp ? new Date((sub.timestamp - 25569) * 86400 * 1000).toLocaleDateString() : 'Unknown Date';
+                
+                html += `<div class="entry-card">
+                            <div class="entry-meta">
+                                <span>Entry #${p.submissions.length - index} (${ratingIcon})</span>
+                                <span>${dateStr} | ${sub.appointment}</span>
+                            </div>`;
+                
+                if(sub.experience) html += `<h4>Experience</h4><div style="margin-bottom:15px; line-height:1.5; white-space: pre-wrap;">${sub.experience}</div>`;
+                if(sub.dos) html += `<h4>Do's</h4><div style="margin-bottom:15px; line-height:1.5; white-space: pre-wrap;">${sub.dos}</div>`;
+                if(sub.donts) html += `<h4>Don'ts</h4><div style="margin-bottom:15px; line-height:1.5; white-space: pre-wrap;">${sub.donts}</div>`;
+                
+                if(sub.questions && sub.questions.length > 0) {
+                    html += `<h4>Q&A</h4>`;
+                    sub.questions.forEach(q => {
+                        html += `<div style="background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; margin-bottom:5px;">
+                                    <strong>Q: ${q.q}</strong><br>
+                                    <span style="opacity:0.8;">A: ${q.a}</span>
+                                 </div>`;
+                    });
+                }
+                html += `</div>`;
+            });
+
+            container.innerHTML = html;
+            navigateTo('profile-view');
+        }
+
+        // --- SUBMIT FORM LOGIC ---
+        function populateSubmitDropdown() {
+            const select = document.getElementById('captain-name-select');
+            select.innerHTML = '<option value="" selected disabled>-- Select or Add New --</option><option value="__add_new__">+ Add New Captain</option>';
+            Object.keys(captainProfiles).sort().forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name; opt.textContent = name;
+                select.appendChild(opt);
+            });
+        }
+        
+        document.getElementById('captain-name-select').addEventListener('change', function() {
+            document.getElementById('add-captain-field').style.display = this.value === '__add_new__' ? 'block' : 'none';
+        });
+
+        // Rich Text Logic
+        function formatText(elementId, command) {
+            // execCommand is deprecated but still the only way for single-file vanilla JS rich text without massive libraries.
+            // It works in all major browsers.
+            document.execCommand(command, false, null);
+            document.getElementById(elementId).focus();
+        }
+
+        // Q&A Logic
+        let qaCount = 0;
+        function addQaPair() {
+            qaCount++;
+            const div = document.createElement('div');
+            div.className = 'qa-pair';
+            div.style = "background: rgba(0,0,0,0.1); padding: 10px; margin-bottom: 10px; border-radius: 8px; position:relative;";
+            div.innerHTML = `
+                <button type="button" class="button-delete" onclick="this.parentElement.remove()" style="position:absolute; right:5px; top:5px;">X</button>
+                <input type="text" placeholder="Question" class="qa-q" style="margin-bottom:5px;">
+                <input type="text" placeholder="Answer" class="qa-a">
+            `;
+            document.getElementById('qa-container').appendChild(div);
+        }
+
+        document.getElementById('entry-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true; btn.textContent = "Transmitting...";
+
+            const formData = new FormData();
+            
+            // Get Name
+            const selectVal = document.getElementById('captain-name-select').value;
+            let name = selectVal === '__add_new__' ? document.getElementById('captain-name-new').value.trim() : selectVal;
+            if(!name) { alert("Name required"); btn.disabled=false; return; }
+            
+            formData.append('captainName', name);
+            formData.append('appointment', document.getElementById('appointment').value);
+            formData.append('rating', document.querySelector('input[name="rating"]:checked').value);
+            formData.append('timestamp', new Date().toISOString());
+
+            // Get Rich Text HTML
+            formData.append('experience', document.getElementById('experience').innerHTML);
+            // Get Plain Text
+            formData.append('dos', document.getElementById('dos').value);
+            formData.append('donts', document.getElementById('donts').value);
+
+            // Get Q&A
+            const qaList = [];
+            document.querySelectorAll('#qa-container > div').forEach(div => {
+                const q = div.querySelector('.qa-q').value.trim();
+                const a = div.querySelector('.qa-a').value.trim();
+                if(q) qaList.push({q, a});
+            });
+            formData.append('questions', JSON.stringify(qaList));
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: new URLSearchParams(formData) // Google Apps Script requires form-urlencoded usually
+                });
+                const res = await response.json();
+                if(res.status === 'success') {
+                    alert("Log Entry Saved.");
+                    this.reset();
+                    document.getElementById('experience').innerHTML = '';
+                    document.getElementById('dos').value = '';
+                    document.getElementById('donts').value = '';
+                    document.getElementById('qa-container').innerHTML = '';
+                    await fetchAllData();
+                    navigateTo('menu-view');
+                } else {
+                    throw new Error(res.message);
+                }
+            } catch(e) {
+                alert("Submission failed: " + e.message);
+            } finally {
+                btn.disabled = false; btn.textContent = "Submit";
+            }
+        });
+
+        // --- SEARCH LOGIC ---
+        document.getElementById('search-box').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase().trim();
+            const resultsDiv = document.getElementById('search-results-list');
+            const profileDiv = document.getElementById('search-profile-content');
+            
+            profileDiv.style.display = 'none';
+            if(!term) { resultsDiv.style.display = 'none'; return; }
+
+            const matches = Object.keys(captainProfiles).filter(n => n.toLowerCase().includes(term));
+            
+            if(matches.length > 0) {
+                resultsDiv.style.display = 'block';
+                let html = '<ul>';
+                matches.forEach(name => {
+                    html += `<li onclick="showProfile('${name}')">${name}</li>`;
+                });
+                html += '</ul>';
+                resultsDiv.innerHTML = html;
+            } else {
+                resultsDiv.style.display = 'block';
+                resultsDiv.innerHTML = '<div style="padding:10px;">No match found.</div>';
+            }
+        });
+
+        // ABBA Display
+        function displayAbba() {
+            const container = document.getElementById('abba-list-content');
+            let pairs = [];
+            Object.values(captainProfiles).forEach(p => {
+                p.submissions.forEach(sub => {
+                    if(sub.questions) {
+                        sub.questions.forEach(q => {
+                            if(q.q && q.a) pairs.push({ c: p.name, q: q.q, a: q.a });
+                        });
+                    }
+                });
+            });
+
+            if(pairs.length === 0) { container.innerHTML = "No Data"; return; }
+
+            let html = '<ul>';
+            pairs.forEach(item => {
+                html += `<li>
+                            <div style="width:100%;">
+                                <strong>Q: ${item.q}</strong> <br>
+                                <span style="opacity:0.8;">A: ${item.a}</span> <br>
+                                <small style="float:right; color:var(--accent);"> - re: ${item.c}</small>
+                            </div>
+                         </li>`;
+            });
+            html += '</ul>';
+            container.innerHTML = html;
+        }
+
+    </script>
 </body>
 </html>
