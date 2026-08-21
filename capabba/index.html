@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Captain Database</title>
+    <title>Command Center</title>
     <!-- Font Awesome for Icons (Optional, using CDN) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -359,6 +359,48 @@
                 <button type="submit" class="button" style="width: 100%; margin: 0;">Authenticate</button>
             </form>
             <p id="password-error" style="color: #ff5252; display: none; margin-top: 10px;">Access Denied.</p>
+            
+            <!-- NEW ToS SECTION -->
+            <p style="font-size: 0.85em; margin-top: 20px; line-height: 1.4; color: var(--text-main); text-align: left;">
+                By clicking 'Authenticate' and accessing this platform, you acknowledge that you have read, understood, and agree to be bound by the <a href="javascript:void(0);" onclick="document.getElementById('tos-content').style.display = document.getElementById('tos-content').style.display === 'none' ? 'block' : 'none';" style="color: var(--accent); text-decoration: underline; cursor: pointer;">Terms of Service</a>. You expressly warrant that any information you submit is strictly factual and compliant with all applicable Singapore laws (including the PDPA and POHA).
+            </p>
+            
+            <div id="tos-content" style="display: none; font-size: 0.8em; text-align: left; margin-top: 15px; padding: 15px; max-height: 200px; overflow-y: auto; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 4px; color: var(--text-main);">
+                <h4 style="margin-bottom: 10px;">TERMS OF SERVICE</h4>
+                <p style="margin-bottom: 10px;">Last Updated: 21/08/2026</p>
+
+                <strong>1. Acceptance of Terms</strong>
+                <p style="margin-top: 5px; margin-bottom: 10px;">By accessing, registering for, or using this platform (the "Platform"), you ("the User") agree to be bound by these Terms of Service. If you do not agree to all terms and conditions, you are expressly prohibited from using the Platform and must discontinue use immediately.</p>
+
+                <strong>2. Purpose and Affiliation Disclaimer</strong>
+                <p style="margin-top: 5px; margin-bottom: 10px;">The Platform is an independent, third-party educational tool designed strictly for the sharing of generalized, objective operational workflows and scenario-based aviation practices.<br><br>The Platform is not affiliated with, endorsed by, or hosted by any airline, aviation authority, or employer.<br><br>The Platform is not a forum for grievances, performance reviews, or personal commentary.</p>
+
+                <strong>3. Strict Prohibition on Personal Data (PDPA Compliance)</strong>
+                <p style="margin-top: 5px; margin-bottom: 10px;">To comply with the Personal Data Protection Act (PDPA) of Singapore, Users are strictly prohibited from uploading personally identifiable information (PII).<br><br>All submissions must focus solely on operational variables and standard operating procedures.</p>
+
+                <strong>4. Acceptable Use and Anti-Harassment (POHA Compliance)</strong>
+                <p style="margin-top: 5px; margin-bottom: 10px;">Users agree to comply with the Protection from Harassment Act (POHA) and the Defamation Act of Singapore. By submitting content, you warrant that:</p>
+                <ul style="margin-top: 5px; margin-bottom: 10px; padding-left: 20px;">
+                    <li>The information is strictly factual, objective, and professionally framed.</li>
+                    <li>The content does not contain false, malicious, defamatory, or derogatory statements.</li>
+                    <li>The content is not intended to, and is not likely to, cause harassment, alarm, or distress to any individual.</li>
+                </ul>
+
+                <strong>5. Administrator Rights and Moderation</strong>
+                <p style="margin-top: 5px; margin-bottom: 10px;">The Platform administrator reserves the absolute right, without prior notice or liability, to edit, redact, or permanently delete any content that violates these terms.</p>
+
+                <strong>6. Indemnification</strong>
+                <p style="margin-top: 5px; margin-bottom: 10px;">You agree to fully indemnify, defend, and hold harmless the Platform creator, administrator, and its affiliates from and against any and all claims, liabilities, damages, losses, costs, or expenses (including legal fees) arising directly or indirectly from:</p>
+                <ul style="margin-top: 5px; margin-bottom: 10px; padding-left: 20px;">
+                    <li>Your use of the Platform.</li>
+                    <li>Any content or data you submit, post, or transmit.</li>
+                    <li>Your violation of any rights of a third party, including intellectual property, privacy, or defamation claims.</li>
+                    <li>Your violation of your employer’s internal policies, confidentiality agreements, or codes of conduct.</li>
+                </ul>
+
+                <strong>7. Governing Law</strong>
+                <p style="margin-top: 5px; margin-bottom: 0;">These Terms shall be governed by and construed in accordance with the laws of the Republic of Singapore. Any disputes arising under these Terms shall be subject to the exclusive jurisdiction of the courts of Singapore.</p>
+            </div>
         </div>
     </div>
 
